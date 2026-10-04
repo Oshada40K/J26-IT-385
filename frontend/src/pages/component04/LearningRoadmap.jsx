@@ -1,14 +1,4 @@
-// TODO (Owner: Dewmi - Component 04):
-// Implement Component 04 logic only in this component folder.
-
+import ComponentIntro from '../../components/ComponentIntro.jsx'
 export default function LearningRoadmap() {
-  return (
-    <div>
-      <h1>Learning Roadmap &amp; Skill Gap</h1>
-      <p>Component 04 development area.</p>
-      <p>
-        Status: <span className="status">Not implemented</span>
-      </p>
-    </div>
-  )
+  return <ComponentIntro number="04" title="Learning Roadmap & Skill Gap" subtitle="Build a learning direction that connects where you are to where you want to go." accent="roadmap" icon="roadmap" owner="Dewmi" items={['Skill gap analysis', 'Learning priorities', 'Growth milestones']} />
 }

@@ -11,18 +11,18 @@ const ENDPOINTS = {
 }
 
 const styles = {
-  card: { background: '#fff', border: '1px solid #ddd', borderRadius: 6, padding: 16, marginBottom: 16 },
-  button: { padding: '8px 14px', border: 'none', borderRadius: 4, background: '#1f3a5f', color: '#fff', cursor: 'pointer' },
+  card: { background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 16, padding: 24, marginBottom: 20 },
+  button: { padding: '8px 14px', border: 'none', borderRadius: 8, color: 'var(--color-surface)', cursor: 'pointer' },
   buttonDisabled: { opacity: 0.6, cursor: 'not-allowed' },
-  muted: { color: '#666', margin: '0 0 12px' },
-  error: { color: '#8a1c25', background: '#f8d7da', border: '1px solid #eba6ac', borderRadius: 4, padding: 10 },
-  pre: { background: '#f5f6f8', border: '1px solid #e2e2e2', borderRadius: 4, padding: 10, overflowX: 'auto', fontSize: 13 },
-  bestJob: { fontSize: 22, fontWeight: 'bold', color: '#1f3a5f', margin: '8px 0' },
+  muted: { color: 'var(--color-text-secondary)', margin: '0 0 12px' },
+  error: { color: 'var(--color-danger-text)', background: 'var(--color-danger-soft)', border: '1px solid var(--color-border)', borderRadius: 8, padding: 10 },
+  pre: { background: 'var(--color-background)', border: '1px solid var(--color-border)', borderRadius: 8, padding: 10, overflowX: 'auto', fontSize: 11 },
+  bestJob: { fontSize: 22, fontWeight: 'bold', color: 'var(--color-primary)', margin: '8px 0' },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', borderBottom: '2px solid #ddd', padding: '6px 8px' },
-  td: { borderBottom: '1px solid #eee', padding: '6px 8px' },
-  barTrack: { background: '#eef2f7', borderRadius: 3, height: 10, width: '100%' },
-  meta: { display: 'grid', gridTemplateColumns: 'max-content 1fr', gap: '4px 16px', margin: 0 },
+  th: { textAlign: 'left', borderBottom: '1px solid var(--color-border)', padding: '6px 8px' },
+  td: { borderBottom: '1px solid var(--color-border)', padding: '6px 8px' },
+  barTrack: { background: 'var(--color-primary-soft)', borderRadius: 8, height: 10, width: '100%' },
+  meta: { display: 'grid', gridTemplateColumns: 'minmax(100px, 160px) minmax(0, 1fr)', gap: '4px 16px', margin: 0 },
 }
 
 function describeError(err) {
@@ -46,6 +46,7 @@ function describeError(err) {
 function Button({ loading, onClick, children }) {
   return (
     <button
+      className="button-ai"
       style={{ ...styles.button, ...(loading ? styles.buttonDisabled : {}) }}
       onClick={onClick}
       disabled={loading}
@@ -66,12 +67,12 @@ function RawJson({ data }) {
 
 function ApiSection({ title, endpoint, state, onLoad, children }) {
   return (
-    <div style={styles.card}>
+    <div className={`card api-card ${title === 'Explanation' ? 'ai-section' : ''}`} style={{ ...styles.card, background: undefined }}>
       <h2 style={{ margin: '0 0 4px' }}>{title}</h2>
       <p style={styles.muted}>
         GET <code>{endpoint}</code>
       </p>
-      {state.error && <p style={styles.error}>{state.error}</p>}
+      {state.error && <p role="alert" style={styles.error}>{state.error}</p>}
       {state.data && (
         <>
           {children(state.data)}
@@ -90,8 +91,8 @@ function ApiSection({ title, endpoint, state, onLoad, children }) {
 function BestJob({ data }) {
   return (
     <>
-      <div>Best matching job:</div>
-      <div style={styles.bestJob}>{data.best_job}</div>
+      <div className="best-match-label">Your strongest career match</div>
+      <div className="best-job-name" style={styles.bestJob}>{data.best_job}</div>
       {data.unrecognised_skills?.length > 0 && (
         <p>Unrecognised skills: {data.unrecognised_skills.join(', ')}</p>
       )}
@@ -101,7 +102,7 @@ function BestJob({ data }) {
 
 function TopJobs({ data }) {
   return (
-    <table style={styles.table}>
+    <div className="table-scroll"><table style={{ ...styles.table, minWidth: 500 }}>
       <thead>
         <tr>
           <th style={styles.th}>Rank</th>
@@ -111,21 +112,21 @@ function TopJobs({ data }) {
       </thead>
       <tbody>
         {data.jobs.map((job) => (
-          <tr key={job.ranking}>
-            <td style={styles.td}>{job.ranking}</td>
+          <tr key={job.ranking} className={job.ranking === 1 ? 'top-job-row' : ''}>
+            <td style={styles.td}><span className="rank-badge">{job.ranking}</span></td>
             <td style={{ ...styles.td, fontWeight: job.ranking === 1 ? 'bold' : 'normal' }}>{job.job}</td>
             <td style={styles.td}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div style={styles.barTrack}>
-                  <div style={{ background: '#1f3a5f', borderRadius: 3, height: 10, width: `${job.score}%` }} />
+                  <div className="score-fill" style={{ width: `${job.score}%` }} />
                 </div>
-                <span style={{ minWidth: 44, textAlign: 'right' }}>{job.score.toFixed(2)}</span>
+                <span className="score-value" style={{ minWidth: 44, textAlign: 'right' }}>{job.score.toFixed(2)}</span>
               </div>
             </td>
           </tr>
         ))}
       </tbody>
-    </table>
+    </table></div>
   )
 }
 
@@ -134,8 +135,8 @@ function Explanation({ data }) {
   const sentences = data.explanation.split(/(?<=\.)\s+/).filter(Boolean)
   return (
     <>
-      <div>Why the top job was recommended (SHAP):</div>
-      <ul>
+      <div className="eyebrow">WHY THIS CAREER / SHAP EXPLAINABILITY</div>
+      <ul className="explanation-list">
         {sentences.map((s, i) => (
           <li key={i} style={{ marginBottom: 4 }}>{s}</li>
         ))}
@@ -146,7 +147,7 @@ function Explanation({ data }) {
 
 function ModelInfo({ data }) {
   return (
-    <div style={styles.card}>
+    <div className="card api-card" style={styles.card}>
       <h2 style={{ margin: '0 0 12px' }}>Model information</h2>
       <dl style={styles.meta}>
         <dt>Candidate ID</dt>
@@ -185,14 +186,16 @@ export default function CareerRecommendation() {
   const metadata = results.bestJob.data || results.topJobs.data || results.explanation.data
 
   return (
-    <div style={{ maxWidth: 900 }}>
-      <h1 style={{ marginTop: 0 }}>Explainable Career Recommendation</h1>
+    <div className="page accent-career">
+      <p className="eyebrow">COMPONENT 03 / EXPLAINABLE CAREER INTELLIGENCE</p>
+      <h1 style={{ marginTop: 0 }}>Find your direction. Understand why.</h1>
+      <p className="page-description" style={{ marginBottom: 20 }}>Explore your strongest career match, compare five ranked possibilities, and discover the evidence behind the recommendation.</p>
       <p style={styles.muted}>
         Component 03 · Backend: <code>{API_BASE_URL}</code>
       </p>
       <div style={{ marginBottom: 16 }}>
         <Button loading={anyLoading} onClick={loadAll}>
-          Load all
+          Load all recommendations
         </Button>
       </div>
 

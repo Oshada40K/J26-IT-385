@@ -1,14 +1,4 @@
-// TODO (Owner: Tharindi - Component 01):
-// Implement Component 01 logic only in this component folder.
-
+import ComponentIntro from '../../components/ComponentIntro.jsx'
 export default function SkillProfile() {
-  return (
-    <div>
-      <h1>Technical Skill Profile</h1>
-      <p>Component 01 development area.</p>
-      <p>
-        Status: <span className="status">Not implemented</span>
-      </p>
-    </div>
-  )
+  return <ComponentIntro number="01" title="Technical Skill Profile" subtitle="Turn technical strengths into a foundation for your career journey." accent="skill" icon="skill" owner="Tharindi" items={['Skill evidence', 'Technical strengths', 'Profile insights']} />
 }
