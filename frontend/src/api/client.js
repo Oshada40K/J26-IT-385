@@ -1,7 +1,7 @@
 // SHARED FILE - controlled by the group leader.
 // Lightweight API helpers built on the native fetch API.
 
-export const API_BASE_URL = 'http://localhost:8000'
+export const API_BASE_URL = 'http://127.0.0.1:8000'
 
 async function handleResponse(response) {
   if (!response.ok) {
