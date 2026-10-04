@@ -7,6 +7,7 @@ import SkillProfile from './pages/component01/SkillProfile.jsx'
 import PersonalityProfile from './pages/component02/PersonalityProfile.jsx'
 import CareerRecommendation from './pages/component03/CareerRecommendation.jsx'
 import LearningRoadmap from './pages/component04/LearningRoadmap.jsx'
+import ApiTest from './pages/ApiTest.jsx'
 
 const components = [
   { path: '/component01', title: 'Component 01', name: 'Technical Skill Profile', owner: 'Tharindi' },
@@ -45,6 +46,7 @@ export default function App() {
             <Route path="/component02" element={<PersonalityProfile />} />
             <Route path="/component03" element={<CareerRecommendation />} />
             <Route path="/component04" element={<LearningRoadmap />} />
+            <Route path="/api-test" element={<ApiTest />} />
           </Routes>
         </main>
       </div>

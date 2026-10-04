@@ -2,7 +2,7 @@
 export default function Navbar() {
   return (
     <header className="navbar">
-      AI-Based Smart Career Path Recommendation System
+      AI-Based Smart Career Path Recommendation System Main Branch
     </header>
   )
 }

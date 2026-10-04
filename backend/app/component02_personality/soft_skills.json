@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "candidate_id": "sample_candidate_001",
+  "soft_skills": [
+    {
+      "name": "Communication",
+      "level": 4,
+      "evidence": "Presented university team projects"
+    },
+    {
+      "name": "Active Listening",
+      "level": 4
+    },
+    {
+      "name": "Teamwork",
+      "level": 4
+    },
+    {
+      "name": "Critical Thinking",
+      "level": 4
+    },
+    {
+      "name": "Problem Solving",
+      "level": 4
+    },
+    {
+      "name": "Time Management",
+      "level": 3
+    },
+    {
+      "name": "Active Learning",
+      "level": 4
+    },
+    {
+      "name": "Writing",
+      "level": 3
+    }
+  ]
+}

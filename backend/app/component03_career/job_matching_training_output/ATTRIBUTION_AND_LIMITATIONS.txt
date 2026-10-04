@@ -1,0 +1,5 @@
+O*NET 30.0 data: U.S. Department of Labor, Employment and Training Administration; National Center for O*NET Development.
+O*NET is a trademark of USDOL/ETA. CC BY 4.0: https://creativecommons.org/licenses/by/4.0/
+Source: https://www.onetcenter.org/database.html and https://www.onetcenter.org/db_releases.html
+Changes: normalisation, application aliases, derived matching features, synthetic profiles and policy pseudo-labels. No endorsement implied.
+This is a prototype evidence-matching model, not validated career suitability or a hiring probability.
