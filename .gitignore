@@ -1,0 +1,41 @@
+# SHARED FILE - controlled by the group leader.
+
+# Environment files
+.env
+*.env
+!.env.example
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Node / build
+node_modules/
+dist/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Logs
+*.log
+
+# ML model files
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
+*.onnx
+
+# Data files
+*.csv
+*.xlsx
+*.parquet
+
+# Component 03 saved models (keep the folder via .gitkeep)
+backend/app/component03_career/ml/saved_models/*
+!backend/app/component03_career/ml/saved_models/.gitkeep
