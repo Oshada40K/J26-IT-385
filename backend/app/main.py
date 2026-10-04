@@ -5,9 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.component01_skill.router import router as skill_router
 from app.component02_personality.router import router as personality_router
 from app.component03_career.router import router as career_router
+from app.component03_career.service import career_lifespan
 from app.component04_roadmap.router import router as roadmap_router
 
-app = FastAPI(title="AI-Based Smart Career Path Recommendation System API")
+app = FastAPI(title="AI-Based Smart Career Path Recommendation System API", lifespan=career_lifespan)
 
 app.add_middleware(
     CORSMiddleware,

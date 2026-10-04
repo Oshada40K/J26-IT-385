@@ -38,7 +38,7 @@ const styles = {
 function describeError(err) {
   // fetch() throws a TypeError when the server is unreachable or the request is blocked by CORS.
   if (err instanceof TypeError) {
-    return `Unable to connect to backend at ${API_BASE_URL}. Make sure FastAPI is running on port 8000 and that CORS allows this origin (${window.location.origin}).`
+    return `Unable to connect to backend at ${API_BASE_URL}. Make sure the FastAPI backend is running (locally on port 8000) and that CORS allows this origin (${window.location.origin}).`
   }
   return err?.message || 'Unknown error'
 }

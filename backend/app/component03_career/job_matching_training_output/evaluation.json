@@ -1,0 +1,12 @@
+{
+  "evaluation_type": "Synthetic held-out-candidate agreement with pseudo-label policy; NOT real-world accuracy",
+  "train_candidates": 1280,
+  "test_candidates": 320,
+  "test_pairs": 5120,
+  "test_mae_score_points": 0.7054996490478516,
+  "test_r2": 0.9947702288627625,
+  "ranking_test_candidates": 30,
+  "ndcg_at_5_against_policy": 0.9977928212879307,
+  "top1_policy_agreement": 0.9666666666666667,
+  "direct_policy_baseline_mae": 0.0
+}
