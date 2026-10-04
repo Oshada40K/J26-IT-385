@@ -38,7 +38,10 @@ const styles = {
 function describeError(err) {
   // fetch() throws a TypeError when the server is unreachable or the request is blocked by CORS.
   if (err instanceof TypeError) {
-    return `Unable to connect to backend at ${API_BASE_URL}. Make sure the FastAPI backend is running (locally on port 8000) and that CORS allows this origin (${window.location.origin}).`
+    if (new URL(API_BASE_URL).hostname.endsWith('.railway.internal')) {
+      return 'The backend URL is a private Railway address. Set VITE_API_BASE_URL to the backend public HTTPS domain from Railway Settings > Networking, then restart or rebuild the frontend.'
+    }
+    return `Unable to connect to backend at ${API_BASE_URL}. Check that this URL is reachable from your browser and that CORS allows this origin (${window.location.origin}).`
   }
   return err?.message || 'Unknown error'
 }
