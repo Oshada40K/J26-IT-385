@@ -1,0 +1,5 @@
+import { Link } from 'react-router-dom'
+import Icon from './Icon.jsx'
+export default function ComponentIntro({ number, title, subtitle, accent, icon, owner, items }) {
+  return <div className={`page accent-${accent}`}><div className="page-heading"><div><p className="eyebrow">COMPONENT {number} / CAREER INTELLIGENCE</p><h1>{title}</h1><p className="page-description">{subtitle}</p></div><span className="component-icon"><Icon name={icon} size={28} /></span></div><section className="card placeholder-panel"><span className="status status-neutral">Not implemented</span><h2>A new perspective on your potential.</h2><p>This research component is in development. Assessment results will appear here when the component is ready.</p><div className="preview-pillars">{items.map((item, i) => <div key={item}><span className="step-number">0{i + 1}</span><h3>{item}</h3><small>Planned research capability</small></div>)}</div><div className="placeholder-footer"><span>Research lead: <strong>{owner}</strong></span><Link className="button button-secondary" to="/">Back to overview <Icon name="arrow" size={16} /></Link></div></section></div>
+}

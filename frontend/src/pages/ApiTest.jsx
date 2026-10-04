@@ -19,20 +19,14 @@ const STATUS = {
   fail: 'Connection Failed',
 }
 
-const statusColors = {
-  idle: { background: '#eee', border: '#ccc', color: '#555' },
-  testing: { background: '#fff3cd', border: '#f0d58c', color: '#7a5d00' },
-  ok: { background: '#d4edda', border: '#9fd3ab', color: '#1e6b33' },
-  fail: { background: '#f8d7da', border: '#eba6ac', color: '#8a1c25' },
-}
 
 const styles = {
-  card: { background: '#fff', border: '1px solid #ddd', borderRadius: 6, padding: 16, marginBottom: 16 },
-  button: { padding: '8px 14px', border: 'none', borderRadius: 4, background: '#1f3a5f', color: '#fff', cursor: 'pointer' },
+  card: { background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 16, padding: 24, marginBottom: 20 },
+  button: { padding: '8px 14px', border: 'none', borderRadius: 8, background: 'var(--color-primary)', color: 'var(--color-surface)', cursor: 'pointer' },
   buttonDisabled: { opacity: 0.6, cursor: 'not-allowed' },
-  pre: { background: '#f5f6f8', border: '1px solid #e2e2e2', borderRadius: 4, padding: 10, overflowX: 'auto', fontSize: 13 },
-  error: { color: '#8a1c25', margin: '8px 0' },
-  summaryRow: { display: 'flex', justifyContent: 'space-between', maxWidth: 360, padding: '4px 0', borderBottom: '1px solid #eee' },
+  pre: { background: 'var(--color-background)', border: '1px solid var(--color-border)', borderRadius: 8, padding: 10, overflowX: 'auto', fontSize: 11 },
+  error: { color: 'var(--color-danger-text)', margin: '8px 0' },
+  summaryRow: { display: 'flex', justifyContent: 'space-between', maxWidth: 360, padding: '4px 0', borderBottom: '1px solid var(--color-border)' },
 }
 
 function describeError(err) {
@@ -47,12 +41,7 @@ function describeError(err) {
 }
 
 function StatusBadge({ status }) {
-  const c = statusColors[status]
-  return (
-    <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 4, border: `1px solid ${c.border}`, background: c.background, color: c.color, fontWeight: 'bold' }}>
-      {STATUS[status]}
-    </span>
-  )
+  return <span className={`status-badge status-${status}`} role="status">{STATUS[status]}</span>
 }
 
 const initialResults = Object.fromEntries(apis.map((a) => [a.id, { status: 'idle', data: null, error: null }]))
@@ -90,9 +79,10 @@ export default function ApiTest() {
   const allOk = summary?.every((s) => s.status === 'ok')
 
   return (
-    <div style={{ maxWidth: 800 }}>
-      <h1 style={{ marginTop: 0 }}>AI-Based Smart Career Path Recommendation System</h1>
-      <h2>API Integration Test</h2>
+    <div className="page">
+      <p className="eyebrow">WORKSPACE / SYSTEM CONNECTIVITY</p>
+      <h1 style={{ marginTop: 0 }}>API integration test</h1>
+      <p className="page-description">Check the connection between your workspace and each research component.</p>
       <p>
         Backend: <code>{API_BASE_URL}</code> ·{' '}
         <a href={`${API_BASE_URL}/docs`} target="_blank" rel="noreferrer">
@@ -100,7 +90,7 @@ export default function ApiTest() {
         </a>
       </p>
 
-      <div style={styles.card}>
+      <div className="card api-card" style={styles.card}>
         <button
           style={{ ...styles.button, ...(testingAll ? styles.buttonDisabled : {}) }}
           onClick={testAll}
@@ -117,7 +107,7 @@ export default function ApiTest() {
                 <StatusBadge status={s.status} />
               </div>
             ))}
-            <p style={{ fontWeight: 'bold', color: allOk ? '#1e6b33' : '#8a1c25' }}>
+            <p style={{ fontWeight: 'bold', color: allOk ? 'var(--color-success-text)' : 'var(--color-danger-text)' }}>
               {allOk ? 'All backend APIs are connected successfully.' : 'Some backend APIs could not be reached.'}
             </p>
           </div>
@@ -128,12 +118,12 @@ export default function ApiTest() {
         const r = results[api.id]
         const busy = r.status === 'testing'
         return (
-          <div key={api.id} style={styles.card}>
+          <div key={api.id} className="card api-card" style={styles.card}>
             <h3 style={{ margin: '0 0 4px' }}>
               {api.title}
               {api.name && ` - ${api.name}`}
             </h3>
-            <p style={{ margin: '0 0 8px', color: '#666' }}>
+            <p style={{ margin: '0 0 8px', color: 'var(--color-text-secondary)' }}>
               GET <code>{api.endpoint}</code>
             </p>
             <p>
@@ -146,7 +136,7 @@ export default function ApiTest() {
                 <pre style={styles.pre}>{JSON.stringify(r.data, null, 2)}</pre>
               </>
             )}
-            {r.status === 'fail' && <p style={styles.error}>{r.error}</p>}
+            {r.status === 'fail' && <p role="alert" style={styles.error}>{r.error}</p>}
 
             <button
               style={{ ...styles.button, ...(busy ? styles.buttonDisabled : {}) }}
