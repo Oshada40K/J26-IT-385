@@ -239,3 +239,30 @@ input.cv-file-input { position: absolute; width: 1px; height: 1px; min-height: 0
 @keyframes cv-glow { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
 @media (max-width: 600px) { .home-page { padding-top: 4px; } .home-intro { margin-top: 0; margin-bottom: 18px; } .home-desktop-break { display: none; } .cv-panel { padding: 22px 18px; border-radius: 20px; } .cv-panel h2 { font-size: 18px; } .home-next > div { gap: 13px; flex-wrap: wrap; } .home-next a { font-size: 10px; } .cv-selection-note { align-items: flex-start; } }
 @media (prefers-reduced-motion: reduce) { .cv-paper,.cv-spark { animation: none; } }
+
+.cv-analyze { margin-top: 10px; width: 100%; max-width: 240px; }
+.cv-dropzone.has-file .cv-browse { background: white; color: var(--color-primary); border-color: #d8d2ec; box-shadow: none; }
+.cv-dropzone.has-file .cv-browse:hover { background: #eeebfc; }
+.skill-empty { text-align: center; padding: 44px 24px; }
+.skill-empty p { color: var(--color-text-secondary); }
+.skill-result-summary { margin-bottom: 22px; }
+.skill-result-summary > strong { display: block; font-size: 18px; margin: 12px 0 8px; }
+.skill-result-summary > p { margin: 0; color: var(--color-text-secondary); }
+.skill-results-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; }
+.skill-result-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.skill-result-heading h2 { margin: 0; font-size: 18px; }
+.skill-level { font-size: 24px; font-weight: 600; color: var(--color-primary); white-space: nowrap; }
+.skill-level small { font-size: 10px; margin-left: 5px; font-weight: 400; color: var(--color-text-secondary); }
+.skill-level-bars { display: flex; gap: 5px; margin: 16px 0 10px; }
+.skill-level-bars span { height: 5px; flex: 1; background: #e9e7f2; border-radius: 4px; }
+.skill-level-bars .filled { background: #8b7ce0; }
+.skill-result > p { color: var(--color-text-secondary); font-size: 12px; }
+.skill-result .skill-confidence { font-size: 11px; color: #7760a9; }
+.skill-result blockquote { margin: 12px 0; padding: 12px 14px; border-left: 3px solid #c5b9eb; background: #faf8ff; font-size: 12px; overflow-wrap: anywhere; }
+.skill-result blockquote small { display: block; text-transform: capitalize; color: var(--color-primary); margin-bottom: 5px; }
+.skill-profile-links,.skill-method { margin-top: 22px; }
+.skill-profile-links h2 { margin-top: 0; font-size: 18px; }
+.skill-profile-links p { color: var(--color-text-secondary); font-size: 12px; }
+.skill-profile-links a { display: flex; align-items: center; gap: 8px; overflow-wrap: anywhere; margin-top: 10px; }
+.skill-method p { font-size: 12px; color: var(--color-text-secondary); }
+@media (max-width: 600px) { .skill-results-grid { grid-template-columns: 1fr; } }
