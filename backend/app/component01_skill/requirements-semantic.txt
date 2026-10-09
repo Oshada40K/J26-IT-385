@@ -1,0 +1,2 @@
+# Install separately; cached model files are required for offline inference.
+sentence-transformers>=5.1,<6

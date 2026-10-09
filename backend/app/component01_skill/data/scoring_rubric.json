@@ -1,0 +1,14 @@
+{
+  "version": "cv_evidence_rubric_v1",
+  "levels": {
+    "1": "Explicit introductory or learning evidence",
+    "2": "Self-reported skill or simple use without attributable implementation",
+    "3": "Named technology and concrete implementation in a project or work responsibility",
+    "4": "At least two distinct implementation records plus explicit skill-specific production ownership and complexity",
+    "5": "Reserved for independent expert review; never assigned automatically"
+  },
+  "semantic_threshold": 0.65,
+  "semantic_threshold_status": "experimental, not calibrated on annotated CVs",
+  "max_automatic_level": 4,
+  "missing_external_evidence_penalty": 0
+}
