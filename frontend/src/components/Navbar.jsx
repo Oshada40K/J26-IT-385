@@ -1,6 +1,6 @@
 import { useLocation } from 'react-router-dom'
 import Icon from './Icon.jsx'
-const titles = { '/': 'Workspace overview', '/component01': 'Skill assessment', '/component02': 'Personality analysis', '/component03': 'Career prediction', '/component04': 'Learning roadmap', '/api-test': 'API integration' }
+const titles = { '/': 'Home', '/component01': 'Skill assessment', '/component02': 'Personality analysis', '/component03': 'Career prediction', '/component04': 'Learning roadmap', '/api-test': 'API integration' }
 export default function Navbar({ menuOpen, onMenuToggle }) {
   const { pathname } = useLocation()
   return <header className="navbar">
