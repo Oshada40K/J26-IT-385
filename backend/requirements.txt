@@ -1,5 +1,11 @@
-fastapi>=0.110.0
-uvicorn[standard]>=0.29.0
-sqlalchemy>=2.0.0
-psycopg2-binary>=2.9.9
-python-dotenv>=1.0.0
+fastapi==0.115.12
+uvicorn[standard]
+python-dotenv
+httpx
+-r app/component03_career/job_matching_training_output/requirements.txt
+
+# Component 01 CV-only runtime (SBERT is optional, see component README).
+python-multipart==0.0.22
+PyMuPDF==1.27.2.2
+python-docx==1.2.0
+anyio==4.9.0

@@ -1,0 +1,88 @@
+﻿name: Backend CI/CD - Railway
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-railway.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-railway.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test backend Docker image
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Python 3.11 backend image
+        run: docker build --tag career-backend:ci ./backend
+      - name: Run real-model integration tests
+        run: docker run --rm career-backend:ci python -m unittest discover -s tests -v
+      - name: Start backend on a dynamic port
+        run: docker run --detach --name career-backend-ci --env PORT=8090 --publish 127.0.0.1:8080:8090 career-backend:ci
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify live APIs and internal upstream calls
+        run: python backend/scripts/smoke_test.py http://127.0.0.1:8080
+      - name: Print backend logs
+        if: always()
+        run: docker logs career-backend-ci 2>/dev/null || true
+      - name: Stop test container
+        if: always()
+        run: docker rm --force career-backend-ci 2>/dev/null || true
+
+  deploy:
+    name: Deploy backend to Railway
+    needs: test
+    if: >-
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    concurrency:
+      group: railway-backend-production
+      cancel-in-progress: false
+    env:
+      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+      RAILWAY_SERVICE_ID: ${{ vars.RAILWAY_SERVICE_ID }}
+      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+      RAILWAY_BACKEND_URL: ${{ vars.RAILWAY_BACKEND_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check deployment configuration
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        shell: bash
+        run: |
+          for key in RAILWAY_TOKEN RAILWAY_PROJECT_ID RAILWAY_SERVICE_ID RAILWAY_ENVIRONMENT_ID RAILWAY_BACKEND_URL; do
+            if [ -z "${!key}" ]; then
+              echo "::error::Missing GitHub Actions configuration: $key"
+              exit 1
+            fi
+          done
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Railway CLI
+        run: npm install --global @railway/cli@5.63.1
+      - name: Upload and deploy backend only
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: >-
+          railway up ./backend --path-as-root
+          --project "$RAILWAY_PROJECT_ID"
+          --service "$RAILWAY_SERVICE_ID"
+          --environment "$RAILWAY_ENVIRONMENT_ID"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify hosted backend APIs
+        run: python backend/scripts/smoke_test.py "$RAILWAY_BACKEND_URL"

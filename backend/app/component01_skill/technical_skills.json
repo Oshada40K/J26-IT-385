@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "candidate_id": "sample_candidate_001",
+  "technical_skills": [
+    {
+      "name": "Python",
+      "level": 4
+    },
+    {
+      "name": "JavaScript",
+      "level": 4
+    },
+    {
+      "name": "React",
+      "level": 4
+    },
+    {
+      "name": "Node.js",
+      "level": 3
+    },
+    {
+      "name": "SQL",
+      "level": 3
+    },
+    {
+      "name": "MongoDB",
+      "level": 3
+    },
+    {
+      "name": "Git",
+      "level": 3
+    },
+    {
+      "name": "HTML",
+      "level": 4
+    },
+    {
+      "name": "CSS",
+      "level": 4
+    }
+  ]
+}
