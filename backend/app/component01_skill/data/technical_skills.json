@@ -1,0 +1,445 @@
+{
+  "Python": {
+    "aliases": [
+      "Python",
+      "Python 3"
+    ],
+    "description": "Programming scripts, applications and automation using Python"
+  },
+  "JavaScript": {
+    "aliases": [
+      "JavaScript",
+      "JS",
+      "ECMAScript"
+    ],
+    "description": "Practical software development using JavaScript"
+  },
+  "TypeScript": {
+    "aliases": [
+      "TypeScript",
+      "TS"
+    ],
+    "description": "Practical software development using TypeScript"
+  },
+  "React": {
+    "aliases": [
+      "React",
+      "React.js",
+      "ReactJS"
+    ],
+    "description": "Building user interfaces and reusable components using React"
+  },
+  "Node.js": {
+    "aliases": [
+      "Node.js",
+      "NodeJS",
+      "Node JS"
+    ],
+    "description": "Practical software development using Node.js"
+  },
+  "Express.js": {
+    "aliases": [
+      "Express.js",
+      "Express",
+      "ExpressJS"
+    ],
+    "description": "Practical software development using Express.js"
+  },
+  "HTML": {
+    "aliases": [
+      "HTML",
+      "HTML5"
+    ],
+    "description": "Practical software development using HTML"
+  },
+  "CSS": {
+    "aliases": [
+      "CSS",
+      "CSS3"
+    ],
+    "description": "Practical software development using CSS"
+  },
+  "SQL": {
+    "aliases": [
+      "SQL"
+    ],
+    "description": "Querying relational databases using SQL"
+  },
+  "PostgreSQL": {
+    "aliases": [
+      "PostgreSQL",
+      "Postgres"
+    ],
+    "description": "Relational database development using PostgreSQL"
+  },
+  "MongoDB": {
+    "aliases": [
+      "MongoDB"
+    ],
+    "description": "Practical software development using MongoDB"
+  },
+  "MySQL": {
+    "aliases": [
+      "MySQL"
+    ],
+    "description": "Practical software development using MySQL"
+  },
+  "SQLite": {
+    "aliases": [
+      "SQLite"
+    ],
+    "description": "Practical software development using SQLite"
+  },
+  "Java": {
+    "aliases": [
+      "Java"
+    ],
+    "description": "Practical software development using Java"
+  },
+  "C": {
+    "aliases": [
+      "C"
+    ],
+    "description": "Practical software development using C"
+  },
+  "C++": {
+    "aliases": [
+      "C++",
+      "CPP"
+    ],
+    "description": "Practical software development using C++"
+  },
+  "C#": {
+    "aliases": [
+      "C#",
+      "C Sharp"
+    ],
+    "description": "Practical software development using C#"
+  },
+  "Go": {
+    "aliases": [
+      "Go",
+      "Golang"
+    ],
+    "description": "Practical software development using Go"
+  },
+  "R": {
+    "aliases": [
+      "R"
+    ],
+    "description": "Practical software development using R"
+  },
+  "PHP": {
+    "aliases": [
+      "PHP"
+    ],
+    "description": "Practical software development using PHP"
+  },
+  "Ruby": {
+    "aliases": [
+      "Ruby"
+    ],
+    "description": "Practical software development using Ruby"
+  },
+  "Swift": {
+    "aliases": [
+      "Swift"
+    ],
+    "description": "Practical software development using Swift"
+  },
+  "Kotlin": {
+    "aliases": [
+      "Kotlin"
+    ],
+    "description": "Practical software development using Kotlin"
+  },
+  "Rust": {
+    "aliases": [
+      "Rust"
+    ],
+    "description": "Practical software development using Rust"
+  },
+  "Dart": {
+    "aliases": [
+      "Dart"
+    ],
+    "description": "Practical software development using Dart"
+  },
+  "Flutter": {
+    "aliases": [
+      "Flutter"
+    ],
+    "description": "Practical software development using Flutter"
+  },
+  "Vue": {
+    "aliases": [
+      "Vue",
+      "Vue.js",
+      "VueJS"
+    ],
+    "description": "Practical software development using Vue"
+  },
+  "Angular": {
+    "aliases": [
+      "Angular",
+      "AngularJS"
+    ],
+    "description": "Practical software development using Angular"
+  },
+  "Next.js": {
+    "aliases": [
+      "Next.js",
+      "NextJS"
+    ],
+    "description": "Practical software development using Next.js"
+  },
+  "Django": {
+    "aliases": [
+      "Django"
+    ],
+    "description": "Practical software development using Django"
+  },
+  "Flask": {
+    "aliases": [
+      "Flask"
+    ],
+    "description": "Practical software development using Flask"
+  },
+  "FastAPI": {
+    "aliases": [
+      "FastAPI"
+    ],
+    "description": "Practical software development using FastAPI"
+  },
+  "Spring Boot": {
+    "aliases": [
+      "Spring Boot"
+    ],
+    "description": "Practical software development using Spring Boot"
+  },
+  ".NET": {
+    "aliases": [
+      ".NET",
+      "ASP.NET",
+      "dotnet"
+    ],
+    "description": "Practical software development using .NET"
+  },
+  "Git": {
+    "aliases": [
+      "Git"
+    ],
+    "description": "Practical software development using Git"
+  },
+  "Docker": {
+    "aliases": [
+      "Docker"
+    ],
+    "description": "Practical software development using Docker"
+  },
+  "Kubernetes": {
+    "aliases": [
+      "Kubernetes",
+      "K8s"
+    ],
+    "description": "Practical software development using Kubernetes"
+  },
+  "AWS": {
+    "aliases": [
+      "AWS",
+      "Amazon Web Services"
+    ],
+    "description": "Practical software development using AWS"
+  },
+  "Azure": {
+    "aliases": [
+      "Azure",
+      "Microsoft Azure"
+    ],
+    "description": "Practical software development using Azure"
+  },
+  "Linux": {
+    "aliases": [
+      "Linux"
+    ],
+    "description": "Practical software development using Linux"
+  },
+  "REST APIs": {
+    "aliases": [
+      "REST APIs",
+      "REST API",
+      "RESTful APIs",
+      "REST endpoints"
+    ],
+    "description": "Implementing and integrating REST API endpoints"
+  },
+  "GraphQL": {
+    "aliases": [
+      "GraphQL"
+    ],
+    "description": "Practical software development using GraphQL"
+  },
+  "Selenium": {
+    "aliases": [
+      "Selenium"
+    ],
+    "description": "Automated browser testing using Selenium"
+  },
+  "Pytest": {
+    "aliases": [
+      "Pytest",
+      "pytest"
+    ],
+    "description": "Writing automated Python tests using Pytest"
+  },
+  "Postman": {
+    "aliases": [
+      "Postman"
+    ],
+    "description": "Practical software development using Postman"
+  },
+  "Jest": {
+    "aliases": [
+      "Jest"
+    ],
+    "description": "Practical software development using Jest"
+  },
+  "Cypress": {
+    "aliases": [
+      "Cypress"
+    ],
+    "description": "Practical software development using Cypress"
+  },
+  "Playwright": {
+    "aliases": [
+      "Playwright"
+    ],
+    "description": "Practical software development using Playwright"
+  },
+  "Manual testing": {
+    "aliases": [
+      "Manual testing",
+      "manual tests"
+    ],
+    "description": "Manually executing software tests and reporting defects"
+  },
+  "Regression testing": {
+    "aliases": [
+      "Regression testing",
+      "regression tests"
+    ],
+    "description": "Testing software changes for regressions"
+  },
+  "Test case design": {
+    "aliases": [
+      "Test case design",
+      "test cases"
+    ],
+    "description": "Designing software test cases for user workflows"
+  },
+  "GitHub Actions": {
+    "aliases": [
+      "GitHub Actions"
+    ],
+    "description": "Practical software development using GitHub Actions"
+  },
+  "CI/CD": {
+    "aliases": [
+      "CI/CD",
+      "continuous integration",
+      "continuous delivery"
+    ],
+    "description": "Practical software development using CI/CD"
+  },
+  "Jira": {
+    "aliases": [
+      "Jira"
+    ],
+    "description": "Practical software development using Jira"
+  },
+  "VS Code": {
+    "aliases": [
+      "VS Code",
+      "Visual Studio Code"
+    ],
+    "description": "Practical software development using VS Code"
+  },
+  "Responsive design": {
+    "aliases": [
+      "Responsive design",
+      "responsive UI",
+      "responsive interfaces",
+      "responsive dashboard"
+    ],
+    "description": "Building responsive user interfaces for multiple screen sizes"
+  },
+  "Machine learning": {
+    "aliases": [
+      "Machine learning",
+      "ML"
+    ],
+    "description": "Practical software development using Machine learning"
+  },
+  "TensorFlow": {
+    "aliases": [
+      "TensorFlow"
+    ],
+    "description": "Practical software development using TensorFlow"
+  },
+  "PyTorch": {
+    "aliases": [
+      "PyTorch"
+    ],
+    "description": "Practical software development using PyTorch"
+  },
+  "Pandas": {
+    "aliases": [
+      "Pandas"
+    ],
+    "description": "Practical software development using Pandas"
+  },
+  "NumPy": {
+    "aliases": [
+      "NumPy"
+    ],
+    "description": "Practical software development using NumPy"
+  },
+  "scikit-learn": {
+    "aliases": [
+      "scikit-learn",
+      "sklearn"
+    ],
+    "description": "Practical software development using scikit-learn"
+  },
+  "Power BI": {
+    "aliases": [
+      "Power BI"
+    ],
+    "description": "Practical software development using Power BI"
+  },
+  "Figma": {
+    "aliases": [
+      "Figma"
+    ],
+    "description": "Practical software development using Figma"
+  },
+  "Redis": {
+    "aliases": [
+      "Redis"
+    ],
+    "description": "Practical software development using Redis"
+  },
+  "Firebase": {
+    "aliases": [
+      "Firebase"
+    ],
+    "description": "Practical software development using Firebase"
+  },
+  "Bash": {
+    "aliases": [
+      "Bash",
+      "shell scripting"
+    ],
+    "description": "Practical software development using Bash"
+  }
+}
