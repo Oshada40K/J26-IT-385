@@ -1,0 +1,97 @@
+{
+  "description": "Rubric regression expectations for the fictional sample, not independent expert labels.",
+  "technical_skills": [
+    {
+      "name": "CSS",
+      "level": 2
+    },
+    {
+      "name": "Express.js",
+      "level": 3
+    },
+    {
+      "name": "Git",
+      "level": 3
+    },
+    {
+      "name": "GitHub Actions",
+      "level": 2
+    },
+    {
+      "name": "HTML",
+      "level": 2
+    },
+    {
+      "name": "JavaScript",
+      "level": 3
+    },
+    {
+      "name": "Jira",
+      "level": 3
+    },
+    {
+      "name": "Manual testing",
+      "level": 2
+    },
+    {
+      "name": "MongoDB",
+      "level": 3
+    },
+    {
+      "name": "Node.js",
+      "level": 3
+    },
+    {
+      "name": "PostgreSQL",
+      "level": 3
+    },
+    {
+      "name": "Postman",
+      "level": 3
+    },
+    {
+      "name": "Pytest",
+      "level": 3
+    },
+    {
+      "name": "Python",
+      "level": 3
+    },
+    {
+      "name": "React",
+      "level": 3
+    },
+    {
+      "name": "Regression testing",
+      "level": 3
+    },
+    {
+      "name": "Responsive design",
+      "level": 3
+    },
+    {
+      "name": "REST APIs",
+      "level": 3
+    },
+    {
+      "name": "Selenium",
+      "level": 3
+    },
+    {
+      "name": "SQL",
+      "level": 2
+    },
+    {
+      "name": "Test case design",
+      "level": 3
+    },
+    {
+      "name": "TypeScript",
+      "level": 2
+    },
+    {
+      "name": "VS Code",
+      "level": 2
+    }
+  ]
+}
