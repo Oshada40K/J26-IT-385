@@ -4,3 +4,6 @@ venv/
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Local Component 01 prototype database
+.data/
