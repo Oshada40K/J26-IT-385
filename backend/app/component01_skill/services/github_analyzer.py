@@ -5,6 +5,7 @@ import time
 import httpx
 from .profile_identifier import normalize_identifier
 from .skill_extractor import TAXONOMY
+from .github_usage import collect_usage
 
 
 @lru_cache(maxsize=128)
@@ -44,6 +45,7 @@ def analyze_github(profile):
         return [], 'invalid', ['Invalid GitHub profile; CV-only assessment continues.']
     try:
         evidence = _public_metadata(valid['handle'], int(time.time() // 300))
-        return [dict(record) for record in evidence], 'completed', ['GitHub metadata supports CV claims only; candidate ownership and contributions are unverified.']
+        activity, warnings = collect_usage(valid['handle'], int(time.time() // 300))
+        return [dict(record) for record in evidence + activity], 'completed', warnings + ['GitHub activity is attributed to the detected account; candidate ownership is unverified.']
     except (httpx.HTTPError, ValueError, TypeError, KeyError, AttributeError):
         return [], 'unavailable', ['GitHub profile is inaccessible, rate-limited, or invalid; CV-only assessment continues.']
