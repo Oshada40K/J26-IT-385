@@ -1,0 +1,6 @@
+.skill-profile-detection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
