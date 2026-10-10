@@ -99,7 +99,7 @@ def test_github_validation_repository_filtering_and_no_redirects():
                 {'name': 'foreign', 'language': 'Python', 'owner': {'login': 'other'}}])
         return httpx.Response(200, json={'login': 'Example', 'type': 'User'})
     real_client = httpx.Client
-    with patch('httpx.Client', side_effect=lambda **kw: real_client(transport=httpx.MockTransport(handler), **kw)):
+    with patch('app.component01_skill.services.github_analyzer.collect_usage', return_value=([], [])), patch('httpx.Client', side_effect=lambda **kw: real_client(transport=httpx.MockTransport(handler), **kw)):
         records, status, warnings = analyze_github({'url': 'https://github.com/Example'})
     assert status == 'completed' and len(records) == 1 and len(requests) == 2
     assert records[0]['skill'] == 'Python'
@@ -129,16 +129,16 @@ def test_linkedin_authorized_adapter_and_failure():
         register_authorized_provider(None)
 
 
-def test_upload_consent_dedup_and_unchanged_levels(monkeypatch):
+def test_upload_automatic_analysis_dedup_and_unchanged_cv_levels(monkeypatch):
     monkeypatch.setenv('SKILL_ENABLE_SBERT', 'false')
     record = {'skill': 'Python', 'text': 'Built Python production systems.', 'source': 'github', 'url': 'https://github.com/Example/project'}
     with patch('app.component01_skill.services.profile_service.repository.save_assessment', side_effect=lambda cid, content, details: details), \
          patch('app.component01_skill.services.profile_service.analyze_github_profile', return_value=([record, record], 'completed', [])) as github, \
          patch('app.component01_skill.services.profile_service.analyze_linkedin', return_value=([dict(record, source='linkedin')], 'completed', [])):
         baseline = process_cv('candidate', 'cv.pdf', linked_pdf())
-        github.assert_not_called()
-        enriched = process_cv('candidate', 'cv.pdf', linked_pdf(), analyze_github=True)
         github.assert_called_once()
+        enriched = process_cv('candidate', 'cv.pdf', linked_pdf(), analyze_github=True)
+        assert github.call_count == 2
     assert set(enriched) == set(baseline)
     assert enriched['skills'][0]['level'] == baseline['skills'][0]['level'] == 2
     assert len(enriched['skills'][0]['evidence']) == 2

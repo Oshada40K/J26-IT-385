@@ -4,6 +4,7 @@ from .cv_parser import parse_cv_document
 from .github_analyzer import analyze_github as analyze_github_profile
 from .linkedin_evidence import analyze_linkedin
 from .profile_evidence import combine_evidence
+from .github_usage import assess_github_usage
 from .profile_identifier import detect_identifiers
 from .skill_assessor import assess_skills
 from .skill_extractor import extract_skills
@@ -15,10 +16,11 @@ def process_cv(candidate_id, filename, content, github_username=None, linkedin_u
     profiles, identifier_warnings = detect_identifiers(text, github_username, linkedin_username, links)
     warnings.extend(identifier_warnings)
     profile_records = []
+    github_assessments = []
     for profile in profiles:
         profile['consent_status'] = 'requested' if analyze_github and profile['platform'] == 'github' else 'not_requested'
         profile['enrichment_status'] = 'not_performed'
-        if profile['platform'] == 'github' and analyze_github:
+        if profile['platform'] == 'github':
             records, status, messages = analyze_github_profile(profile)
         elif profile['platform'] == 'linkedin':
             records, status, messages = analyze_linkedin(candidate_id, profile)
@@ -27,6 +29,17 @@ def process_cv(candidate_id, filename, content, github_username=None, linkedin_u
         profile['enrichment_status'] = status
         profile_records.extend(records)
         warnings.extend(messages)
+        if profile['platform'] == 'github':
+            assessed = assess_github_usage(records)
+            if assessed:
+                github_assessments.append(assessed)
+            elif status == 'completed':
+                warnings.append('Insufficient attributable GitHub activity for a proficiency estimate; no GitHub rating was added.')
     skills = combine_evidence(assess_skills(extracted), profile_records)
+    # Never pool activity from separate accounts to manufacture proficiency.
+    github_skill = max(github_assessments, key=lambda skill: skill['level'], default=None)
+    if github_skill:
+        skills = [skill for skill in skills if skill['name'] != 'GitHub'] + [github_skill]
+        skills.sort(key=lambda skill: skill['name'].casefold())
     details = {'assessment_method': METHOD_VERSION, 'model_version': model_version, 'skills': skills, 'external_profiles': profiles, 'warnings': warnings, 'limitations': 'Estimated levels from CV evidence, not verified competency. Missing external profiles do not reduce levels.'}
     return repository.save_assessment(candidate_id, content, details)
