@@ -91,6 +91,18 @@ class AssessmentIntegrationTests(career_tests.CareerIntegrationTests):
             response = self.client.get('/api/career/best-job', params={'candidate_id': 'different'})
             self.assertEqual(response.status_code, 502)
 
+    def test_all_career_routes_honor_candidate_query(self):
+        schema = self.client.get('/openapi.json').json()
+        for endpoint in ['best-job', 'top-jobs', 'explanation']:
+            path = '/api/career/' + endpoint
+            parameters = schema['paths'][path]['get']['parameters']
+            self.assertTrue(any(p['name'] == 'candidate_id' and p['in'] == 'query' for p in parameters))
+            # Even a configured legacy upstream must not return a successful
+            # sample recommendation for a different requested candidate.
+            with patch.dict('os.environ', {'CAREER_TECHNICAL_PROFILE_PATH': '/api/skill/profile'}):
+                response = self.client.get(path, params={'candidate_id': 'another-candidate'})
+                self.assertEqual(response.status_code, 502, response.text)
+
 
 if __name__ == '__main__':
     unittest.main()
