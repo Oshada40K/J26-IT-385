@@ -133,13 +133,20 @@ words are not treated as usernames. Credentials, ports, unsafe schemes, other
 hosts, encoded paths, and non-profile paths are rejected before requests.
 
 No GitHub analyzer or authorized LinkedIn workflow previously existed in this
-component. The new GitHub analyzer uses the existing `analyze_github=true` upload
-consent flag, validates the personal account through the official API, and checks
+component. The GitHub analyzer now runs automatically for detected profiles,
+validates the personal account through the official API, and checks
 up to 30 recently updated repositories. Forks, archived repositories, and other
 owners are excluded. It uses a fixed API origin, five-second request timeouts,
 no redirects, and a bounded five-minute cache. Primary-language metadata supports
-existing CV skills; it does not verify source code, contributions, or candidate
-ownership. Account existence never sets `ownership_verified` to true.
+existing CV skills. Additional activity analysis samples up to three repositories
+and three account-authored commits per repository, plus two authored merged pull
+requests (including contributions to other owners' repositories), changed files,
+contributors, and peer reviews. It excludes initial/generated commits, forks,
+unattributed changes, and generated/dependency files. Activity sampling is bounded
+to 24 requests and a 25-second deadline with no redirects and a five-minute cache.
+The existing `analyze_github` form field remains accepted for API compatibility;
+it no longer gates automatic public analysis. Account existence never sets
+`ownership_verified` to true; the account's connection to the CV is unverified.
 
 To connect an authorized LinkedIn workflow, register an application-configured
 callable with `services.linkedin_evidence.register_authorized_provider(provider)`.
@@ -149,8 +156,23 @@ enforce candidate-specific authorization. Evidence records contain `skill`,
 Without a provider, detected profiles are retained with a warning and analysis
 is not performed. Provider failures never block CV assessment.
 
-External evidence is attached after the unchanged CV scoring rubric runs, only
-to existing CV skills. It cannot add skills, raise levels, or change confidence.
+External language/LinkedIn evidence is attached after the unchanged CV scoring
+rubric runs, only to existing CV skills. It cannot raise levels or change confidence.
+The exception is the new GitHub skill, assessed separately by `github_activity_v1`:
+
+- Level 1: substantive account-authored documentation/workflow changes.
+- Level 2: substantive account-authored source changes.
+- Level 3: source changes, distinct commits on separate days, and a merged PR.
+- Level 4: Level 3 plus multi-project changes, peer review, other contributors,
+  test changes, and workflow automation; requires review.
+- Level 5 is not inferred from this limited public sample.
+
+Profile existence and repository counts never award a rating. Missing or
+insufficient activity adds no GitHub skill. Separate accounts are assessed
+individually; their activity is never pooled to increase proficiency. Skills are
+unique and deterministically sorted. API errors retain only evidence already
+retrieved. Ratings are provisional estimates of observed account activity, not
+validated competency; template/copied work cannot always be identified.
 Duplicate excerpts, repository URLs, and identifiable project names are suppressed.
 Uncertain project identity is not assumed; external records never enter scoring.
 Invalid, absent, or inaccessible profiles leave CV assessment available. The
