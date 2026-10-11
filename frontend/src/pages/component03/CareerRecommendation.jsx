@@ -177,7 +177,7 @@ export default function CareerRecommendation() {
       <p className="page-description" style={{ marginBottom: 20 }}>Explore your strongest career match, compare five ranked possibilities, and discover the evidence behind the recommendation.</p>
       <p style={styles.muted}>
         {savedSession()?.candidate_id
-          ? 'Recommendations require your completed technical and personality profiles.'
+          ? 'Recommendations use your CV skills and the current sample personality profile.'
           : 'Showing sample recommendations. Upload your CV in Component 01 to use your own profile.'}
       </p>
       <p style={styles.muted}>

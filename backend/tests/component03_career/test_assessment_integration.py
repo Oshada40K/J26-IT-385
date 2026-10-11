@@ -5,6 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from app.component03_career import service
 from app.component03_career.profile_adapter import adapt_technical_profile
 from tests import test_career_integration as career_tests
 
@@ -46,11 +47,12 @@ class AssessmentIntegrationTests(career_tests.CareerIntegrationTests):
                 self.data['/api/skill/profile']['skills'][0]['level'] = value
                 self.assertEqual(self.client.get('/api/career/best-job').status_code, 502)
 
-    def test_new_assessment_does_not_use_other_candidates_soft_profile(self):
+    def test_new_assessment_without_query_uses_fixed_component2_profile(self):
         self.data['/api/skill/profile'] = copy.deepcopy(ASSESSMENT)
-        response = self.client.get('/api/career/best-job')
-        self.assertEqual(response.status_code, 502)
-        self.assertIn('matching candidate IDs', response.json()['detail'])
+        for endpoint in ['best-job', 'top-jobs', 'explanation']:
+            response = self.client.get('/api/career/' + endpoint)
+            self.assertEqual(response.status_code, 200, response.text)
+            self.assertEqual(response.json()['candidate_id'], ASSESSMENT['candidate_id'])
 
     def test_duplicate_alias_is_rejected_after_adaptation(self):
         self.assessment_inputs()
@@ -102,6 +104,77 @@ class AssessmentIntegrationTests(career_tests.CareerIntegrationTests):
             with patch.dict('os.environ', {'CAREER_TECHNICAL_PROFILE_PATH': '/api/skill/profile'}):
                 response = self.client.get(path, params={'candidate_id': 'another-candidate'})
                 self.assertEqual(response.status_code, 502, response.text)
+
+    def test_sample_candidate_uses_live_skills_and_unchanged_fixed_soft_profile(self):
+        candidate_id = 'candidate_093495d9a2e7460785f1618c623faf50'
+        self.assertEqual(ASSESSMENT['candidate_id'], candidate_id)
+        path = '/api/component01/skills/' + candidate_id + '/details'
+        self.data[path] = copy.deepcopy(ASSESSMENT)
+        fixed_soft = copy.deepcopy(self.data['/api/personality/profile'])
+        model_soft = {**fixed_soft, 'candidate_id': candidate_id}
+        expected = service._predict(model_soft, adapt_technical_profile(ASSESSMENT))
+        results = {}
+        for endpoint in ['best-job', 'top-jobs', 'explanation']:
+            response = self.client.get('/api/career/' + endpoint,
+                params={'candidate_id': candidate_id},
+                headers={'Authorization': 'Bearer test-candidate-token'})
+            self.assertEqual(response.status_code, 200, response.text)
+            results[endpoint] = response.json()
+            self.assertEqual(response.json()['candidate_id'], candidate_id)
+        self.assertEqual(results['best-job']['best_job'], expected['best_job']['job_title'])
+        self.assertEqual(results['explanation']['explanation'], expected['best_job']['explanation'])
+        self.assertEqual(results['top-jobs']['jobs'], [
+            {'ranking': job['rank'], 'job': job['job_title'], 'score': job['match_score_0_to_100']}
+            for job in [expected['best_job'], *expected['alternative_jobs']]])
+        self.assertEqual(self.seen.count(path), 3)
+        self.assertNotIn('/api/skill/profile', self.seen)
+        self.assertEqual(self.seen.count('/api/personality/profile'), 3)
+        self.assertEqual(self.data['/api/personality/profile'], fixed_soft)
+        for job in [expected['best_job'], *expected['alternative_jobs']]:
+            reconstructed = job['shap_baseline'] + sum(f['shap_score_points'] for f in job['all_shap_factors'])
+            self.assertAlmostEqual(reconstructed, job['raw_model_score'], delta=0.001)
+
+    def test_live_integration_rejects_missing_invalid_and_wrong_candidate_data(self):
+        candidate_id = ASSESSMENT['candidate_id']
+        path = '/api/component01/skills/' + candidate_id + '/details'
+        cases = [
+            (path, None), (path, {}), (path, {**ASSESSMENT, 'skills': []}),
+            (path, {**ASSESSMENT, 'candidate_id': 'another-candidate'}),
+            ('/api/personality/profile', None),
+            ('/api/personality/profile', {**self.profiles['/api/personality/profile'], 'soft_skills': []}),
+        ]
+        for upstream_path, payload in cases:
+            with self.subTest(path=upstream_path, payload=payload):
+                self.data = copy.deepcopy(self.profiles)
+                self.data[path] = copy.deepcopy(ASSESSMENT)
+                self.data[upstream_path] = payload
+                response = self.client.get('/api/career/top-jobs', params={'candidate_id': candidate_id})
+                self.assertEqual(response.status_code, 502, response.text)
+
+    def test_fixed_component2_identity_and_url_variants_do_not_block_prediction(self):
+        candidate_id = ASSESSMENT['candidate_id']
+        technical_path = '/api/component01/skills/' + candidate_id + '/details'
+        self.data[technical_path] = copy.deepcopy(ASSESSMENT)
+        for configured_path in ['/api/personality/profile', '/api/personality/profile/',
+                                'http://upstream.test/api/personality/profile']:
+            with self.subTest(path=configured_path):
+                request_path = '/api/personality/profile/' if configured_path.endswith('/') else '/api/personality/profile'
+                fixed_soft = {**self.profiles['/api/personality/profile'], 'candidate_id': 'fixed_personality_fixture'}
+                self.data[request_path] = copy.deepcopy(fixed_soft)
+                with patch.dict('os.environ', {'CAREER_SOFT_PROFILE_PATH': configured_path}):
+                    for endpoint in ['best-job', 'top-jobs', 'explanation']:
+                        response = self.client.get('/api/career/' + endpoint, params={'candidate_id': candidate_id})
+                        self.assertEqual(response.status_code, 200, response.text)
+                        self.assertEqual(response.json()['candidate_id'], candidate_id)
+                self.assertEqual(self.data[request_path], fixed_soft)
+
+    def test_custom_soft_endpoint_cannot_be_rebound_as_fixed_component2_data(self):
+        candidate_id = ASSESSMENT['candidate_id']
+        self.data['/api/component01/skills/' + candidate_id + '/details'] = copy.deepcopy(ASSESSMENT)
+        self.data['/custom/soft'] = copy.deepcopy(self.profiles['/api/personality/profile'])
+        with patch.dict('os.environ', {'CAREER_SOFT_PROFILE_PATH': '/custom/soft'}):
+            response = self.client.get('/api/career/best-job', params={'candidate_id': candidate_id})
+            self.assertEqual(response.status_code, 502, response.text)
 
 
 if __name__ == '__main__':
