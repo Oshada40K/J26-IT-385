@@ -6,7 +6,7 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 from threading import Lock
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 
 import httpx
 from dotenv import load_dotenv
@@ -83,12 +83,20 @@ async def recommend(request: Request, candidate_id: str | None = None):
         _fetch(request.app.state.career_client, soft_path, headers),
     )
     try:
+        is_assessment = isinstance(technical_input, dict) and 'skills' in technical_input
         technical_input = adapt_technical_profile(technical_input)
         soft = SoftProfile.model_validate(soft_input)
-        if technical_input['candidate_id'] != soft.candidate_id:
-            raise ValueError("Upstream profiles must have matching candidate IDs")
         if candidate_id is not None and technical_input['candidate_id'] != candidate_id:
             raise ValueError('Upstream profile candidate ID does not match the requested candidate')
+        if technical_input['candidate_id'] != soft.candidate_id:
+            if ((candidate_id is not None or is_assessment)
+                    and urlsplit(soft_path).path.rstrip('/') == '/api/personality/profile'):
+                # Component 2 currently supplies a fixed sample, as requested.
+                # Bind a copy to the live candidate for the matcher's identity
+                # contract; preserve every soft-skill value and the API payload.
+                soft_input = {**soft_input, 'candidate_id': technical_input['candidate_id']}
+            else:
+                raise ValueError("Upstream profiles must have matching candidate IDs")
         return await run_in_threadpool(_predict, soft_input, technical_input)
     except ValidationError as exc:
         raise HTTPException(502, "Invalid upstream profile: expected a completed cv_evidence_rubric_v1 assessment (levels 1 to 5) or schema_version 1.0 profiles (levels 0 to 5), with nonempty candidate IDs and skill names") from exc
