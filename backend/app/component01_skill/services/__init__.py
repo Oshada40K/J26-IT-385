@@ -1,0 +1,1 @@
+"""CV-only assessment services."""

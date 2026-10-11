@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import Icon from './Icon.jsx'
 const links = [
-  { to: '/', label: 'Overview', icon: 'grid' },
+  { to: '/', label: 'Home', icon: 'home' },
   { to: '/component01', label: 'Skill assessment', icon: 'skill', number: '01' },
   { to: '/component02', label: 'Personality analysis', icon: 'personality', number: '02' },
   { to: '/component03', label: 'Career prediction', icon: 'career', number: '03' },

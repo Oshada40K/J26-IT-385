@@ -1,4 +1,7 @@
 const paths = {
+  home: 'm3 10 9-7 9 7 M5 9v12h14V9 M9 21v-8h6v8',
+  upload: 'M12 16V3 m-5 5 5-5 5 5 M4 15v6h16v-6',
+  document: 'M14 2H5v20h14V7l-5-5Z M14 2v5h5 M8 12h8 M8 16h5',
   spark: 'm12 3 2.4 6.6L21 12l-6.6 2.4L12 21l-2.4-6.6L3 12l6.6-2.4L12 3Z',
   grid: 'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',
   skill: 'm8 5-6 7 6 7 M16 5l6 7-6 7 M14 3l-4 18',

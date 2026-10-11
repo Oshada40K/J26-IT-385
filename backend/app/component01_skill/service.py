@@ -1,4 +1,4 @@
-# TODO (Owner: Tharindi - Component 01):
-# Implement Component 01 logic only in this component folder.
+"""Component service entry point; the implementation lives in services/."""
+from .services.profile_service import process_cv
 
-# Future business/AI logic belonging to Component 01 goes here.
+__all__ = ['process_cv']

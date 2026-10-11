@@ -1,0 +1,420 @@
+{
+    "assessment_method": "cv_evidence_rubric_v1",
+    "model_version": "explicit_boundary_v1",
+    "skills": [
+        {
+            "name": "Bash",
+            "level": 2,
+            "confidence": "low",
+            "status": "provisional",
+            "reason": "Self-reported presence; insufficient implementation evidence.",
+            "evidence": [
+                {
+                    "source": "cv_skills",
+                    "section": "skills",
+                    "text": "Tool - UNIX/Linux, Shell Scripting, Apache Tomcat, Jupiter Notebook",
+                    "unit_start": 3563,
+                    "match_start": 19,
+                    "match_method": "explicit"
+                }
+            ]
+        },
+        {
+            "name": "C",
+            "level": 2,
+            "confidence": "low",
+            "status": "provisional",
+            "reason": "Self-reported presence; insufficient implementation evidence.",
+            "evidence": [
+                {
+                    "source": "cv_skills",
+                    "section": "skills",
+                    "text": "Programming Languages – Python, R, Java, JavaScript, PHP, C, C++, Kotlin, SQL",
+                    "unit_start": 3416,
+                    "match_start": 58,
+                    "match_method": "explicit"
+                }
+            ]
+        },
+        {
+            "name": "C++",
+            "level": 2,
+            "confidence": "low",
+            "status": "provisional",
+            "reason": "Self-reported presence; insufficient implementation evidence.",
+            "evidence": [
+                {
+                    "source": "cv_skills",
+                    "section": "skills",
+                    "text": "Programming Languages – Python, R, Java, JavaScript, PHP, C, C++, Kotlin, SQL",
+                    "unit_start": 3416,
+                    "match_start": 61,
+                    "match_method": "explicit"
+                }
+            ]
+        },
+        {
+            "name": "CSS",
+            "level": 3,
+            "confidence": "medium",
+            "status": "provisional",
+            "reason": "Named technology accompanies concrete implementation in project/work evidence.",
+            "evidence": [
+                {
+                    "source": "cv_projects",
+                    "section": "projects",
+                    "text": "  Fun Slice Pizzeria - Figma Design (2025) Designed a creative and user-friendly mobile app prototype using Figma for an online pizza ordering system. Focused on clean layouts, attractive visuals, and easy navigation to improve user experience. Included key features such as menu browsing, order customization, and a simple checkout process..   Online Laundry Website (2024) A user-friendly online laundry system built with HTML, CSS, JavaScript, PHP, and MySQL (phpMyAdmin). Key features include service selection, user registration, order tracking, admin panel, and order management—ideal for small laundry businesses. This project enhanced my skills in web design, CRUD operations, and client-server interactions.",
+                    "unit_start": 2030,
+                    "match_start": 432,
+                    "match_method": "explicit"
+                },
+                {
+                    "source": "cv_skills",
+                    "section": "skills",
+                    "text": "Web Development - HTML, CSS, JSP Servlets, MERN Stack, Spring Boot",
+                    "unit_start": 3495,
+                    "match_start": 24,
+                    "match_method": "explicit"
+                }
+            ]
+        },
+        {
+            "name": "Figma",
+            "level": 3,
+            "confidence": "medium",
+            "status": "provisional",
+            "reason": "Named technology accompanies concrete implementation in project/work evidence.",
+            "evidence": [
+                {
+                    "source": "cv_projects",
+                    "section": "projects",
+                    "text": "  Fun Slice Pizzeria - Figma Design (2025) Designed a creative and user-friendly mobile app prototype using Figma for an online pizza ordering system. Focused on clean layouts, attractive visuals, and easy navigation to improve user experience. Included key features such as menu browsing, order customization, and a simple checkout process..   Online Laundry Website (2024) A user-friendly online laundry system built with HTML, CSS, JavaScript, PHP, and MySQL (phpMyAdmin). Key features include service selection, user registration, order tracking, admin panel, and order management—ideal for small laundry businesses. This project enhanced my skills in web design, CRUD operations, and client-server interactions.",
+                    "unit_start": 2030,
+                    "match_start": 24,
+                    "match_method": "explicit"
+                },
+                {
+                    "source": "cv_skills",
+                    "section": "skills",
+                    "text": "Web Designing – Canva, Figma",
+                    "unit_start": 3632,
+                    "match_start": 23,
+                    "match_method": "explicit"
+                }
+            ]
+        },
+        {
+            "name": "GitHub",
+            "level": 2,
+            "confidence": "low",
+            "status": "provisional",
+            "reason": "Account-attributed substantive changes demonstrate basic version-control usage.",
+            "evidence": [
+                {
+                    "source": "github",
+                    "section": "external",
+                    "text": "Account-authored commit modifies substantive files in Oshada40K/J26-IT-385: backend/app/component03_career/INTEGRATION.md, backend/scripts/smoke_test.py, backend/tests/component03_career/test_assessment_integration.py, frontend/src/pages/Home.jsx, frontend/src/pages/component03/CareerRecommendation.jsx",
+                    "url": "https://github.com/Oshada40K/J26-IT-385/commit/f105c8783bf2a8dfc448e56e780356e26d5d995b",
+                    "match_method": "github_activity_v1"
+                },
+                {
+                    "source": "github",
+                    "section": "external",
+                    "text": "Account-authored merged pull request in Oshada40K/J26-IT-385 changes substantive files.",
+                    "url": "https://github.com/Oshada40K/J26-IT-385/pull/17",
+                    "match_method": "github_activity_v1"
+                },
+                {
+                    "source": "github",
+                    "section": "external",
+                    "text": "Account-authored merged pull request in Oshada40K/J26-IT-385 changes substantive files.",
+                    "url": "https://github.com/Oshada40K/J26-IT-385/pull/16",
+                    "match_method": "github_activity_v1"
+                }
+            ]
+        },
+        {
+            "name": "HTML",
+            "level": 3,
+            "confidence": "medium",
+            "status": "provisional",
+            "reason": "Named technology accompanies concrete implementation in project/work evidence.",
+            "evidence": [
+                {
+                    "source": "cv_projects",
+                    "section": "projects",
+                    "text": "  Fun Slice Pizzeria - Figma Design (2025) Designed a creative and user-friendly mobile app prototype using Figma for an online pizza ordering system. Focused on clean layouts, attractive visuals, and easy navigation to improve user experience. Included key features such as menu browsing, order customization, and a simple checkout process..   Online Laundry Website (2024) A user-friendly online laundry system built with HTML, CSS, JavaScript, PHP, and MySQL (phpMyAdmin). Key features include service selection, user registration, order tracking, admin panel, and order management—ideal for small laundry businesses. This project enhanced my skills in web design, CRUD operations, and client-server interactions.",
+                    "unit_start": 2030,
+                    "match_start": 426,
+                    "match_method": "explicit"
+                },
+                {
+                    "source": "cv_skills",
+                    "section": "skills",
+                    "text": "Web Development - HTML, CSS, JSP Servlets, MERN Stack, Spring Boot",
+                    "unit_start": 3495,
+                    "match_start": 18,
+                    "match_method": "explicit"
+                }
+            ]
+        },
+        {
+            "name": "Java",
+            "level": 2,
+            "confidence": "low",
+            "status": "provisional",
+            "reason": "Self-reported presence; insufficient implementation evidence.",
+            "evidence": [
+                {
+                    "source": "cv_skills",
+                    "section": "skills",
+                    "text": "Programming Languages – Python, R, Java, JavaScript, PHP, C, C++, Kotlin, SQL",
+                    "unit_start": 3416,
+                    "match_start": 35,
+                    "match_method": "explicit"
+                },
+                {
+                    "source": "github",
+                    "section": "external",
+                    "text": "Public repository Online-Event-Planning-System reports Java as its primary language; contribution and proficiency are unverified.",
+                    "match_method": "repository_metadata",
+                    "url": "https://github.com/Oshada40K/Online-Event-Planning-System"
+                }
+            ]
+        },
+        {
+            "name": "JavaScript",
+            "level": 3,
+            "confidence": "medium",
+            "status": "provisional",
+            "reason": "Named technology accompanies concrete implementation in project/work evidence.",
+            "evidence": [
+                {
+                    "source": "cv_projects",
+                    "section": "projects",
+                    "text": "  Fun Slice Pizzeria - Figma Design (2025) Designed a creative and user-friendly mobile app prototype using Figma for an online pizza ordering system. Focused on clean layouts, attractive visuals, and easy navigation to improve user experience. Included key features such as menu browsing, order customization, and a simple checkout process..   Online Laundry Website (2024) A user-friendly online laundry system built with HTML, CSS, JavaScript, PHP, and MySQL (phpMyAdmin). Key features include service selection, user registration, order tracking, admin panel, and order management—ideal for small laundry businesses. This project enhanced my skills in web design, CRUD operations, and client-server interactions.",
+                    "unit_start": 2030,
+                    "match_start": 437,
+                    "match_method": "explicit"
+                },
+                {
+                    "source": "cv_skills",
+                    "section": "skills",
+                    "text": "Programming Languages – Python, R, Java, JavaScript, PHP, C, C++, Kotlin, SQL",
+                    "unit_start": 3416,
+                    "match_start": 41,
+                    "match_method": "explicit"
+                },
+                {
+                    "source": "github",
+                    "section": "external",
+                    "text": "Public repository portfolio reports JavaScript as its primary language; contribution and proficiency are unverified.",
+                    "match_method": "repository_metadata",
+                    "url": "https://github.com/Oshada40K/portfolio"
+                },
+                {
+                    "source": "github",
+                    "section": "external",
+                    "text": "Public repository Group-project reports JavaScript as its primary language; contribution and proficiency are unverified.",
+                    "match_method": "repository_metadata",
+                    "url": "https://github.com/Oshada40K/Group-project"
+                }
+            ]
+        },
+        {
+            "name": "Kotlin",
+            "level": 3,
+            "confidence": "medium",
+            "status": "provisional",
+            "reason": "Named technology accompanies concrete implementation in project/work evidence.",
+            "evidence": [
+                {
+                    "source": "cv_projects",
+                    "section": "projects",
+                    "text": "  Personal Financial Tracker - Mobile Application (2025) A polished personal finance app developed in Kotlin that allows easy tracking of income, expenses, and savings. Users can organize their finances by categories such as food, transport, and entertainment. Key features include budget notifications, visual spending reports, and secure data backup using JSON/text files. The app leverages SharedPreferences to deliver a seamless and efficient user experience.",
+                    "unit_start": 1240,
+                    "match_start": 103,
+                    "match_method": "explicit"
+                },
+                {
+                    "source": "cv_skills",
+                    "section": "skills",
+                    "text": "Programming Languages – Python, R, Java, JavaScript, PHP, C, C++, Kotlin, SQL",
+                    "unit_start": 3416,
+                    "match_start": 66,
+                    "match_method": "explicit"
+                }
+            ]
+        },
+        {
+            "name": "Linux",
+            "level": 2,
+            "confidence": "low",
+            "status": "provisional",
+            "reason": "Self-reported presence; insufficient implementation evidence.",
+            "evidence": [
+                {
+                    "source": "cv_skills",
+                    "section": "skills",
+                    "text": "Tool - UNIX/Linux, Shell Scripting, Apache Tomcat, Jupiter Notebook",
+                    "unit_start": 3563,
+                    "match_start": 12,
+                    "match_method": "explicit"
+                }
+            ]
+        },
+        {
+            "name": "MySQL",
+            "level": 3,
+            "confidence": "medium",
+            "status": "provisional",
+            "reason": "Named technology accompanies concrete implementation in project/work evidence.",
+            "evidence": [
+                {
+                    "source": "cv_projects",
+                    "section": "projects",
+                    "text": "  Fun Slice Pizzeria - Figma Design (2025) Designed a creative and user-friendly mobile app prototype using Figma for an online pizza ordering system. Focused on clean layouts, attractive visuals, and easy navigation to improve user experience. Included key features such as menu browsing, order customization, and a simple checkout process..   Online Laundry Website (2024) A user-friendly online laundry system built with HTML, CSS, JavaScript, PHP, and MySQL (phpMyAdmin). Key features include service selection, user registration, order tracking, admin panel, and order management—ideal for small laundry businesses. This project enhanced my skills in web design, CRUD operations, and client-server interactions.",
+                    "unit_start": 2030,
+                    "match_start": 458,
+                    "match_method": "explicit"
+                }
+            ]
+        },
+        {
+            "name": "PHP",
+            "level": 3,
+            "confidence": "medium",
+            "status": "provisional",
+            "reason": "Named technology accompanies concrete implementation in project/work evidence.",
+            "evidence": [
+                {
+                    "source": "cv_projects",
+                    "section": "projects",
+                    "text": "  Fun Slice Pizzeria - Figma Design (2025) Designed a creative and user-friendly mobile app prototype using Figma for an online pizza ordering system. Focused on clean layouts, attractive visuals, and easy navigation to improve user experience. Included key features such as menu browsing, order customization, and a simple checkout process..   Online Laundry Website (2024) A user-friendly online laundry system built with HTML, CSS, JavaScript, PHP, and MySQL (phpMyAdmin). Key features include service selection, user registration, order tracking, admin panel, and order management—ideal for small laundry businesses. This project enhanced my skills in web design, CRUD operations, and client-server interactions.",
+                    "unit_start": 2030,
+                    "match_start": 449,
+                    "match_method": "explicit"
+                },
+                {
+                    "source": "cv_skills",
+                    "section": "skills",
+                    "text": "Programming Languages – Python, R, Java, JavaScript, PHP, C, C++, Kotlin, SQL",
+                    "unit_start": 3416,
+                    "match_start": 53,
+                    "match_method": "explicit"
+                }
+            ]
+        },
+        {
+            "name": "Python",
+            "level": 2,
+            "confidence": "low",
+            "status": "provisional",
+            "reason": "Self-reported presence; insufficient implementation evidence.",
+            "evidence": [
+                {
+                    "source": "cv_skills",
+                    "section": "skills",
+                    "text": "Programming Languages – Python, R, Java, JavaScript, PHP, C, C++, Kotlin, SQL",
+                    "unit_start": 3416,
+                    "match_start": 24,
+                    "match_method": "explicit"
+                },
+                {
+                    "source": "github",
+                    "section": "external",
+                    "text": "Public repository J26-IT-385 reports Python as its primary language; contribution and proficiency are unverified.",
+                    "match_method": "repository_metadata",
+                    "url": "https://github.com/Oshada40K/J26-IT-385"
+                },
+                {
+                    "source": "github",
+                    "section": "external",
+                    "text": "Public repository IT23292468_ITPM_Assignment-1 reports Python as its primary language; contribution and proficiency are unverified.",
+                    "match_method": "repository_metadata",
+                    "url": "https://github.com/Oshada40K/IT23292468_ITPM_Assignment-1"
+                }
+            ]
+        },
+        {
+            "name": "R",
+            "level": 2,
+            "confidence": "low",
+            "status": "provisional",
+            "reason": "Self-reported presence; insufficient implementation evidence.",
+            "evidence": [
+                {
+                    "source": "cv_skills",
+                    "section": "skills",
+                    "text": "Programming Languages – Python, R, Java, JavaScript, PHP, C, C++, Kotlin, SQL",
+                    "unit_start": 3416,
+                    "match_start": 32,
+                    "match_method": "explicit"
+                }
+            ]
+        },
+        {
+            "name": "Spring Boot",
+            "level": 2,
+            "confidence": "low",
+            "status": "provisional",
+            "reason": "Self-reported presence; insufficient implementation evidence.",
+            "evidence": [
+                {
+                    "source": "cv_skills",
+                    "section": "skills",
+                    "text": "Web Development - HTML, CSS, JSP Servlets, MERN Stack, Spring Boot",
+                    "unit_start": 3495,
+                    "match_start": 55,
+                    "match_method": "explicit"
+                }
+            ]
+        },
+        {
+            "name": "SQL",
+            "level": 2,
+            "confidence": "low",
+            "status": "provisional",
+            "reason": "Self-reported presence; insufficient implementation evidence.",
+            "evidence": [
+                {
+                    "source": "cv_skills",
+                    "section": "skills",
+                    "text": "Programming Languages – Python, R, Java, JavaScript, PHP, C, C++, Kotlin, SQL",
+                    "unit_start": 3416,
+                    "match_start": 74,
+                    "match_method": "explicit"
+                }
+            ]
+        }
+    ],
+    "external_profiles": [
+        {
+            "platform": "github",
+            "handle": "Oshada40K",
+            "url": "https://github.com/Oshada40K",
+            "ownership_verified": false,
+            "consent_status": "not_requested",
+            "enrichment_status": "completed"
+        },
+        {
+            "platform": "linkedin",
+            "handle": "oshada-deneth-092756216",
+            "url": "https://www.linkedin.com/in/oshada-deneth-092756216",
+            "ownership_verified": false,
+            "consent_status": "not_requested",
+            "enrichment_status": "not_performed"
+        }
+    ],
+    "warnings": [
+        "Semantic matching is disabled; explicit CV evidence was used.",
+        "GitHub activity is attributed to the detected account; candidate ownership is unverified.",
+        "LinkedIn evidence unavailable: no authorized provider is configured."
+    ],
+    "limitations": "Estimated levels from CV evidence, not verified competency. Missing external profiles do not reduce levels.",
+    "assessment_id": "assessment_0615dd644b9e4d73ad48bd03ece35538",
+    "candidate_id": "candidate_093495d9a2e7460785f1618c623faf50",
+    "created_at": "2026-10-11T14:01:06.833102+00:00",
+    "status": "completed",
+    "source_cv_hash": "0940b51ff23b347f18e36fd65827599953935a39d2978b5347106380b9aed06a"
+}

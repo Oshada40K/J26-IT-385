@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Query, Request
 
 from . import service
 from .schemas import BestJobResponse, ErrorResponse, ExplanationResponse, TopJobsResponse
@@ -14,15 +14,15 @@ def test_component():
 
 @router.get("/best-job", response_model=BestJobResponse, responses=ERRORS,
             summary="Get the highest-ranked job name and model metadata")
-async def best_job(request: Request):
-    result = await service.recommend(request)
+async def best_job(request: Request, candidate_id: str | None = Query(default=None, min_length=1)):
+    result = await service.recommend(request, candidate_id)
     fields = ["candidate_id", "onet_version", "model_type", "score_meaning", "eligible_occupations", "unrecognised_skills"]
     return {**{key: result[key] for key in fields}, "best_job": result["best_job"]["job_title"]}
 
 @router.get("/top-jobs", response_model=TopJobsResponse, responses=ERRORS,
             summary="Get exactly five ranked jobs including the best match")
-async def top_jobs(request: Request):
-    result = await service.recommend(request)
+async def top_jobs(request: Request, candidate_id: str | None = Query(default=None, min_length=1)):
+    result = await service.recommend(request, candidate_id)
     fields = ["candidate_id", "onet_version", "model_type", "score_meaning", "eligible_occupations", "unrecognised_skills"]
     jobs = [result["best_job"], *result["alternative_jobs"]]
     return {
@@ -33,7 +33,7 @@ async def top_jobs(request: Request):
 @router.get("/explanation", response_model=ExplanationResponse, responses=ERRORS,
             summary="Get the top job's SHAP-based explanation",
             description="Returns five model metadata fields and the exported explanation text for the highest-ranked job.")
-async def explanation(request: Request):
-    result = await service.recommend(request)
+async def explanation(request: Request, candidate_id: str | None = Query(default=None, min_length=1)):
+    result = await service.recommend(request, candidate_id)
     fields = ["candidate_id", "onet_version", "model_type", "score_meaning", "eligible_occupations"]
     return {**{key: result[key] for key in fields}, "explanation": result["best_job"]["explanation"]}
