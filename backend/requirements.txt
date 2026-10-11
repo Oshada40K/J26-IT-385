@@ -2,6 +2,8 @@ fastapi==0.115.12
 uvicorn[standard]
 python-dotenv
 httpx
+PyJWT>=2.10,<3
+argon2-cffi>=23.1,<26
 -r app/component03_career/job_matching_training_output/requirements.txt
 
 # Component 01 CV-only runtime (SBERT is optional, see component README).
