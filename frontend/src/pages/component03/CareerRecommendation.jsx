@@ -2,14 +2,10 @@
 // Calls the three career APIs and shows their responses. The backend builds the
 // recommendation from the Component 01 and 02 profiles for the saved candidate.
 import { useState } from 'react'
-import { API_BASE_URL, apiGet } from '../../api/client.js'
+import { useLocation } from 'react-router-dom'
+import { API_BASE_URL } from '../../api/client.js'
 import { savedSession } from '../component01/skillApi.js'
-
-const ENDPOINTS = {
-  bestJob: '/api/career/best-job',
-  topJobs: '/api/career/top-jobs',
-  explanation: '/api/career/explanation',
-}
+import { ENDPOINTS, describeCareerError, getCareerResult } from './careerApi.js'
 
 const styles = {
   card: { background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 16, padding: 24, marginBottom: 20 },
@@ -24,24 +20,6 @@ const styles = {
   td: { borderBottom: '1px solid var(--color-border)', padding: '6px 8px' },
   barTrack: { background: 'var(--color-primary-soft)', borderRadius: 8, height: 10, width: '100%' },
   meta: { display: 'grid', gridTemplateColumns: 'minmax(100px, 160px) minmax(0, 1fr)', gap: '4px 16px', margin: 0 },
-}
-
-function describeError(err) {
-  // fetch() throws a TypeError when the backend is unreachable or blocked by CORS.
-  if (err instanceof TypeError) {
-    return `Unable to connect to backend at ${API_BASE_URL}.`
-  }
-  // apiGet throws "API error <status>: <body>"; show FastAPI's "detail" when present.
-  const match = /^API error (\d+): ([\s\S]*)$/.exec(err?.message || '')
-  if (match) {
-    try {
-      const detail = JSON.parse(match[2]).detail
-      if (detail) return `HTTP ${match[1]}: ${typeof detail === 'string' ? detail : JSON.stringify(detail)}`
-    } catch {
-      // Body was not JSON; fall through to the raw message.
-    }
-  }
-  return err?.message || 'Unknown error'
 }
 
 function Button({ loading, onClick, children }) {
@@ -169,26 +147,21 @@ function ModelInfo({ data }) {
 const emptyState = { loading: false, data: null, error: null }
 
 export default function CareerRecommendation() {
-  const [results, setResults] = useState({ bestJob: emptyState, topJobs: emptyState, explanation: emptyState })
+  const location = useLocation()
+  const [results, setResults] = useState(() => {
+    const prediction = location.state
+    return prediction?.candidateId === savedSession()?.candidate_id && prediction?.careerResults
+      ? prediction.careerResults
+      : { bestJob: emptyState, topJobs: emptyState, explanation: emptyState }
+  })
 
   async function load(key) {
     setResults((prev) => ({ ...prev, [key]: { ...prev[key], loading: true, error: null } }))
     try {
-      const current = savedSession()
-      let data
-      if (current?.candidate_id && current?.access_token) {
-        const query = new URLSearchParams({ candidate_id: current.candidate_id })
-        const response = await fetch(`${API_BASE_URL}${ENDPOINTS[key]}?${query}`, {
-          headers: { Authorization: `Bearer ${current.access_token}` },
-        })
-        if (!response.ok) throw new Error(`API error ${response.status}: ${await response.text()}`)
-        data = await response.json()
-      } else {
-        data = await apiGet(ENDPOINTS[key])
-      }
+      const data = await getCareerResult(key, API_BASE_URL, savedSession())
       setResults((prev) => ({ ...prev, [key]: { loading: false, data, error: null } }))
     } catch (err) {
-      setResults((prev) => ({ ...prev, [key]: { loading: false, data: null, error: describeError(err) } }))
+      setResults((prev) => ({ ...prev, [key]: { loading: false, data: null, error: describeCareerError(err, API_BASE_URL) } }))
     }
   }
 

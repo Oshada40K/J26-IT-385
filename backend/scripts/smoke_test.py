@@ -2,7 +2,7 @@
 import json
 import sys
 import time
-from urllib.error import URLError
+from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
 
@@ -45,7 +45,19 @@ def verify(base_url):
     assert get(base_url, '/api/roadmap/test')['status'] == 'working'
     schema = get(base_url, '/openapi.json')
     assert '/api/career/top-jobs' in schema['paths']
-    print('PASS: health, fixtures, career inference, rankings, explanation, roadmap and OpenAPI')
+    for endpoint in ['best-job', 'top-jobs', 'explanation']:
+        path = '/api/career/' + endpoint
+        parameters = schema['paths'][path]['get'].get('parameters', [])
+        assert any(p['name'] == 'candidate_id' and p['in'] == 'query' for p in parameters), (
+            f'{path}: deployed backend lacks candidate_id support; deploy the updated Component 3 code')
+        # An unknown, unauthenticated candidate must never receive sample results.
+        try:
+            get(base_url, path + '?candidate_id=smoke_nonexistent_candidate')
+        except HTTPError as exc:
+            assert exc.code in {401, 403, 404, 409, 422, 502}, f'{path}: unexpected HTTP {exc.code}'
+        else:
+            raise AssertionError(f'{path}: ignored candidate_id and returned a successful recommendation')
+    print('PASS: health, fixtures, career inference, rankings, explanation, roadmap, candidate isolation and OpenAPI')
 
 
 if __name__ == '__main__':
