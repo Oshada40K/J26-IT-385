@@ -71,16 +71,38 @@ remains at Component 1's details endpoint. Canonical alias validation and unknow
 skill exclusion still use the saved catalogue; unknown technologies are returned
 in `unrecognised_skills` by the best-job and top-jobs APIs.
 
-Both profiles must have the same candidate ID, and it must match `candidate_id`
-when supplied. Component 2 currently exposes a sample profile for
-`sample_candidate_001`; it is not a real assessment for the candidate in the new
-Component 1 JSON. Configure `CAREER_SOFT_PROFILE_PATH` to an actual Component 2
-profile endpoint returning `schema_version: "1.0"`, the same `candidate_id`, and
-a nonempty `soft_skills` list. Until that data is available, live requests return
-502 for the identity mismatch. Candidate IDs are never rewritten to make unrelated
-assessments match. The pasted assessment is stored as a regression fixture under
-`tests/component03_career/fixtures/`; tests pair it with explicitly synthetic
-soft data only to verify the adapter and real saved model.
+Component 1's response ID must match the requested `candidate_id`. Component 2
+continues to provide its existing hardcoded JSON through `/api/personality/profile`.
+For a candidate request or a new-format Component 1 assessment, Component 3
+accepts that endpoint's fixed profile regardless of its fixture ID and creates
+an in-memory copy with Component 1's validated candidate ID so the saved matcher
+can combine the inputs. Absolute endpoint URLs and trailing slashes are supported.
+The assignment is per request:
+
+```python
+soft_input = {**soft_input, 'candidate_id': technical_input['candidate_id']}
+```
+
+Each uploaded CV's ID is taken from its validated Component 1 response. No CV ID
+is hardcoded in Component 3, and the shared Component 2 JSON is never overwritten.
+Every soft-skill name,
+level and evidence value is preserved; Component 2 and its original payload are
+unchanged. This is a prediction using live technical evidence and a fixed sample
+personality profile, not a personalized personality assessment. Other soft-profile
+identity mismatches still return 502, including mismatches from custom endpoints.
+The attached JSON for `candidate_093495d9a2e7460785f1618c623faf50` is stored as the
+regression fixture in `tests/component03_career/fixtures/`.
+
+Example live request (the Component 1 candidate access token is required):
+
+```http
+GET /api/career/top-jobs?candidate_id=candidate_093495d9a2e7460785f1618c623faf50
+Authorization: Bearer <candidate_access_token>
+```
+
+The same query and header work for `/api/career/best-job` and
+`/api/career/explanation`. Requests without a candidate ID retain the existing
+legacy sample behavior for frontend and deployment compatibility.
 
 These checks establish input compatibility, not 100% real career prediction
 accuracy. The exported model was trained on synthetic O*NET policy scores;
@@ -105,7 +127,7 @@ upload. Retrying or removing the frontend identity check does not fix that issue
 Deploy the updated backend containing the candidate-aware router, service and
 profile adapter through the configured Backend CI/CD - Railway workflow on the
 repository's default branch. See `backend/RAILWAY_DEPLOYMENT.md` for setup.
-Then reload recommendations. Candidate-specific Component 2 data is still required.
+Then reload recommendations. Component 2's existing fixed profile remains in use.
 
 The deployment smoke check now verifies that all three career routes advertise
 `candidate_id` and reject an unknown candidate instead of returning sample results:

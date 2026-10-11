@@ -113,8 +113,22 @@
                 {
                     "source": "github",
                     "section": "external",
-                    "text": "Account-authored commit modifies substantive files in Oshada40K/J26-IT-385: frontend/src/App.jsx, frontend/src/components/ComponentIntro.jsx, frontend/src/components/Icon.jsx, frontend/src/components/Navbar.jsx, frontend/src/components/Sidebar.jsx",
-                    "url": "https://github.com/Oshada40K/J26-IT-385/commit/b799bc02b7dcc3ef5fc81935e83a5359ae8d50b4",
+                    "text": "Account-authored commit modifies substantive files in Oshada40K/J26-IT-385: backend/app/component03_career/INTEGRATION.md, backend/scripts/smoke_test.py, backend/tests/component03_career/test_assessment_integration.py, frontend/src/pages/Home.jsx, frontend/src/pages/component03/CareerRecommendation.jsx",
+                    "url": "https://github.com/Oshada40K/J26-IT-385/commit/f105c8783bf2a8dfc448e56e780356e26d5d995b",
+                    "match_method": "github_activity_v1"
+                },
+                {
+                    "source": "github",
+                    "section": "external",
+                    "text": "Account-authored merged pull request in Oshada40K/J26-IT-385 changes substantive files.",
+                    "url": "https://github.com/Oshada40K/J26-IT-385/pull/17",
+                    "match_method": "github_activity_v1"
+                },
+                {
+                    "source": "github",
+                    "section": "external",
+                    "text": "Account-authored merged pull request in Oshada40K/J26-IT-385 changes substantive files.",
+                    "url": "https://github.com/Oshada40K/J26-IT-385/pull/16",
                     "match_method": "github_activity_v1"
                 }
             ]
@@ -394,14 +408,13 @@
     ],
     "warnings": [
         "Semantic matching is disabled; explicit CV evidence was used.",
-        "GitHub activity sampling incomplete; unavailable evidence was not inferred.",
         "GitHub activity is attributed to the detected account; candidate ownership is unverified.",
         "LinkedIn evidence unavailable: no authorized provider is configured."
     ],
     "limitations": "Estimated levels from CV evidence, not verified competency. Missing external profiles do not reduce levels.",
-    "assessment_id": "assessment_74389dfefbee4bcd9e7d37c9426052d9",
-    "candidate_id": "candidate_3df06a16f72745b29960cbbfb7b6ba64",
-    "created_at": "2026-10-11T13:17:48.050412+00:00",
+    "assessment_id": "assessment_0615dd644b9e4d73ad48bd03ece35538",
+    "candidate_id": "candidate_093495d9a2e7460785f1618c623faf50",
+    "created_at": "2026-10-11T14:01:06.833102+00:00",
     "status": "completed",
     "source_cv_hash": "0940b51ff23b347f18e36fd65827599953935a39d2978b5347106380b9aed06a"
 }
