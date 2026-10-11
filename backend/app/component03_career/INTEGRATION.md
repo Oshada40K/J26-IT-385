@@ -77,6 +77,14 @@ For a candidate request or a new-format Component 1 assessment, Component 3
 accepts that endpoint's fixed profile regardless of its fixture ID and creates
 an in-memory copy with Component 1's validated candidate ID so the saved matcher
 can combine the inputs. Absolute endpoint URLs and trailing slashes are supported.
+The assignment is per request:
+
+```python
+soft_input = {**soft_input, 'candidate_id': technical_input['candidate_id']}
+```
+
+Each uploaded CV's ID is taken from its validated Component 1 response. No CV ID
+is hardcoded in Component 3, and the shared Component 2 JSON is never overwritten.
 Every soft-skill name,
 level and evidence value is preserved; Component 2 and its original payload are
 unchanged. This is a prediction using live technical evidence and a fixed sample
