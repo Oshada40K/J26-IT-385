@@ -14,6 +14,22 @@ class Profile(BaseModel):
 class TechnicalProfile(Profile):
     technical_skills: Annotated[list[Skill], Field(min_length=1)]
 
+class AssessmentSkill(BaseModel):
+    name: Annotated[str, Field(min_length=1)]
+    level: Annotated[float, Field(strict=True, ge=1, le=5, allow_inf_nan=False)]
+    confidence: Literal['low', 'medium', 'high']
+    status: str
+    reason: str
+    evidence: list[dict]
+
+class TechnicalAssessment(BaseModel):
+    assessment_method: Literal['cv_evidence_rubric_v1']
+    model_version: Annotated[str, Field(min_length=1)]
+    candidate_id: Annotated[str, Field(min_length=1)]
+    assessment_id: Annotated[str, Field(min_length=1)]
+    status: Literal['completed']
+    skills: Annotated[list[AssessmentSkill], Field(min_length=1)]
+
 class SoftProfile(Profile):
     soft_skills: Annotated[list[Skill], Field(min_length=1)]
 

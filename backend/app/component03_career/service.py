@@ -6,6 +6,7 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 from threading import Lock
+from urllib.parse import quote
 
 import httpx
 from dotenv import load_dotenv
@@ -14,7 +15,8 @@ from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
 
 from .job_matching_training_output import inference
-from .schemas import SoftProfile, TechnicalProfile
+from .schemas import SoftProfile
+from .profile_adapter import adapt_technical_profile
 
 logger = logging.getLogger(__name__)
 _inference_lock = Lock()
@@ -39,9 +41,9 @@ async def career_lifespan(app):
         yield
 
 
-async def _fetch(client, path):
+async def _fetch(client, path, headers=None):
     try:
-        response = await client.get(path)
+        response = await client.get(path, headers=headers)
         response.raise_for_status()
         data = response.json()
     except httpx.TimeoutException as exc:
@@ -64,20 +66,32 @@ def _predict(soft_input, technical_input):
     return result
 
 
-async def recommend(request: Request):
+async def recommend(request: Request, candidate_id: str | None = None):
+    technical_path = os.getenv('CAREER_TECHNICAL_PROFILE_PATH',
+        '/api/component01/skills/{candidate_id}/details' if candidate_id else '/api/skill/profile')
+    soft_path = os.getenv('CAREER_SOFT_PROFILE_PATH', '/api/personality/profile')
+    if '{candidate_id}' in technical_path or '{candidate_id}' in soft_path:
+        if not candidate_id or not candidate_id.strip():
+            raise HTTPException(422, 'candidate_id is required for candidate profile endpoints')
+    encoded_id = quote(candidate_id, safe='') if candidate_id else ''
+    technical_path = technical_path.replace('{candidate_id}', encoded_id)
+    soft_path = soft_path.replace('{candidate_id}', encoded_id)
+    # Credentials belong to this request, never the shared client's defaults.
+    headers = {'Authorization': request.headers['authorization']} if 'authorization' in request.headers else {}
     technical_input, soft_input = await asyncio.gather(
-        _fetch(request.app.state.career_client, "/api/skill/profile"),
-        _fetch(request.app.state.career_client, "/api/personality/profile"),
+        _fetch(request.app.state.career_client, technical_path, headers),
+        _fetch(request.app.state.career_client, soft_path, headers),
     )
     try:
-        technical = TechnicalProfile.model_validate(technical_input)
+        technical_input = adapt_technical_profile(technical_input)
         soft = SoftProfile.model_validate(soft_input)
-        if technical.candidate_id != soft.candidate_id:
+        if technical_input['candidate_id'] != soft.candidate_id:
             raise ValueError("Upstream profiles must have matching candidate IDs")
-        # Pass the original dictionaries; exported parsing retains alias/duplicate validation.
+        if candidate_id is not None and technical_input['candidate_id'] != candidate_id:
+            raise ValueError('Upstream profile candidate ID does not match the requested candidate')
         return await run_in_threadpool(_predict, soft_input, technical_input)
     except ValidationError as exc:
-        raise HTTPException(502, "Invalid upstream profile: schema_version must be 1.0, candidate_id and skill names must be nonempty, and levels must be numbers from 0 to 5") from exc
+        raise HTTPException(502, "Invalid upstream profile: expected a completed cv_evidence_rubric_v1 assessment (levels 1 to 5) or schema_version 1.0 profiles (levels 0 to 5), with nonempty candidate IDs and skill names") from exc
     except ValueError as exc:
         raise HTTPException(502, f"Invalid upstream profile: {exc}") from exc
     except Exception as exc:
