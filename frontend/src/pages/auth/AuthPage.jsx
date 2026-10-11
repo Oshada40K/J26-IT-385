@@ -24,7 +24,7 @@ function PasswordField({ name, label, value, onChange, error, autoComplete }) {
 }
 
 export default function AuthPage({ mode = 'login' }) {
-  const { user, loading, login, refresh } = useAuth()
+  const { user, loading, login, loginWithGoogle, refresh } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [values, setValues] = useState({ full_name: '', email: location.state?.email || '', password: '', confirm: '', remember_me: false })
@@ -32,6 +32,7 @@ export default function AuthPage({ mode = 'login' }) {
   const [error, setError] = useState('')
   const [message, setMessage] = useState(location.state?.message || '')
   const [busy, setBusy] = useState(false)
+  const [googleBusy, setGoogleBusy] = useState(false)
   const [title, subtitle, action] = content[mode]
   const token = new URLSearchParams(location.hash.slice(1)).get('token') || ''
   const update = event => {
@@ -73,6 +74,11 @@ export default function AuthPage({ mode = 'login' }) {
     } catch (err) { setError(err.message) }
     finally { setBusy(false) }
   }
+  async function googleLogin() {
+    setGoogleBusy(true); setError(''); setMessage('')
+    try { await loginWithGoogle() }
+    catch (err) { setError(err.message || 'Google sign-in is unavailable. Please try again.'); setGoogleBusy(false) }
+  }
   if (loading) return <div className="auth-status" role="status">Opening CareerNova…</div>
   if (user && mode !== 'reset') return <Navigate to="/" replace />
   return <main className="auth-page">
@@ -95,10 +101,16 @@ export default function AuthPage({ mode = 'login' }) {
       <div className="auth-form-card">
         <span className="auth-form-symbol"><Icon size={25} /></span><p className="eyebrow">YOUR CAREER STARTS HERE</p>
         <h2>{title}</h2><p className="auth-subtitle">{subtitle}</p>
+        {['login', 'register'].includes(mode) && <>
+          <button type="button" className="auth-google" onClick={googleLogin} disabled={busy || googleBusy}>
+            <svg width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.38a4.6 4.6 0 0 1-2 3.02v2.51h3.24c1.89-1.74 2.98-4.3 2.98-7.36Z"/><path fill="#34A853" d="M12 22c2.7 0 4.96-.9 6.62-2.41l-3.24-2.51c-.9.6-2.04.97-3.38.97-2.6 0-4.8-1.76-5.59-4.12H3.07v2.59A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.41 13.93A6 6 0 0 1 6.1 12c0-.67.11-1.32.31-1.93V7.48H3.07A10 10 0 0 0 2 12c0 1.61.38 3.14 1.07 4.52l3.34-2.59Z"/><path fill="#EA4335" d="M12 5.95c1.47 0 2.79.51 3.83 1.51L18.7 4.6A9.6 9.6 0 0 0 12 2a10 10 0 0 0-8.93 5.48l3.34 2.59C7.2 7.71 9.4 5.95 12 5.95Z"/></svg>
+            {googleBusy ? 'Connecting to Google…' : 'Continue with Google'}
+          </button><div className="auth-divider"><span>or continue with email</span></div>
+        </>}
         <form onSubmit={submit} noValidate>
           {message && <div className="auth-success" role="status"><Icon name="check" size={18} />{message}</div>}
           {error && <div className="auth-error" role="alert">{error}</div>}
-          <fieldset disabled={busy}>
+          <fieldset disabled={busy || googleBusy}>
             {mode === 'register' && <div className="auth-field"><label htmlFor="full_name">Full name</label><input id="full_name" name="full_name" autoComplete="name" placeholder="Your full name" maxLength={100} value={values.full_name} onChange={update} required aria-invalid={!!errors.full_name} aria-describedby={errors.full_name ? 'name-error' : undefined} />{errors.full_name && <span className="auth-field-error" id="name-error">{errors.full_name}</span>}</div>}
             {mode !== 'reset' && <div className="auth-field"><label htmlFor="email">Email address</label><input id="email" name="email" type="email" autoComplete="email" placeholder="you@example.com" maxLength={254} value={values.email} onChange={update} required aria-invalid={!!errors.email} aria-describedby={errors.email ? 'email-error' : undefined} />{errors.email && <span className="auth-field-error" id="email-error">{errors.email}</span>}</div>}
             {mode !== 'forgot' && <><PasswordField name="password" label="Password" value={values.password} onChange={update} error={errors.password} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} />{mode !== 'login' && <p className="auth-password-hint">Use at least 12 characters. A memorable passphrase works well.</p>}</>}
