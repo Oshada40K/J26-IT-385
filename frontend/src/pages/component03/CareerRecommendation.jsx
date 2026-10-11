@@ -1,8 +1,9 @@
 // Owner: Oshada - Component 03: Explainable Career Recommendation.
 // Calls the three career APIs and shows their responses. The backend builds the
-// recommendation from the Component 01 and 02 profiles, so no input is sent from here.
+// recommendation from the Component 01 and 02 profiles for the saved candidate.
 import { useState } from 'react'
 import { API_BASE_URL, apiGet } from '../../api/client.js'
+import { savedSession } from '../component01/skillApi.js'
 
 const ENDPOINTS = {
   bestJob: '/api/career/best-job',
@@ -173,7 +174,18 @@ export default function CareerRecommendation() {
   async function load(key) {
     setResults((prev) => ({ ...prev, [key]: { ...prev[key], loading: true, error: null } }))
     try {
-      const data = await apiGet(ENDPOINTS[key])
+      const current = savedSession()
+      let data
+      if (current?.candidate_id && current?.access_token) {
+        const query = new URLSearchParams({ candidate_id: current.candidate_id })
+        const response = await fetch(`${API_BASE_URL}${ENDPOINTS[key]}?${query}`, {
+          headers: { Authorization: `Bearer ${current.access_token}` },
+        })
+        if (!response.ok) throw new Error(`API error ${response.status}: ${await response.text()}`)
+        data = await response.json()
+      } else {
+        data = await apiGet(ENDPOINTS[key])
+      }
       setResults((prev) => ({ ...prev, [key]: { loading: false, data, error: null } }))
     } catch (err) {
       setResults((prev) => ({ ...prev, [key]: { loading: false, data: null, error: describeError(err) } }))
@@ -190,6 +202,11 @@ export default function CareerRecommendation() {
       <p className="eyebrow">COMPONENT 03 / EXPLAINABLE CAREER INTELLIGENCE</p>
       <h1 style={{ marginTop: 0 }}>Find your direction. Understand why.</h1>
       <p className="page-description" style={{ marginBottom: 20 }}>Explore your strongest career match, compare five ranked possibilities, and discover the evidence behind the recommendation.</p>
+      <p style={styles.muted}>
+        {savedSession()?.candidate_id
+          ? 'Recommendations require your completed technical and personality profiles.'
+          : 'Showing sample recommendations. Upload your CV in Component 01 to use your own profile.'}
+      </p>
       <p style={styles.muted}>
         Component 03 · Backend: <code>{API_BASE_URL}</code>
       </p>
