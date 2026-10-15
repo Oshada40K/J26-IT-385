@@ -4,3 +4,4 @@
 //Configuration for the AI Personalized Learning Roadmap component.
 // Collects the user's current skills and target career.
 //Handles changes to the skill assessment form fields.
+//Sends the assessment information to the backend API.
