@@ -6,12 +6,21 @@ from fastapi import HTTPException
 COOKIE = 'careernova_session'
 ISSUER = 'careernova'
 AUDIENCE = 'careernova-web'
+LOCAL_DEVELOPMENT_ORIGINS = (
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:5175',
+    'http://127.0.0.1:5175',
+    'http://localhost:5176',
+    'http://127.0.0.1:5176',
+)
 
 
 def allowed_origins():
-    return [value.strip().rstrip('/') for value in os.getenv(
-        'AUTH_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173'
-    ).split(',') if value.strip() and value.strip() != '*']
+    configured = os.getenv('AUTH_ALLOWED_ORIGINS', '')
+    origins = [value.strip().rstrip('/') for value in configured.split(',')
+               if value.strip() and value.strip() != '*']
+    return list(dict.fromkeys((*LOCAL_DEVELOPMENT_ORIGINS, *origins)))
 
 
 def secret():

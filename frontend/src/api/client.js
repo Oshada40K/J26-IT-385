@@ -1,8 +1,8 @@
 // SHARED FILE - controlled by the group leader.
 // Lightweight API helpers built on the native fetch API.
 
-// Set VITE_API_BASE_URL at build time (e.g. on Vercel); defaults to the local backend.
-export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '')
+// Local Vite requests use the proxy; deployments set VITE_API_BASE_URL to the public backend URL.
+export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? '' : 'http://127.0.0.1:8000')).replace(/\/+$/, '')
 
 async function handleResponse(response) {
   if (!response.ok) {

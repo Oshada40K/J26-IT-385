@@ -1,0 +1,20 @@
+{
+  "version": "0.1-draft",
+  "note": "Prototype settings for confidence-weighted late fusion and the Personality Consistency Score. Tune with the supervisor and the evaluation data; changing this file needs no code change.",
+  "confidence": {
+    "questionnaire_valid": 1.0,
+    "questionnaire_invalid": 0.5,
+    "sjt_base": 0.7,
+    "sjt_full_coverage_scenarios": 6,
+    "text_base": 0.4,
+    "text_full_confidence_words": 300
+  },
+  "consistency": {
+    "flag_divergence": 0.35,
+    "bands": [
+      {"min": 0.75, "label": "High", "meaning": "Your answers, choices and writing mostly agree."},
+      {"min": 0.55, "label": "Moderate", "meaning": "Your sources agree on some traits but differ on others."},
+      {"min": 0.0, "label": "Low", "meaning": "How you describe yourself differs noticeably from how you responded in scenarios and writing."}
+    ]
+  }
+}
