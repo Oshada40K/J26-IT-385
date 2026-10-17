@@ -4,7 +4,14 @@ import { API_BASE_URL } from '../../api/client.js'
 import { getSkillDetails, savedSession } from '../component01/skillApi.js'
 import { getCareerResult } from '../component03/careerApi.js'
 
-const BASE = `${API_BASE_URL}/api/roadmap/assessment`
+const ROOT = `${API_BASE_URL}/api/roadmap`
+const BASE = `${ROOT}/assessment`
+const LAST_KEY = 'careernova-c4-assessment'
+
+function authHeaders() {
+  const session = savedSession()
+  return session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}
+}
 
 function readableDetail(detail) {
   if (typeof detail === 'string') return detail
@@ -14,9 +21,9 @@ function readableDetail(detail) {
   return ''
 }
 
-async function request(path, options = {}) {
+async function request(path, options = {}, base = BASE) {
   let response
-  try { response = await fetch(`${BASE}${path}`, options) }
+  try { response = await fetch(`${base}${path}`, options) }
   catch { throw new Error('Cannot reach the assessment service. Check that the backend is running.') }
   const data = await response.json().catch(() => ({}))
   if (!response.ok) {
@@ -39,15 +46,38 @@ export function getQuestions(careerId, c1Skills) {
   })
 }
 
-export function submitAssessment(payload) {
+export async function submitAssessment(payload) {
   const session = savedSession()
-  const headers = { 'Content-Type': 'application/json' }
-  if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`
-  return request('', {
+  const saved = await request('', {
     method: 'POST',
-    headers,
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({ ...payload, candidate_id: session?.candidate_id || null }),
   })
+  try { sessionStorage.setItem(LAST_KEY, saved.assessment_id) } catch { /* storage unavailable */ }
+  return saved
+}
+
+export function getAssessment(assessmentId) {
+  return request(`/${encodeURIComponent(assessmentId)}`, { headers: authHeaders() })
+}
+
+export function getAnalysis(assessmentId) {
+  return request(`/analysis/${encodeURIComponent(assessmentId)}`, { headers: authHeaders() }, ROOT)
+}
+
+// The candidate's latest saved assessment, or the last one submitted in this browser session.
+export async function findLatestAssessment() {
+  if (savedSession()?.access_token) {
+    try {
+      const latest = await request('/latest', { headers: authHeaders() })
+      if (latest) return latest
+    } catch (error) { if (error.status !== 401) throw error }
+  }
+  let lastId = null
+  try { lastId = sessionStorage.getItem(LAST_KEY) } catch { /* storage unavailable */ }
+  if (!lastId) return null
+  try { return await getAssessment(lastId) }
+  catch { return null }
 }
 
 // C1 skills from the uploaded CV; an empty list when no CV has been assessed yet.

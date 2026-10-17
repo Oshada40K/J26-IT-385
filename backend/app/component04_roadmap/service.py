@@ -1,14 +1,14 @@
 # Owner: Dewmi - Component 04.
-# Career Readiness Assessment form: chooses the skills to ask about and stores submissions.
-# Roadmap generation, gap analysis and readiness scoring are not implemented here.
-import json
-import os
+# Career Readiness Assessment: chooses the skills to ask about, stores submissions and builds the
+# explainable analysis (gap analysis, priorities, resources, roadmap, readiness) from the latest
+# Component 01 CV assessment and the stored form. See analysis.py for the methods.
 from datetime import datetime, timezone
 from functools import lru_cache
-from pathlib import Path
 from uuid import uuid4
 
-INPUTS_DIR = Path(__file__).with_name("inputs")
+from . import repository
+from .errors import ModelsUnavailable
+
 MIN_SKILLS, MAX_SKILLS = 10, 15
 
 # Form options -> learning_resources.csv resource types used by c4_engine.
@@ -24,17 +24,12 @@ class CareerNotSupported(ValueError):
     pass
 
 
-def assessments_dir():
-    default = Path(__file__).parents[2] / ".data" / "component04" / "assessments"
-    return Path(os.getenv("C4_ASSESSMENT_DIR", str(default)))
-
-
 @lru_cache(maxsize=1)
 def engine():
     # Imported lazily so a data problem only affects C4 endpoints, never app startup.
-    # No models are loaded: the form only needs the O*NET catalogue and C1 skill mapping.
-    from .c4_engine import C4Engine
-    return C4Engine(str(INPUTS_DIR), None)
+    # Trained models are loaded on the first analysis, not here.
+    from .analysis import C4Analyzer
+    return C4Analyzer()
 
 
 def careers():
@@ -78,6 +73,28 @@ def _resource_preferences(methods):
     return types[0], (types[1] if len(types) > 1 else types[0])
 
 
+def c1_profile(candidate_id):
+    """Latest Component 01 CV assessment in c4_engine's c1_json format (read-only)."""
+    empty = {"candidate_id": candidate_id, "skills": [], "assessment_id": None, "created_at": None}
+    if not candidate_id:
+        return empty
+    from app.component01_skill.repository import latest_assessment
+    details = latest_assessment(candidate_id)
+    if not details:
+        return empty
+    skills = [{"name": s["name"], "level": s.get("level", 0), "confidence": s.get("confidence")}
+              for s in details.get("skills", []) if s.get("name")]
+    return {"candidate_id": candidate_id, "skills": skills,
+            "assessment_id": details.get("assessment_id"), "created_at": details.get("created_at")}
+
+
+def _readiness_snapshot(c1, form):
+    try:
+        return engine().analyze_assessment(c1, form)["readiness"]["score"]
+    except ModelsUnavailable:
+        return None
+
+
 def save_assessment(submission, candidate_id):
     eng = engine()
     unknown = [c.skill_id for c in submission.confidence if c.skill_id not in eng.name]
@@ -86,30 +103,55 @@ def save_assessment(submission, candidate_id):
     career_id, career_name = resolve_career(submission.career_id)
     prefs = submission.preferences
     preferred, secondary = _resource_preferences(prefs.learning_methods)
+    # Same shape as c4_engine's form_json, plus the raw form answers.
+    form = {
+        "candidate_id": candidate_id,
+        "career_id": career_id,
+        "confidence": [c.model_dump() for c in submission.confidence],
+        "preferences": {
+            "learning_methods": prefs.learning_methods,
+            "learning_methods_other": (prefs.learning_methods_other or "").strip() or None,
+            "weekly_hours": prefs.weekly_hours,
+            "weekly_study_hours": WEEKLY_HOURS[prefs.weekly_hours],
+            "preferred_resource_type": preferred,
+            "secondary_resource_type": secondary,
+        },
+        "activity": submission.experience.model_dump(),
+    }
+    c1 = c1_profile(candidate_id)
+    previous = repository.latest_for(candidate_id) if candidate_id else None
     record = {
         "assessment_id": uuid4().hex,
         "candidate_id": candidate_id,
         "career_id": career_id,
         "career_name": career_name,
         "submitted_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "status": "submitted",
-        # Same shape as c4_engine's form_json so the roadmap engine can consume it later.
-        "form": {
-            "candidate_id": candidate_id,
-            "career_id": career_id,
-            "confidence": [c.model_dump() for c in submission.confidence],
-            "preferences": {
-                "learning_methods": prefs.learning_methods,
-                "learning_methods_other": (prefs.learning_methods_other or "").strip() or None,
-                "weekly_hours": prefs.weekly_hours,
-                "weekly_study_hours": WEEKLY_HOURS[prefs.weekly_hours],
-                "preferred_resource_type": preferred,
-                "secondary_resource_type": secondary,
-            },
-            "activity": submission.experience.model_dump(),
-        },
+        "previous_assessment_id": previous["assessment_id"] if previous else None,
+        "c1_assessment_id": c1["assessment_id"],
+        "readiness_score": _readiness_snapshot(c1, form),
+        "form": form,
     }
-    folder = assessments_dir()
-    folder.mkdir(parents=True, exist_ok=True)
-    (folder / f"{record['assessment_id']}.json").write_text(json.dumps(record, indent=2), encoding="utf-8")
-    return record
+    repository.save(record)
+    return {**record, "status": "submitted"}
+
+
+def analysis(record):
+    """Recomputed on every request from the latest CV assessment, so the roadmap updates when the
+    student's CV skills change (Component 01) or when they submit an updated assessment."""
+    c1 = c1_profile(record["candidate_id"])
+    out = engine().analyze_assessment(c1, record["form"])
+    previous = repository.get(record["previous_assessment_id"]) if record.get("previous_assessment_id") else None
+    changes = []
+    if record.get("c1_assessment_id") and c1["assessment_id"] and c1["assessment_id"] != record["c1_assessment_id"]:
+        changes.append("Your CV assessment was updated after you submitted this form. The analysis uses your latest CV evidence.")
+    out["assessment"] = {
+        "assessment_id": record["assessment_id"], "submitted_at": record["submitted_at"],
+        "readiness_at_submission": record.get("readiness_score"),
+        "previous": None if not previous else {
+            "assessment_id": previous["assessment_id"], "submitted_at": previous["submitted_at"],
+            "career_name": previous["career_name"], "readiness_score": previous.get("readiness_score")},
+        "cv_assessment_id": c1["assessment_id"], "cv_assessed_at": c1["created_at"],
+        "history": repository.history(record["candidate_id"]),
+        "changes": changes,
+    }
+    return out

@@ -143,38 +143,37 @@ function SkillQuestion({ skill, index, value, error, onChange }) {
   </fieldset>
 }
 
-function SubmittedView({ saved, onEdit }) {
-  return <section className="card c4-submitted" role="status">
-    <span className="c4-submitted-icon"><Icon name="check" size={28} /></span>
-    <h2>Assessment submitted</h2>
-    <p>Thank you. Your Career Readiness Assessment for <strong>{saved.career_name}</strong> has been saved.</p>
-    <dl className="c4-submitted-meta">
-      <dt>Reference</dt><dd><code>{saved.assessment_id}</code></dd>
-      <dt>Submitted</dt><dd>{new Date(saved.submitted_at).toLocaleString('en-GB')}</dd>
-    </dl>
-    <div className="c4-submitted-actions">
-      <button type="button" className="button-secondary" onClick={onEdit}>Edit my responses</button>
-      <Link className="button" to="/component03">Back to career matches <Icon name="arrow" size={16} /></Link>
-    </div>
-  </section>
+// Answers from a previously stored assessment, so students can update rather than start again.
+function previousAnswers(record) {
+  const form = record?.form || {}
+  const prefs = form.preferences || {}
+  const activity = form.activity || {}
+  return {
+    careerId: record?.career_id || '',
+    ratings: Object.fromEntries((form.confidence || []).map(c => [c.skill_id, c.rating === null ? 'not_studied' : c.rating])),
+    methods: prefs.learning_methods || [],
+    otherText: prefs.learning_methods_other || '',
+    hours: prefs.weekly_hours || '',
+    experience: record ? Object.fromEntries(EXPERIENCE.map(({ key }) => [key, String(activity[key] ?? '')])) : emptyExperience,
+  }
 }
 
-export default function CareerReadinessForm() {
+export default function CareerReadinessForm({ initialRecord = null, onSubmitted, onCancel }) {
   const location = useLocation()
+  const [initial] = useState(() => previousAnswers(initialRecord))
   const [boot, setBoot] = useState({ loading: true, error: '', careers: [], matches: [], cvSkills: [] })
   const [reload, setReload] = useState(0)
-  const [careerId, setCareerId] = useState('')
+  const [careerId, setCareerId] = useState(initial.careerId)
   const [questions, setQuestions] = useState({ loading: false, error: '', data: null })
   const [questionsRetry, setQuestionsRetry] = useState(0)
-  const [ratings, setRatings] = useState({})
-  const [methods, setMethods] = useState([])
-  const [otherText, setOtherText] = useState('')
-  const [hours, setHours] = useState('')
-  const [experience, setExperience] = useState(emptyExperience)
+  const [ratings, setRatings] = useState(initial.ratings)
+  const [methods, setMethods] = useState(initial.methods)
+  const [otherText, setOtherText] = useState(initial.otherText)
+  const [hours, setHours] = useState(initial.hours)
+  const [experience, setExperience] = useState(initial.experience)
   const [attempted, setAttempted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
-  const [saved, setSaved] = useState(null)
 
   useEffect(() => {
     let active = true
@@ -238,8 +237,7 @@ export default function CareerReadinessForm() {
         preferences: { learning_methods: methods, learning_methods_other: methods.includes('other') ? otherText.trim() : null, weekly_hours: hours },
         experience: Object.fromEntries(EXPERIENCE.map(({ key }) => [key, Number(experience[key])])),
       })
-      setSaved(result)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      onSubmitted?.(result)
     } catch (error) {
       setSubmitError(error.message)
     } finally {
@@ -247,19 +245,9 @@ export default function CareerReadinessForm() {
     }
   }
 
-  return <div className="page accent-roadmap c4-page">
-    <div className="page-heading">
-      <div>
-        <p className="eyebrow">COMPONENT 04 / CAREER READINESS ASSESSMENT</p>
-        <h1>Career Readiness Assessment</h1>
-        <p className="page-description">Tell us how confident you feel with the key skills for your chosen career, how you like to learn, and the practical experience you already have.</p>
-      </div>
-      <span className="component-icon"><Icon name="roadmap" size={28} /></span>
-    </div>
-
+  return <>
     {boot.loading ? <div className="card" role="status">Loading your assessment…</div>
       : boot.error ? <div className="card"><p className="error-message" role="alert">{boot.error}</p><button type="button" onClick={() => setReload(v => v + 1)}>Try again</button></div>
-      : saved ? <SubmittedView saved={saved} onEdit={() => setSaved(null)} />
       : <>
         <CareerPicker careers={boot.careers} matches={boot.matches} careerId={careerId} cvSkillCount={boot.cvSkills.length}
           onChange={id => { setCareerId(id); setSubmitError('') }} />
@@ -341,9 +329,12 @@ export default function CareerReadinessForm() {
             {submitError && <p className="c4-error-summary" role="alert">{submitError}</p>}
             <div className="c4-submit">
               <p className="muted">Your responses are used only for this research assessment.</p>
-              <button type="submit" className="button-ai" disabled={submitting}>{submitting ? 'Submitting…' : <>Submit Assessment <Icon name="arrow" size={16} /></>}</button>
+              <div className="c4-submit-actions">
+                {onCancel && <button type="button" className="button-secondary" onClick={onCancel}>Back to my results</button>}
+                <button type="submit" className="button-ai" disabled={submitting}>{submitting ? 'Analysing…' : <>Submit Assessment <Icon name="arrow" size={16} /></>}</button>
+              </div>
             </div>
           </form>}
       </>}
-  </div>
+  </>
 }

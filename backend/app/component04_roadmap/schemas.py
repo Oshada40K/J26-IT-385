@@ -92,4 +92,17 @@ class AssessmentSaved(BaseModel):
     career_id: str
     career_name: str
     submitted_at: str
+    readiness_score: float | None = None
+    previous_assessment_id: str | None = None
     status: Literal["submitted"] = "submitted"
+
+
+class AssessmentRecord(BaseModel):
+    assessment_id: str
+    candidate_id: str | None
+    career_id: str
+    career_name: str
+    submitted_at: str
+    readiness_score: float | None = None
+    previous_assessment_id: str | None = None
+    form: dict

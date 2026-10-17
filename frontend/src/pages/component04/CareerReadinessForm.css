@@ -2,6 +2,7 @@
    .card.* selectors: index.css loads after this file in the app, so plain .card rules would win. */
 .c4-page { max-width: 980px; }
 .c4-form { display: grid; gap: 20px; }
+.c4-form > * { min-width: 0; }
 .c4-page > .card,.c4-page > section { margin-bottom: 20px; }
 .c4-section-heading { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
 .c4-section-heading h2 { margin: 0 0 2px; }
@@ -92,16 +93,9 @@
 /* submit */
 .c4-submit { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 4px 0 8px; }
 .c4-submit p { margin: 0; font-size: 12px; }
-.c4-submit button { min-width: 200px; }
+.c4-submit-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.c4-submit button[type=submit] { min-width: 200px; }
 
-/* submitted */
-.card.c4-submitted { text-align: center; padding: 40px 28px; }
-.c4-submitted-icon { display: inline-grid; place-items: center; width: 60px; height: 60px; margin-bottom: 12px; border-radius: 50%; background: var(--color-success-soft); color: var(--color-success-text); }
-.c4-submitted h2 { margin: 0 0 8px; }
-.c4-submitted-meta { display: inline-grid; grid-template-columns: auto auto; gap: 4px 14px; margin: 8px auto 22px; text-align: left; font-size: 12px; }
-.c4-submitted-meta dt { color: var(--color-text-secondary); }
-.c4-submitted-meta dd { margin: 0; overflow-wrap: anywhere; }
-.c4-submitted-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
 
 @media (max-width: 900px) {
   .c4-number-grid { grid-template-columns: 1fr; }
@@ -114,6 +108,6 @@
   .c4-rating-options label.c4-not-studied { grid-column: 1 / -1; min-height: 44px; }
   .c4-choice-grid,.c4-choice-grid.c4-hours { grid-template-columns: 1fr; }
   .c4-submit { flex-direction: column-reverse; align-items: stretch; text-align: center; }
-  .c4-submit button { width: 100%; }
+  .c4-submit-actions,.c4-submit button { width: 100%; }
   .card.c4-section,.c4-skill,.c4-question,.c4-number { scroll-margin-top: 24px; }
 }

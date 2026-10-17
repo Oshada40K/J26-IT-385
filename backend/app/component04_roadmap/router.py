@@ -4,8 +4,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.concurrency import run_in_threadpool
 
-from . import service
-from .schemas import AssessmentSaved, AssessmentSubmission, Career, QuestionRequest, QuestionResponse
+from . import repository, service
+from .errors import ModelsUnavailable
+from .schemas import AssessmentRecord, AssessmentSaved, AssessmentSubmission, Career, QuestionRequest, QuestionResponse
 
 router = APIRouter(prefix="/api/roadmap", tags=["Learning Roadmap & Skill Gap"])
 security = HTTPBearer(auto_error=False)
@@ -53,6 +54,17 @@ def _candidate(credentials: Annotated[HTTPAuthorizationCredentials | None, Depen
     return candidate
 
 
+def _owned_record(assessment_id, owner):
+    record = repository.get(assessment_id)
+    if not record:
+        raise HTTPException(404, "Assessment not found.")
+    # Assessments linked to a CV session are private to that candidate; anonymous ones are
+    # reachable only through their unguessable assessment ID.
+    if record["candidate_id"] and record["candidate_id"] != owner:
+        raise HTTPException(403, "You cannot access another candidate's assessment.")
+    return record
+
+
 @router.post("/assessment", response_model=AssessmentSaved, status_code=201,
              summary="Submit the Career Readiness Assessment form")
 async def submit_assessment(body: AssessmentSubmission, owner: Annotated[str | None, Depends(_candidate)]):
@@ -65,3 +77,30 @@ async def submit_assessment(body: AssessmentSubmission, owner: Annotated[str | N
         raise HTTPException(404, str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
+
+
+@router.get("/assessment/latest", response_model=AssessmentRecord | None,
+            summary="Latest assessment for the signed-in CV candidate (null when there is none yet)")
+async def latest_assessment(owner: Annotated[str | None, Depends(_candidate)]):
+    if not owner:
+        raise HTTPException(401, "Upload your CV in Component 01 to save and reload assessments.")
+    return await run_in_threadpool(repository.latest_for, owner)
+
+
+@router.get("/assessment/{assessment_id}", response_model=AssessmentRecord, summary="Stored assessment answers")
+async def get_assessment(assessment_id: str, owner: Annotated[str | None, Depends(_candidate)]):
+    return await run_in_threadpool(_owned_record, assessment_id, owner)
+
+
+@router.get("/analysis/{assessment_id}",
+            summary="Skill gaps, priorities, resources, roadmap and readiness score for an assessment")
+async def assessment_analysis(assessment_id: str, owner: Annotated[str | None, Depends(_candidate)]):
+    record = await run_in_threadpool(_owned_record, assessment_id, owner)
+    await run_in_threadpool(_engine_or_503)
+    try:
+        return await run_in_threadpool(service.analysis, record)
+    except ModelsUnavailable as exc:
+        raise HTTPException(503, f"{exc}. The assessment was saved; the analysis will be available once the trained "
+                                 "models are present in backend/app/component04_roadmap/trained_models/.") from exc
+    except service.CareerNotSupported as exc:
+        raise HTTPException(404, str(exc)) from exc
