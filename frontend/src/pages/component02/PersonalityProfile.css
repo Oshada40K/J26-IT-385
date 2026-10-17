@@ -1,13 +1,31 @@
-.personality-stages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 22px; padding: 16px; }
-.personality-stages > div { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: var(--radius-md); background: var(--color-background); }
-.personality-stages > div.is-ready { background: var(--component-soft); }
-.personality-stages > div > div { flex: 1; min-width: 0; }
+/* .card.* selectors: index.css loads after this file in the app, so plain .card rules would win */
+.card.personality-stages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 22px; padding: 16px; scroll-margin-top: 24px; }
+.personality-stages > button { display: flex; align-items: center; gap: 12px; padding: 12px; min-height: 0; border-radius: var(--radius-md); background: var(--color-background); border: 1px solid transparent; color: var(--color-text); text-align: left; font-weight: 400; }
+.personality-stages > button:hover:not(:disabled) { background: var(--component-soft); transform: none; }
+.personality-stages > button.is-active { background: var(--component-soft); border-color: var(--component-accent); }
+.personality-stages > button:disabled { opacity: .7; }
+.personality-stages > button > span:nth-child(2) { flex: 1; min-width: 0; }
 .personality-stages strong { display: block; font-size: 13px; }
-.personality-stages small { color: var(--color-text-secondary); font-size: 11px; }
+.personality-stages small { display: block; color: var(--color-text-secondary); font-size: 11px; line-height: 1.4; }
 
 .personality-layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 22px; align-items: start; }
 .personality-form h2,.personality-results h2 { margin: 0 0 6px; }
 
+/* questionnaire */
+.personality-progress { height: 6px; margin-top: 18px; border-radius: 999px; background: var(--color-background); overflow: hidden; }
+.personality-progress span { display: block; height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-ai)); transition: width var(--motion); }
+.personality-progress-label { margin: 8px 0 0; font-size: 12px; }
+.personality-likert { margin: 0; padding: 16px 0; border: 0; border-bottom: 1px solid var(--color-border); min-width: 0; }
+.personality-likert legend { display: flex; gap: 10px; align-items: baseline; float: left; width: 100%; margin-bottom: 12px; padding: 0; font-weight: 600; }
+.personality-likert-number { flex-shrink: 0; min-width: 22px; color: var(--component-accent); font: 11px var(--font-mono); }
+.personality-likert-options { clear: both; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.personality-likert-options label { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 6px 8px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 11px; line-height: 1.25; text-align: center; cursor: pointer; transition: background var(--motion), border-color var(--motion); }
+.personality-likert-options label:hover { background: var(--component-soft); }
+.personality-likert-options label.is-selected { background: var(--component-soft); border-color: var(--component-accent); color: var(--component-accent); font-weight: 600; }
+.personality-likert-options input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.personality-likert-options label:has(input:focus-visible) { outline: 3px solid var(--color-primary); outline-offset: 2px; }
+
+/* written answers */
 .personality-question { display: grid; gap: 6px; margin-top: 20px; }
 .personality-question-label { display: flex; align-items: center; gap: 10px; font-weight: 600; font-family: var(--font-heading); }
 .personality-question-prompt { color: var(--color-text-secondary); font-size: 13px; }
@@ -17,22 +35,34 @@
 .personality-submit { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--color-border); flex-wrap: wrap; }
 .personality-hint { color: var(--color-text-secondary); font-size: 12px; }
 .personality-submit .muted { font-size: 12px; }
-.personality-form > p[role] { margin: 12px 0 0; font-size: 12px; }
+.personality-form > p[role],.personality-form > .personality-hint { margin: 12px 0 0; font-size: 12px; }
 
+/* results */
 .personality-results { position: sticky; top: 24px; }
 .personality-empty { display: grid; justify-items: center; text-align: center; gap: 12px; padding: 36px 12px; }
 .personality-empty p { max-width: 260px; margin: 0; }
+.personality-legend { display: grid; gap: 6px; margin: 4px 0 6px; font-size: 12px; color: var(--color-text-secondary); }
+.personality-legend > span { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.personality-legend i { width: 18px; height: 8px; border-radius: 999px; }
+.personality-key-questionnaire { background: linear-gradient(90deg, var(--color-primary), var(--color-ai)); }
+.personality-key-writing { background: var(--color-text-secondary); opacity: .55; }
+.personality-badge { padding: 2px 7px; border-radius: 6px; background: var(--color-gold-soft); color: var(--color-text); font-size: 10px; font-weight: 600; }
+.personality-warning { margin: 8px 0; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--color-danger-soft); color: var(--color-danger-text); font-size: 12px; }
 
 .personality-trait { padding: 14px 0; border-bottom: 1px solid var(--color-border); }
 .personality-trait:last-of-type { border-bottom: 0; }
-.personality-trait-heading { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.personality-trait-heading { margin-bottom: 8px; }
 .personality-trait h3 { margin: 0; font-size: 14px; }
 .personality-trait-heading small { color: var(--color-text-secondary); font-size: 12px; }
-.personality-trait-score { font: 600 18px var(--font-mono); color: var(--component-accent); text-align: right; white-space: nowrap; }
-.personality-trait-score small { display: block; font: 600 10px var(--font-body); color: var(--color-text-secondary); }
+.personality-source { display: grid; grid-template-columns: 82px minmax(0, 1fr) 76px; align-items: center; gap: 10px; margin-top: 6px; font-size: 11px; color: var(--color-text-secondary); }
+.personality-source > strong { font: 600 14px var(--font-mono); color: var(--color-text); text-align: right; white-space: nowrap; }
+.personality-source > strong small { display: block; font: 600 10px var(--font-body); color: var(--color-text-secondary); }
+.personality-source > strong small.is-inline { display: inline; margin-left: 1px; }
 
 .personality-meter { position: relative; height: 8px; border-radius: 999px; background: var(--color-background); border: 1px solid var(--color-border); overflow: hidden; }
-.personality-meter-fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: linear-gradient(90deg, var(--color-primary), var(--color-ai)); transform-origin: left; animation: fill-in 600ms ease-out; }
+.personality-meter-fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; transform-origin: left; animation: fill-in 600ms ease-out; }
+.personality-meter-questionnaire .personality-meter-fill { background: linear-gradient(90deg, var(--color-primary), var(--color-ai)); }
+.personality-meter-writing .personality-meter-fill { background: var(--color-text-secondary); opacity: .55; }
 .personality-meter-mid { position: absolute; top: -2px; bottom: -2px; left: 50%; width: 2px; background: var(--color-text-secondary); opacity: .45; }
 
 .personality-note { display: flex; gap: 8px; align-items: flex-start; margin: 14px 0 0; padding: 12px; border-radius: var(--radius-sm); background: var(--component-soft); color: var(--color-text); font-size: 12px; }
@@ -43,5 +73,7 @@
   .personality-results { position: static; }
 }
 @media (max-width: 760px) {
-  .personality-stages { grid-template-columns: 1fr; }
+  .card.personality-stages { grid-template-columns: 1fr; }
+  .personality-likert-options { grid-template-columns: 1fr; }
+  .personality-likert-options label { justify-content: flex-start; min-height: 40px; }
 }

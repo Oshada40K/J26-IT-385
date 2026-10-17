@@ -14,6 +14,20 @@ async function request(path, options = {}) {
   return data
 }
 
+// IPIP-50 Big Five questionnaire: statements in display order (attention checks included).
+export function getQuestionnaire() {
+  return request('/questionnaire')
+}
+
+// Questionnaire answers {itemId: 1..5} -> normalised trait levels (0-1) and validity warnings.
+export function scoreQuestionnaire(responses) {
+  return request('/questionnaire/score', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ responses }),
+  })
+}
+
 // Behavioural text model: free-text answers -> P(high trait) for each Big Five trait.
 export function analyseTextAnswers(answers) {
   return request('/text-traits', {
