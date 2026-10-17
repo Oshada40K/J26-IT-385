@@ -15,11 +15,11 @@ const QUESTIONS = [
 ]
 
 const TRAITS = [
-  { code: 'OPN', name: 'Openness', high: 'Curious, imaginative, enjoys new ideas', low: 'Practical, prefers the familiar' },
-  { code: 'CON', name: 'Conscientiousness', high: 'Organised, plans ahead, dependable', low: 'Flexible, spontaneous' },
-  { code: 'EXT', name: 'Extraversion', high: 'Energised by people and social settings', low: 'Reserved, prefers focused solo work' },
-  { code: 'AGR', name: 'Agreeableness', high: 'Cooperative, empathetic, trusting', low: 'Direct, competitive, sceptical' },
-  { code: 'NEU', name: 'Neuroticism', high: 'Feels stress and worry more easily', low: 'Calm and steady under pressure' },
+  { code: 'OPN', name: 'Openness', high: 'Curious, imaginative, enjoys new ideas', low: 'Practical, prefers the familiar', more: 'open to new ideas' },
+  { code: 'CON', name: 'Conscientiousness', high: 'Organised, plans ahead, dependable', low: 'Flexible, spontaneous', more: 'organised and dependable' },
+  { code: 'EXT', name: 'Extraversion', high: 'Energised by people and social settings', low: 'Reserved, prefers focused solo work', more: 'outgoing' },
+  { code: 'AGR', name: 'Agreeableness', high: 'Cooperative, empathetic, trusting', low: 'Direct, competitive, sceptical', more: 'cooperative and caring' },
+  { code: 'NEU', name: 'Neuroticism', high: 'Feels stress and worry more easily', low: 'Calm and steady under pressure', more: 'easily stressed' },
 ]
 
 const STAGES = [
@@ -296,7 +296,10 @@ function FinalProfile({ draft }) {
           </div>
           {pt && <p className="personality-final-detail">
             You rated yourself <strong>{Math.round(pt.questionnaire * 100)}</strong>; your scenarios and writing suggest <strong>{Math.round(pt.behavioural * 100)}</strong>
-            {' '}(difference {Math.round(pt.divergence * 100)}{pt.flagged ? `, ${pt.direction === 'self-report higher' ? 'you rate yourself higher than your responses show' : 'your responses show more than you rate yourself'}` : ''}).
+            {' '}(difference {Math.round(pt.divergence * 100)}).
+            {pt.flagged && <> {pt.direction === 'self-report higher'
+              ? `You describe yourself as more ${trait.more} than your responses show.`
+              : `Your responses show you as more ${trait.more} than you describe yourself.`}</>}
           </p>}
         </div>
       })}
