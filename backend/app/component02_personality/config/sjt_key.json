@@ -1,0 +1,109 @@
+{
+  "name": "Workplace situational judgement scenarios",
+  "version": "0.1-draft",
+  "status": "Draft scoring key written for the prototype. It must be reviewed by at least three expert raters (target Cohen's kappa >= 0.60) before use in data collection.",
+  "instruction": "Choose what you would most likely do, not what you think is the best answer.",
+  "weight_meaning": "+1 = the option signals a higher level of the trait, -1 = a lower level, missing = no signal",
+  "scenarios": [
+    {
+      "id": "S1", "topic": "Team conflict",
+      "text": "Two teammates are arguing about which framework to use for your group project, and the meeting is going nowhere.",
+      "options": [
+        {"id": "A", "text": "Ask each of them to list the pros and cons, then let the whole team vote.", "weights": {"AGR": 1, "CON": 1}},
+        {"id": "B", "text": "Make the decision yourself based on what you think is technically best, to keep things moving.", "weights": {"EXT": 1, "AGR": -1}},
+        {"id": "C", "text": "Stay out of it and wait for them to settle it between themselves.", "weights": {"EXT": -1}},
+        {"id": "D", "text": "Suggest trying a newer framework that none of you has used yet, which might suit the project better.", "weights": {"OPN": 1}}
+      ]
+    },
+    {
+      "id": "S2", "topic": "Deadline pressure",
+      "text": "Two days before a deadline you realise one important feature of your project will not be finished in time.",
+      "options": [
+        {"id": "A", "text": "Work late both nights so that everything is finished exactly as planned.", "weights": {"CON": 1}},
+        {"id": "B", "text": "Tell your lecturer or team lead now and agree on a smaller scope you can deliver well.", "weights": {"CON": 1, "NEU": -1}},
+        {"id": "C", "text": "Keep going as normal and hope it comes together, even though you feel worried about it.", "weights": {"NEU": 1, "CON": -1}},
+        {"id": "D", "text": "Build a quick creative workaround that shows the idea, even if it is not polished.", "weights": {"OPN": 1, "CON": -1}}
+      ]
+    },
+    {
+      "id": "S3", "topic": "Receiving criticism",
+      "text": "Your supervisor criticises your report in front of the rest of the team.",
+      "options": [
+        {"id": "A", "text": "Thank them, ask for specific examples, and revise the report.", "weights": {"AGR": 1, "NEU": -1}},
+        {"id": "B", "text": "Explain straight away why you made the choices you did.", "weights": {"EXT": 1, "AGR": -1}},
+        {"id": "C", "text": "Say very little, but keep thinking about the comments for days afterwards.", "weights": {"NEU": 1, "EXT": -1}},
+        {"id": "D", "text": "Take it as a reason to try a completely different structure for the report.", "weights": {"OPN": 1}}
+      ]
+    },
+    {
+      "id": "S4", "topic": "Ambiguous requirements",
+      "text": "A client asks you to build a small app, but their requirements are vague and incomplete.",
+      "options": [
+        {"id": "A", "text": "Write a list of questions and arrange a meeting to clarify everything before you start.", "weights": {"CON": 1}},
+        {"id": "B", "text": "Build a quick prototype of your own interpretation and show it to them for feedback.", "weights": {"OPN": 1}},
+        {"id": "C", "text": "Start coding from your best guess and adjust later if needed.", "weights": {"CON": -1}},
+        {"id": "D", "text": "Feel uneasy and put off starting until someone gives you clearer instructions.", "weights": {"NEU": 1}}
+      ]
+    },
+    {
+      "id": "S5", "topic": "Struggling teammate",
+      "text": "A new member of your team keeps falling behind on their tasks and seems stressed.",
+      "options": [
+        {"id": "A", "text": "Offer to sit with them and help them catch up.", "weights": {"AGR": 1, "EXT": 1}},
+        {"id": "B", "text": "Let the team leader know about the delay so the plan can be adjusted.", "weights": {"CON": 1}},
+        {"id": "C", "text": "Quietly redo their part yourself so that the work gets done properly.", "weights": {"EXT": -1}},
+        {"id": "D", "text": "Leave it to them; managing their own work is their responsibility.", "weights": {"AGR": -1}}
+      ]
+    },
+    {
+      "id": "S6", "topic": "Unexpected problem",
+      "text": "The day before an important demo, the project database crashes and the data is lost.",
+      "options": [
+        {"id": "A", "text": "Stay calm, follow the steps to restore a backup, and check everything carefully.", "weights": {"NEU": -1, "CON": 1}},
+        {"id": "B", "text": "Call the team together straight away to solve it as a group.", "weights": {"EXT": 1}},
+        {"id": "C", "text": "Feel panicked and find it hard to concentrate, but keep trying to fix it.", "weights": {"NEU": 1}},
+        {"id": "D", "text": "Try an unusual fix you read about once but have never tested.", "weights": {"OPN": 1, "CON": -1}}
+      ]
+    },
+    {
+      "id": "S7", "topic": "Networking event",
+      "text": "Your department is holding an industry networking evening with professionals from several companies.",
+      "options": [
+        {"id": "A", "text": "Go and introduce yourself to as many professionals as you can.", "weights": {"EXT": 1}},
+        {"id": "B", "text": "Go, with specific questions prepared for two or three companies you have researched.", "weights": {"CON": 1}},
+        {"id": "C", "text": "Skip it; you would rather research the companies online on your own.", "weights": {"EXT": -1}},
+        {"id": "D", "text": "Go mainly to hear about new technologies and ideas, whoever is presenting.", "weights": {"OPN": 1}}
+      ]
+    },
+    {
+      "id": "S8", "topic": "Unfamiliar technology",
+      "text": "Your project needs a technology that nobody in the team has used before.",
+      "options": [
+        {"id": "A", "text": "Volunteer to learn it and explore what else it can do.", "weights": {"OPN": 1}},
+        {"id": "B", "text": "Make a study plan with milestones and follow it step by step.", "weights": {"CON": 1}},
+        {"id": "C", "text": "Suggest using a tool the team already knows, even if it fits the project less well.", "weights": {"OPN": -1}},
+        {"id": "D", "text": "Worry that you will not learn it fast enough and ask someone else to take it on.", "weights": {"NEU": 1}}
+      ]
+    },
+    {
+      "id": "S9", "topic": "Shared credit",
+      "text": "Your group is praised for a project, but one member did much less work than everyone else.",
+      "options": [
+        {"id": "A", "text": "Accept the praise as a team; it is not worth causing tension.", "weights": {"AGR": 1}},
+        {"id": "B", "text": "Privately tell that member you noticed, and agree how work will be shared next time.", "weights": {"CON": 1}},
+        {"id": "C", "text": "Let the lecturer know who did which part of the work.", "weights": {"AGR": -1}},
+        {"id": "D", "text": "Feel annoyed about it for a while, but say nothing.", "weights": {"NEU": 1, "EXT": -1}}
+      ]
+    },
+    {
+      "id": "S10", "topic": "Free week",
+      "text": "You have a free week between semesters with no assignments.",
+      "options": [
+        {"id": "A", "text": "Start a creative side project just to try something new.", "weights": {"OPN": 1}},
+        {"id": "B", "text": "Plan the week to get ahead on next semester's modules.", "weights": {"CON": 1}},
+        {"id": "C", "text": "Spend most of it meeting friends and going out.", "weights": {"EXT": 1}},
+        {"id": "D", "text": "Volunteer to help with a community project or a classmate's work.", "weights": {"AGR": 1}}
+      ]
+    }
+  ]
+}

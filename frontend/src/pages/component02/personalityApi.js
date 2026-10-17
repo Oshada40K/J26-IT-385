@@ -28,6 +28,29 @@ export function scoreQuestionnaire(responses) {
   })
 }
 
+// Situational judgement scenarios (the scoring key stays on the server).
+export function getScenarios() {
+  return request('/sjt')
+}
+
+// Chosen options {scenarioId: optionId} -> trait tendencies (0-1).
+export function scoreScenarios(responses) {
+  return request('/sjt/score', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ responses }),
+  })
+}
+
+// All completed parts -> fused profile + Personality Consistency Score (versioned JSON for Component 3).
+export function assessProfile({ questionnaire, sjt, answers }) {
+  return request('/assess', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ questionnaire, sjt, answers }),
+  })
+}
+
 // Behavioural text model: free-text answers -> P(high trait) for each Big Five trait.
 export function analyseTextAnswers(answers) {
   return request('/text-traits', {
