@@ -1,0 +1,47 @@
+.personality-stages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 22px; padding: 16px; }
+.personality-stages > div { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: var(--radius-md); background: var(--color-background); }
+.personality-stages > div.is-ready { background: var(--component-soft); }
+.personality-stages > div > div { flex: 1; min-width: 0; }
+.personality-stages strong { display: block; font-size: 13px; }
+.personality-stages small { color: var(--color-text-secondary); font-size: 11px; }
+
+.personality-layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+.personality-form h2,.personality-results h2 { margin: 0 0 6px; }
+
+.personality-question { display: grid; gap: 6px; margin-top: 20px; }
+.personality-question-label { display: flex; align-items: center; gap: 10px; font-weight: 600; font-family: var(--font-heading); }
+.personality-question-prompt { color: var(--color-text-secondary); font-size: 13px; }
+.personality-question textarea { resize: vertical; min-height: 96px; }
+.personality-question > small { justify-self: end; font-size: 11px; }
+
+.personality-submit { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--color-border); flex-wrap: wrap; }
+.personality-hint { color: var(--color-text-secondary); font-size: 12px; }
+.personality-submit .muted { font-size: 12px; }
+.personality-form > p[role] { margin: 12px 0 0; font-size: 12px; }
+
+.personality-results { position: sticky; top: 24px; }
+.personality-empty { display: grid; justify-items: center; text-align: center; gap: 12px; padding: 36px 12px; }
+.personality-empty p { max-width: 260px; margin: 0; }
+
+.personality-trait { padding: 14px 0; border-bottom: 1px solid var(--color-border); }
+.personality-trait:last-of-type { border-bottom: 0; }
+.personality-trait-heading { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.personality-trait h3 { margin: 0; font-size: 14px; }
+.personality-trait-heading small { color: var(--color-text-secondary); font-size: 12px; }
+.personality-trait-score { font: 600 18px var(--font-mono); color: var(--component-accent); text-align: right; white-space: nowrap; }
+.personality-trait-score small { display: block; font: 600 10px var(--font-body); color: var(--color-text-secondary); }
+
+.personality-meter { position: relative; height: 8px; border-radius: 999px; background: var(--color-background); border: 1px solid var(--color-border); overflow: hidden; }
+.personality-meter-fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: linear-gradient(90deg, var(--color-primary), var(--color-ai)); transform-origin: left; animation: fill-in 600ms ease-out; }
+.personality-meter-mid { position: absolute; top: -2px; bottom: -2px; left: 50%; width: 2px; background: var(--color-text-secondary); opacity: .45; }
+
+.personality-note { display: flex; gap: 8px; align-items: flex-start; margin: 14px 0 0; padding: 12px; border-radius: var(--radius-sm); background: var(--component-soft); color: var(--color-text); font-size: 12px; }
+.personality-note svg { color: var(--component-accent); flex-shrink: 0; margin-top: 2px; }
+
+@media (max-width: 1100px) {
+  .personality-layout { grid-template-columns: 1fr; }
+  .personality-results { position: static; }
+}
+@media (max-width: 760px) {
+  .personality-stages { grid-template-columns: 1fr; }
+}
