@@ -11,6 +11,16 @@ class CVError(ValueError):
 
 
 def parse_cv(filename: str, content: bytes) -> str:
+    return parse_cv_document(filename, content)[0]
+
+
+def parse_cv_document(filename: str, content: bytes) -> tuple[str, list[str]]:
+    """Extract link targets separately so URLs never become skill evidence."""
+    links = []
+    def add_link(value):
+        if isinstance(value, str) and len(value) <= 2048 and value not in links and len(links) < 200:
+            links.append(value)
+
     suffix = Path(filename).suffix.lower()
     if suffix not in {'.pdf', '.docx'}:
         raise CVError('Choose a PDF or DOCX file.')
@@ -29,6 +39,8 @@ def parse_cv(filename: str, content: bytes) -> str:
                 parts = []
                 count = 0
                 for page in doc:
+                    for link in page.get_links():
+                        add_link(link.get('uri'))
                     value = page.get_text('text', sort=True)
                     count += len(value)
                     if count > MAX_TEXT_CHARS:
@@ -45,6 +57,12 @@ def parse_cv(filename: str, content: bytes) -> str:
                 if any(info.flag_bits & 1 for info in archive.infolist()):
                     raise CVError('Encrypted DOCX files are not supported.')
             doc = Document(io.BytesIO(content))
+            # Includes drawing/icon hyperlinks and header/footer relationships.
+            from docx.opc.constants import RELATIONSHIP_TYPE as RT
+            for part in doc.part.package.parts:
+                for relationship in part.rels.values():
+                    if relationship.reltype == RT.HYPERLINK and relationship.is_external:
+                        add_link(relationship.target_ref)
             # Preserve paragraph/table order, including CV skills in table cells.
             from docx.oxml.ns import qn
             from docx.table import Table
@@ -65,7 +83,7 @@ def parse_cv(filename: str, content: bytes) -> str:
     text = text.replace('\x00', '').replace('\r', '\n')
     if not text.strip():
         raise CVError('No readable text found. Scanned CVs need OCR before upload.')
-    return text
+    return text, links
 
 
 HEADINGS = {

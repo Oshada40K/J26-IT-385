@@ -121,3 +121,65 @@ Validation: Component 01 regression suite (14 tests), existing career integratio
 suite (3 tests and 9 subtests), frontend production build, and package dependency
 checks pass. Semantic inference is tested with a controlled model stub; the real
 SBERT model has not been downloaded or accuracy-validated in this environment.
+
+### Embedded links and profile evidence
+
+Uploads now extract PDF URI annotations via `page.get_links()` and DOCX external
+hyperlink relationships across document parts, including drawings/icons and
+headers/footers. Links remain separate from CV text; `parse_cv()` still returns
+text only. Full and scheme-less profile URLs and clearly labeled plain usernames
+are normalized to HTTPS and deduplicated by platform/handle. Unlabeled arbitrary
+words are not treated as usernames. Credentials, ports, unsafe schemes, other
+hosts, encoded paths, and non-profile paths are rejected before requests.
+
+No GitHub analyzer or authorized LinkedIn workflow previously existed in this
+component. The GitHub analyzer now runs automatically for detected profiles,
+validates the personal account through the official API, and checks
+up to 30 recently updated repositories. Forks, archived repositories, and other
+owners are excluded. It uses a fixed API origin, five-second request timeouts,
+no redirects, and a bounded five-minute cache. Primary-language metadata supports
+existing CV skills. Additional activity analysis samples up to three repositories
+and three account-authored commits per repository, plus two authored merged pull
+requests (including contributions to other owners' repositories), changed files,
+contributors, and peer reviews. It excludes initial/generated commits, forks,
+unattributed changes, and generated/dependency files. Activity sampling is bounded
+to 24 requests and a 25-second deadline with no redirects and a five-minute cache.
+The existing `analyze_github` form field remains accepted for API compatibility;
+it no longer gates automatic public analysis. Account existence never sets
+`ownership_verified` to true; the account's connection to the CV is unverified.
+
+To connect an authorized LinkedIn workflow, register an application-configured
+callable with `services.linkedin_evidence.register_authorized_provider(provider)`.
+Its signature is `(candidate_id, canonical_profile_url) -> list[dict]`. It must
+enforce candidate-specific authorization. Evidence records contain `skill`,
+`text`, `source`, and optional `url` / `project_name`. No LinkedIn scraping occurs.
+Without a provider, detected profiles are retained with a warning and analysis
+is not performed. Provider failures never block CV assessment.
+
+External language/LinkedIn evidence is attached after the unchanged CV scoring
+rubric runs, only to existing CV skills. It cannot raise levels or change confidence.
+The exception is the new GitHub skill, assessed separately by `github_activity_v1`:
+
+- Level 1: substantive account-authored documentation/workflow changes.
+- Level 2: substantive account-authored source changes.
+- Level 3: source changes, distinct commits on separate days, and a merged PR.
+- Level 4: Level 3 plus multi-project changes, peer review, other contributors,
+  test changes, and workflow automation; requires review.
+- Level 5 is not inferred from this limited public sample.
+
+Profile existence and repository counts never award a rating. Missing or
+insufficient activity adds no GitHub skill. Separate accounts are assessed
+individually; their activity is never pooled to increase proficiency. Skills are
+unique and deterministically sorted. API errors retain only evidence already
+retrieved. Ratings are provisional estimates of observed account activity, not
+validated competency; template/copied work cannot always be identified.
+Duplicate excerpts, repository URLs, and identifiable project names are suppressed.
+Uncertain project identity is not assumed; external records never enter scoring.
+Invalid, absent, or inaccessible profiles leave CV assessment available. The
+upload contract, database, and shared GET JSON format remain unchanged.
+
+Run regression tests from `backend/`:
+
+```bash
+.venv/bin/python -m pytest app/component01_skill/tests tests/component01_skill -q
+```
