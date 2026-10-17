@@ -2,6 +2,7 @@
 import copy
 import json
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from unittest.mock import patch
 
@@ -175,6 +176,54 @@ class AssessmentIntegrationTests(career_tests.CareerIntegrationTests):
         with patch.dict('os.environ', {'CAREER_SOFT_PROFILE_PATH': '/custom/soft'}):
             response = self.client.get('/api/career/best-job', params={'candidate_id': candidate_id})
             self.assertEqual(response.status_code, 502, response.text)
+
+    def test_different_cv_ids_are_bound_independently_for_all_career_apis(self):
+        fixed_soft = copy.deepcopy(self.data['/api/personality/profile'])
+        candidates = {
+            'candidate_cv_python': [{'name': 'Python', 'level': 2}],
+            'candidate_cv_javascript': [{'name': 'JavaScript', 'level': 3}],
+        }
+        for candidate_id, skills in candidates.items():
+            path = '/api/component01/skills/' + candidate_id + '/details'
+            assessment = copy.deepcopy(ASSESSMENT)
+            assessment['candidate_id'] = candidate_id
+            assessment['skills'] = [
+                {**next(s for s in ASSESSMENT['skills'] if s['name'] == skill['name']), **skill}
+                for skill in skills
+            ]
+            self.data[path] = assessment
+        with patch.object(service, '_predict', wraps=service._predict) as predict:
+            # Return to the first CV after the second to catch leaked IDs.
+            for candidate_id in ['candidate_cv_python', 'candidate_cv_javascript', 'candidate_cv_python']:
+                for endpoint in ['best-job', 'top-jobs', 'explanation']:
+                    response = self.client.get('/api/career/' + endpoint,
+                        params={'candidate_id': candidate_id})
+                    self.assertEqual(response.status_code, 200, response.text)
+                    self.assertEqual(response.json()['candidate_id'], candidate_id)
+                    soft_input, technical_input = predict.call_args.args
+                    self.assertEqual(soft_input, {**fixed_soft, 'candidate_id': candidate_id})
+                    self.assertEqual(technical_input['candidate_id'], candidate_id)
+                    self.assertEqual(technical_input['technical_skills'], candidates[candidate_id])
+        self.assertEqual(self.data['/api/personality/profile'], fixed_soft)
+
+    def test_simultaneous_cv_predictions_keep_their_own_candidate_ids(self):
+        fixed_soft = copy.deepcopy(self.data['/api/personality/profile'])
+        candidate_ids = ['candidate_parallel_one', 'candidate_parallel_two']
+        for candidate_id in candidate_ids:
+            assessment = {**copy.deepcopy(ASSESSMENT), 'candidate_id': candidate_id}
+            self.data['/api/component01/skills/' + candidate_id + '/details'] = assessment
+
+        def predict_candidate(candidate_id):
+            response = self.client.get('/api/career/top-jobs', params={'candidate_id': candidate_id})
+            return candidate_id, response
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            results = list(pool.map(predict_candidate, candidate_ids))
+        for candidate_id, response in results:
+            self.assertEqual(response.status_code, 200, response.text)
+            self.assertEqual(response.json()['candidate_id'], candidate_id)
+            self.assertEqual(len(response.json()['jobs']), 5)
+        self.assertEqual(self.data['/api/personality/profile'], fixed_soft)
 
 
 if __name__ == '__main__':
