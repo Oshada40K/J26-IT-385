@@ -1,12 +1,12 @@
 # Owner: Dewmi - Component 04.
 """Explainable C4 analysis built on c4_engine.py and the trained models in trained_models/.
 
-c4_engine.py is left unchanged because the training notebook shares its feature code. This module
+c4_engine.py's feature code is shared with the training notebook and is not changed here. This module
 reuses its feature builders (gap_frame, priority_frame, readiness_features, make_roadmap) and the
 trained models, and adds the student-facing explanation layer:
 
-1. Confidence-aware gap analysis   - trained model A (RandomForest gap + HistGradientBoosting severity)
-                                     combined with the transparent CV-evidence rule (see _gap_status).
+1. Confidence-aware gap analysis   - severity from CV evidence only (c4_engine.cv_severity), trained gap
+                                     model A for review flags, and "unverified" claimed skills (see _gap_status).
 2. Multi-factor prioritisation     - transparent weighted sum using the weights learned in the notebook
                                      (c4_config.json "B"); the demand factor uses real O*NET flags.
 3. Adaptive resources              - learning_resources.csv ranked by the student's learning methods and
@@ -24,15 +24,15 @@ from pathlib import Path
 
 import numpy as np
 
-from .c4_engine import A_FEATURES, C_FEATURES, FIVE, LEVEL_MAX, SEVERITY, STAGES, C4Engine, _clean, band_of
+from .c4_engine import (A_FEATURES, C_FEATURES, FIVE, GAP_TOLERANCE, LEVEL_MAX, STAGES, VERIFY_REASON, VERIFY_TYPES,
+                        UNVERIFIED_PRIORITY_FACTOR, C4Engine, _clean, band_of, cv_severity, gap_message)
 from .errors import ModelsUnavailable
 
 INPUTS_DIR = Path(__file__).with_name("inputs")
 MODELS_DIR = Path(__file__).with_name("trained_models")
-REQUIRED_MODEL_FILES = ("c4_config.json", "A_gap.joblib", "A_severity.joblib", "C_readiness.joblib")
+REQUIRED_MODEL_FILES = ("c4_config.json", "A_gap.joblib", "C_readiness.joblib")   # severity now uses CV evidence only
 SCHEMA_VERSION = "c4-analysis-1.0"
 PREREQ_TARGET = 0.5            # c4_engine adds a prerequisite to the roadmap when CV proficiency < 0.5
-COVERAGE = 0.9                 # c4_engine.readiness_features: a requirement is covered at >= 90% of the required level
 
 # Form learning methods -> resource_type values in learning_resources.csv.
 METHOD_RESOURCE_TYPES = {
@@ -57,11 +57,11 @@ FACTORS = {
 }
 
 READINESS_LABELS = {
-    "coverage_ratio": ("Required skills at the needed level", "percent"),
+    "coverage_ratio": ("Required skills within 90% of the needed level", "percent"),
     "weighted_proficiency_ratio": ("Importance-weighted proficiency in required skills", "percent"),
-    "essential_coverage_ratio": ("Essential skills at the needed level", "percent"),
+    "essential_coverage_ratio": ("Essential skills within 90% of the needed level", "percent"),
     "critical_gap_count": ("Skills with a large importance-weighted gap", "count"),
-    "hot_technology_coverage": ("O*NET Hot Technologies at the needed level", "percent"),
+    "hot_technology_coverage": ("O*NET Hot Technologies within 90% of the needed level", "percent"),
     "hidden_weakness_count": ("Skills rated well below your CV evidence", "count"),
     "num_projects": ("Relevant projects", "count"),
     "num_certifications": ("Relevant certifications", "count"),
@@ -107,11 +107,13 @@ STAGE_ACTIVITIES = {
                  "Apply {skill} to a realistic end-to-end scenario.",
                  "Document your design decisions and trade-offs."],
 }
+VERIFY_ACTIVITIES = ["Build a small project, or earn a certificate, that shows you can use {skill}.",
+                     "Add it to your CV and upload the updated CV in Component 01 so the evidence is counted."]
 REVIEW_ACTIVITIES = ["Build a small piece of work that demonstrates {skill}.",
                      "Describe this work clearly in your CV or portfolio so the evidence is visible."]
 
 LIMITATIONS = [
-    "The trained models (skill gap, gap severity and readiness) were trained on synthetic data for 800 simulated students, "
+    "The trained models (skill gap and readiness) were trained on synthetic data for 800 simulated students, "
     "as recorded in c4_config.json. They have not been validated with real students, so no accuracy is claimed.",
     "The readiness score summarises the available evidence for the selected career. It is not a probability of getting a job "
     "and it is not an assessment by an employer.",
@@ -210,7 +212,8 @@ class C4Analyzer(C4Engine):
         return pf
 
     # ------------------------------------------------------------------ feature 3: adaptive resources
-    def recommend_resources(self, skill_id, proficiency, resource_types, k=3):
+    def recommend_resources(self, skill_id, proficiency, resource_types, k=3, first_types=()):
+        """first_types: resource types ranked before the student's preference (in order)."""
         r = self.res[self.res.skill_id == skill_id]
         if r.empty:
             return []
@@ -219,6 +222,8 @@ class C4Analyzer(C4Engine):
         preferred = set(resource_types)
         score = (r.resource_type.isin(preferred) * 3.0 + (r.level == target) * 1.5 + (r.level == adjacent) * 0.5
                  + r.is_free * 0.3 + r.rating.fillna(4.0) / 10)
+        for i, t in enumerate(first_types):             # e.g. project +20, certification +10
+            score = score + (r.resource_type == t) * (20.0 / (i + 1))
         ranked = r.assign(_score=score).sort_values(["_score", "resource_id"], ascending=[False, True])
         picks, per_type = [], {}
         for x in ranked.itertuples():                   # at most two resources of the same type
@@ -230,7 +235,9 @@ class C4Analyzer(C4Engine):
         out = []
         for x in picks:
             why = []
-            if x.resource_type in preferred:
+            if x.resource_type in first_types:
+                why.append("a project or certificate lets you verify this skill in your CV")
+            elif x.resource_type in preferred:
                 why.append(f"matches your preference for {RESOURCE_TYPE_LABELS.get(x.resource_type, x.resource_type)} learning")
             why.append(f"{x.level.lower()} level" + (" suits your current proficiency" if x.level == target else ""))
             if x.is_free:
@@ -243,19 +250,20 @@ class C4Analyzer(C4Engine):
         return out
 
     # ------------------------------------------------------------------ feature 1: gap status
-    def _gap_status(self, g):
-        """Model A and the transparent evidence rule, combined:
-        gap    - CV proficiency is below the O*NET required level (severity from the trained severity model);
+    def _gap_status(self, g, st=None):
+        """CV evidence decides gaps; model A only adds review flags:
+        unverified - rated 4-5/5 but CV level 0-1/5 (a claimed skill that needs evidence);
+        gap    - CV gap > 0.05 below the O*NET required level; severity = cv_severity (confidence never lowers it);
         review - CV evidence meets the level but model A still flags the skill (for example a large
                  confidence/evidence mismatch), so the student should confirm it with practical work;
         met    - evidence meets the level and the model does not flag it."""
         X = g[A_FEATURES]
         g["gap_probability"] = self.models["A_gap"].predict_proba(X)[:, 1]
         flagged = g.gap_probability >= float(self.cfg["A"]["threshold"])
-        severity = [SEVERITY[int(s)] for s in self.models["A_severity"].predict(X)]
-        below = g.current_proficiency < COVERAGE * g.required_level - 1e-9
-        g["status"] = np.where(below, "gap", np.where(flagged, "review", "met"))
-        g["severity"] = [("minor" if s == "none" else s) if st == "gap" else "none" for s, st in zip(severity, g.status)]
+        g["severity"] = [cv_severity(d, imp) for d, imp in zip(g.competency_distance, g.importance)]
+        below = g.severity != "none"                     # always a gap, whatever the model or confidence says
+        claimed = np.array(self.claimed_mask(g, st or {}), dtype=bool)   # verified proof clears the claim
+        g["status"] = np.where(claimed, "unverified", np.where(below, "gap", np.where(flagged, "review", "met")))
         g["is_deficient"] = (g.status != "met").astype(int)
         return g
 
@@ -272,6 +280,11 @@ class C4Analyzer(C4Engine):
                          coefficient=float(coef[f]), points=float(coef[f] * rf[f])) for f in C_FEATURES}
         raw = intercept + sum(t["points"] for t in terms.values())
         score = float(np.clip(raw, 0, 100))
+
+        def score_fn(features):                          # same linear model, academic year at its training mean
+            features = {**features, "academic_year": float(mean["academic_year"])}
+            return float(np.clip(intercept + sum(coef[f] * features[f] for f in C_FEATURES), 0, 100))
+        potential = self.potential_readiness(g, {**activity, "academic_year": 0}, score, score_fn)
         groups = [dict(name=name, points=sum(terms[f]["points"] for f in fs), terms=[terms[f] for f in fs])
                   for name, fs in READINESS_GROUPS.items()]
         ranked = sorted((t for f, t in terms.items() if f != "academic_year"), key=lambda t: t["points"])
@@ -282,7 +295,7 @@ class C4Analyzer(C4Engine):
             summary += f" It is mainly supported by {' and '.join(helped)}."
         if held:
             summary += f" It is reduced by {' and '.join(held)}."
-        return dict(score=round(score, 1), band=band_of(score), raw_score=raw, intercept=intercept, groups=groups,
+        return dict(score=round(score, 1), band=band_of(score), raw_score=raw, intercept=intercept, groups=groups, **potential,
                     summary=summary, bands=[{"band": "Not ready", "range": "0-39"}, {"band": "Developing", "range": "40-59"},
                                             {"band": "Nearly ready", "range": "60-79"}, {"band": "Job ready", "range": "80-100"}],
                     formula="score = intercept + sum(coefficient x value), limited to 0-100. Coefficients come from the "
@@ -298,11 +311,13 @@ class C4Analyzer(C4Engine):
             current = float(st["proficiencies"].get(sid, 0.0))
             row = rows.get(sid)
             status = row.status if row is not None else "prerequisite"
-            target = COVERAGE * float(row.required_level) if row is not None else PREREQ_TARGET
+            target = float(row.required_level) - GAP_TOLERANCE if row is not None else PREREQ_TARGET
             reason = {"gap": "Required for the career and below the required level",
-                      "review": "Required for the career; your CV evidence meets the level but should be confirmed"}.get(
+                      "review": "Required for the career; your CV evidence meets the level but should be confirmed",
+                      "unverified": VERIFY_REASON}.get(
                 status, step["reason"][0].upper() + step["reason"][1:])
-            activities = [a.format(skill=name) for a in (REVIEW_ACTIVITIES if status == "review" else STAGE_ACTIVITIES[stage])]
+            template = {"review": REVIEW_ACTIVITIES, "unverified": VERIFY_ACTIVITIES}.get(status, STAGE_ACTIVITIES[stage])
+            activities = [a.format(skill=name) for a in template]
             project = PROJECT_TEMPLATES[CATEGORY_FAMILY.get(self.category.get(sid), "general")].format(skill=name)
             milestones = [f"Reach Component 01 evidence level {max(_target_level(target), _to_level(current))}/5 in {name} "
                           f"(currently {_to_level(current)}/5), confirmed by uploading your updated CV.",
@@ -313,7 +328,8 @@ class C4Analyzer(C4Engine):
                               start_week=step["start_week"], end_week=step["end_week"],
                               current_level=_to_level(current), target_level=max(_target_level(target), _to_level(current)),
                               activities=activities, project=project, milestones=milestones,
-                              resources=self.recommend_resources(sid, current, types)))
+                              resources=self.recommend_resources(
+                                  sid, current, types, first_types=VERIFY_TYPES if status == "unverified" else ())))
         stages = []
         for stage in STAGES:
             items = [s for s in steps if s["stage"] == stage]
@@ -332,31 +348,50 @@ class C4Analyzer(C4Engine):
                     total_weeks=max((s["end_week"] for s in steps), default=0), stages=stages)
 
     # ------------------------------------------------------------------ public entry point
-    def analyze_assessment(self, c1, form):
+    def analyze_assessment(self, c1, form, evidence=None):
         """c1: {"candidate_id", "skills": [{"name", "level", "confidence"}]} (may be empty);
-        form: the stored C4 form (c4_engine form_json format plus learning_methods)."""
+        form: the stored C4 form (c4_engine form_json format plus learning_methods);
+        evidence: optional {skill_id: status} or {skill_id: {status, level, source, detail, evidence_id}}
+        (service.evidence_summary). Never required: the roadmap is always built from CV evidence + the form.
+        Usable proof raises proficiency to max(CV level, proof level) / 5; C4's own checks are capped at 3/5."""
         self.ensure_models()
         st = self.student_from_json(c1, {}, form, form["career_id"])
+        proof = {sid: (e if isinstance(e, dict) else {"status": e}) for sid, e in (evidence or {}).items()}
+        st["evidence_status"] = {sid: e.get("status", "none") for sid, e in proof.items()}
+        st["verified_skills"] = [s for s, v in st["evidence_status"].items() if v == "verified"]
+        st["evidence_source"] = {}
+        for sid, e in proof.items():                     # proof may raise proficiency, never lower it
+            level = e.get("level")
+            if level is not None and sid in self.name and level / LEVEL_MAX > st["proficiencies"].get(sid, 0.0):
+                st["proficiencies"][sid] = level / LEVEL_MAX
+                st["evidence"][sid] = max(st["evidence"].get(sid, 0), 1)      # counts as low-strength evidence
+                st["evidence_source"][sid] = e.get("source")
         methods = (form.get("preferences") or {}).get("learning_methods") or []
         st["preferences"]["resource_types"] = list(dict.fromkeys(t for m in methods for t in METHOD_RESOURCE_TYPES.get(m, [])))
         ratings = {c["skill_id"]: c.get("rating") for c in form.get("confidence", [])}
 
-        g = self._gap_status(self.gap_frame(st))
+        g = self._gap_status(self.gap_frame(st), st)
         gaps = g[g.is_deficient == 1]
         weights = self.cfg["B"]["weights"]
         priorities = []
         if len(gaps):
             pf = self.priority_frame(gaps, st)
-            pf["priority_score"] = sum(pf[f] * weights[f] for f in FIVE)
-            pf = pf.sort_values(["priority_score", "skill_name"], ascending=[False, True])
             status = g.set_index("skill_id").status.to_dict()
+            pf["base_priority_score"] = sum(pf[f] * weights[f] for f in FIVE)
+            pf["adjustment_factor"] = [UNVERIFIED_PRIORITY_FACTOR if status[s] == "unverified" else 1.0 for s in pf.skill_id]
+            pf["priority_score"] = pf.base_priority_score * pf.adjustment_factor
+            pf = pf.sort_values(["priority_score", "skill_name"], ascending=[False, True])   # re-rank after the factor
             for rank, r in enumerate(pf.to_dict("records"), 1):
                 factors = [dict(key=FACTORS[f][0], label=FACTORS[f][1], definition=FACTORS[f][2], value=float(r[f]),
                                 weight=float(weights[f]), points=float(r[f] * weights[f])) for f in FIVE]
                 top = [_lower_first(x["label"]) for x in sorted(factors, key=lambda x: -x["points"])[:2]]
                 priorities.append(dict(rank=rank, skill_id=r["skill_id"], skill_name=r["skill_name"],
                                        status=status[r["skill_id"]], priority_score=float(r["priority_score"]),
-                                       factors=factors, why=f"Ranked by {top[0]} and {top[1]}."))
+                                       base_priority_score=float(r["base_priority_score"]),
+                                       adjustment_factor=float(r["adjustment_factor"]),
+                                       factors=factors, why=f"Ranked by {top[0]} and {top[1]}." + (
+                                           " Lowered because you may already know this claimed skill."
+                                           if status[r["skill_id"]] == "unverified" else "")))
         prio = {p["skill_id"]: p["priority_score"] for p in priorities}
         rank_of = {p["skill_id"]: p["rank"] for p in priorities}
 
@@ -366,7 +401,7 @@ class C4Analyzer(C4Engine):
         for r in g.itertuples():
             rating = ratings.get(r.skill_id, "not_asked")
             notes = []
-            if r.overconfidence_flag:
+            if r.overconfidence_flag and r.status != "unverified":     # unverified skills explain this in "message"
                 notes.append("Your self-rating is higher than the evidence in your CV. Self-ratings are not counted as "
                              "proficiency, so show this skill in a project or certification and add it to your CV.")
             if r.hidden_weakness_flag:
@@ -381,16 +416,24 @@ class C4Analyzer(C4Engine):
                 skill_level=r.skill_level, is_essential=bool(r.is_essential), importance=r.importance,
                 hot_technology=bool(self.onet_flags.get((st["career_id"], r.skill_id), (0, 0))[0]),
                 in_demand=bool(self.onet_flags.get((st["career_id"], r.skill_id), (0, 0))[1]),
-                required_proficiency=r.required_level, required_level=_target_level(COVERAGE * r.required_level),
+                required_proficiency=r.required_level, required_level=_target_level(r.required_level - GAP_TOLERANCE),
                 current_proficiency=r.current_proficiency, current_level=_to_level(r.current_proficiency),
-                evidence_source=("derived from your programming languages" if source and source["c1_name"] == "(derived)"
-                                 else "CV" if source else "none"),
+                evidence_source=st["evidence_source"].get(r.skill_id) or (
+                    "derived from your programming languages" if source and source["c1_name"] == "(derived)"
+                    else "CV" if source else "none"),
                 evidence_strength=evidence_label.get(st["evidence"].get(r.skill_id)),
                 self_rating=None if rating == "not_asked" else rating, not_studied=bool(r.not_studied),
                 status=r.status, severity=r.severity, gap_probability=r.gap_probability,
+                message=("Your CV evidence meets the level, but confirm it with practical work." if r.status == "review"
+                         else gap_message("ok" if r.status == "met" else r.status, r.confidence_norm,
+                                          r.current_proficiency, r.required_level)),
                 overconfident=bool(r.overconfidence_flag), underconfident=bool(r.hidden_weakness_flag),
-                priority_rank=rank_of.get(r.skill_id), notes=notes))
-        order = {"gap": 0, "review": 1, "met": 2}
+                priority_rank=rank_of.get(r.skill_id), notes=notes,
+                evidence_status=st["evidence_status"].get(r.skill_id, "none"),
+                evidence_level=proof.get(r.skill_id, {}).get("level"),
+                evidence_detail=proof.get(r.skill_id, {}).get("detail"),
+                evidence_id=proof.get(r.skill_id, {}).get("evidence_id")))
+        order = {"unverified": 0, "gap": 0, "review": 1, "met": 2}
         skills.sort(key=lambda s: (order[s["status"]], s["priority_rank"] or 999, s["skill_name"]))
 
         unmapped = [m["c1_name"] for m in st["skill_mapping"] if not m["skill_id"]]
@@ -410,17 +453,20 @@ class C4Analyzer(C4Engine):
             skill_gaps=dict(summary=dict(required=len(skills), met=sum(s["status"] == "met" for s in skills),
                                          review=sum(s["status"] == "review" for s in skills),
                                          gaps=sum(s["status"] == "gap" for s in skills),
+                                         unverified=sum(s["status"] == "unverified" for s in skills),
                                          critical=sum(s["severity"] == "critical" for s in skills)),
                             skills=skills),
             priorities=priorities,
             roadmap=self._roadmap(st, g, prio),
             method=dict(
                 gap_analysis="Each O*NET requirement is compared with your CV proficiency (Component 01 level / 5). "
-                             "A requirement is met when the proficiency reaches 90% of the O*NET required level (the coverage rule used by the "
-                             "readiness model); otherwise it is a gap and the trained severity model "
-                             "rates it minor, moderate or critical. When the evidence meets the level but the trained gap model "
+                             "It is a gap when the proficiency is more than 0.05 below the O*NET required level. Severity uses CV "
+                             "evidence only: gap x (0.5 + 0.5 x importance), critical from 0.25, otherwise moderate; self-ratings "
+                             "never make a gap smaller. A skill rated 4-5/5 with CV level 0-1/5 is shown as claimed but not verified. "
+                             "When the evidence meets the level but the trained gap model "
                              f"(probability >= {float(self.cfg['A']['threshold']):.2f}) still flags it, it is marked for review.",
-                priority_formula="priority = " + " + ".join(f"{weights[f]:.4f} x {_lower_first(FACTORS[f][1])}" for f in FIVE),
+                priority_formula="priority = " + " + ".join(f"{weights[f]:.4f} x {_lower_first(FACTORS[f][1])}" for f in FIVE)
+                                 + f"; claimed but unverified skills x {UNVERIFIED_PRIORITY_FACTOR}",
                 priority_factors=[dict(key=FACTORS[f][0], label=FACTORS[f][1], definition=FACTORS[f][2], weight=weights[f]) for f in FIVE],
                 priority_weights_source="Weights learned in the C4 training notebook (c4_config.json 'B') and used as a transparent weighted sum.",
                 resource_ranking="Resources are ranked by your preferred learning methods, a level that suits your current proficiency, "

@@ -13,7 +13,7 @@ Owner: Dewmi. Frontend: `frontend/src/pages/component04/`. Route: `/component04`
 
 | File | Purpose |
 |---|---|
-| `c4_engine.py` | Original engine shared with the training notebook (features, roadmap ordering). Not modified. |
+| `c4_engine.py` | Engine shared with the training notebook. Feature code unchanged; severity, status/message and verify steps added. |
 | `analysis.py` | Student-facing analysis built on the engine and trained models (the five features below). |
 | `service.py` | Skill selection for the form, C1 integration (read-only), saving assessments. |
 | `repository.py` | Component-local SQLite store (`backend/.data/component04.sqlite3`, override with `C4_DATABASE_PATH`). |
@@ -23,7 +23,7 @@ Owner: Dewmi. Frontend: `frontend/src/pages/component04/`. Route: `/component04`
 
 ## Methods
 
-**1. Confidence-aware gap analysis.** CV proficiency = C1 level / 5. A requirement is **met** when proficiency ≥ 90% of the O*NET required level (the coverage rule in `readiness_features`), otherwise it is a **gap** with severity from the trained severity model (`A_severity`, HistGradientBoosting). When evidence meets the level but the trained gap model (`A_gap`, RandomForest, threshold from `c4_config.json`) still flags the skill, it is marked **review**. Self-ratings never change proficiency; they flag over-confidence (rating > evidence + 0.25) and under-confidence (evidence > rating + 0.25).
+**1. Confidence-aware gap analysis.** CV proficiency = C1 level / 5. `distance = max(required − proficiency, 0)`; severity uses CV evidence only (`c4_engine.cv_severity`): `none` if distance ≤ 0.05, `critical` if distance × (0.5 + 0.5 × importance) ≥ 0.25, otherwise `moderate`. A distance > 0.05 is always a gap, whatever the model or the self-rating says. A skill rated 4–5/5 with CV level 0–1/5 is **unverified** ("Claimed – not verified"); its roadmap step is "verify claimed skill" (10 hours, project and certification resources first). When evidence meets the level but the trained gap model (`A_gap`) still flags the skill, it is marked **review**. Each skill has a `status` and a plain-English `message` (the engine's `skill_gap_report` uses `unverified | gap | ok`). The readiness model's coverage inputs keep their trained 90% rule, so they are labelled "within 90% of the needed level".
 
 **2. Prioritisation.** `priority = Σ weight × factor`, weights learned in the notebook (`c4_config.json` "B", sum to 1):
 
@@ -40,6 +40,46 @@ Owner: Dewmi. Frontend: `frontend/src/pages/component04/`. Route: `/component04`
 **4. Roadmap.** `make_roadmap` orders gap/review skills and missing prerequisites (proficiency < 0.5) topologically, then by level and priority. Steps are grouped into Beginner → Intermediate → Advanced (no prerequisite in the data has a higher level than its dependent skill). Hours = max(4, distance × 40/60/80 by level); weeks use the student's weekly hours. Each step has activities, a practical project, resources and measurable milestones (target C1 level, project, confidence ≥ 4).
 
 **5. Readiness score.** `score = intercept + Σ coefficient × value` from the trained linear model (`C_readiness`), limited to 0–100 and shown term by term. Academic year is not collected, so its training mean is used.
+
+## Claimed skills and optional proof
+
+- The roadmap is always generated immediately from CV evidence + the C4 form; proof is optional and never awaited.
+- Unverified (claimed) skills get `priority x 0.6` (`UNVERIFIED_PRIORITY_FACTOR`) and are re-ranked, so real gaps come first.
+- `potential_score` re-runs the same readiness model with each claimed skill at `min(confidence, required level)`;
+  it and `potential_skills` appear only when at least 1 point above `score`.
+
+**Endpoints** (C4 is mounted at `/api/roadmap` in the shared `main.py`):
+
+| Method | Path | Notes |
+|---|---|---|
+| POST | `/api/roadmap/evidence` | multipart/form-data (or JSON): `candidate_id`, `skill_id`, `proof_type` = github \| certificate_link \| certificate_file, `url` or `file` (PDF/PNG/JPG, max 5 MB), `description`. Returns the evidence + regenerated `analysis`. |
+| GET | `/api/roadmap/evidence/{candidate_id}` | The student's evidence (own candidate only). |
+| DELETE | `/api/roadmap/evidence/{evidence_id}` | Removes own evidence (and its file); returns the regenerated `analysis`. |
+
+Invalid input returns **400** with a clear message (`errors.EvidenceError`). Files are stored in the private folder
+`backend/.data/component04_evidence/` (override `C4_EVIDENCE_DIR`), named by evidence ID; the path is never returned.
+
+**Simple checks** (`evidence_check.py`, run right after upload):
+
+| Proof | Check | Result |
+|---|---|---|
+| github | only `https://github.com/<owner>/<repo>`; GitHub REST API (`GITHUB_TOKEN` optional, 5 s timeout): exists, not empty, languages/name/description/topics match the skill (`SKILL_RULES`) | match: `provisional` 3/5; no match/not found/empty: `rejected` + reason; API error: `pending` |
+| certificate_link | URL is never fetched; domain must be on `TRUSTED_CERTIFICATE_DOMAINS` | trusted: `provisional` 3/5; otherwise `pending` |
+| certificate_file | cannot be checked automatically | `pending`, level 2/5 |
+
+**In the analysis:** proficiency = max(CV level, best usable proof level) / 5. Usable: provisional (capped at
+`PROVISIONAL_LEVEL_LINK` = 3), pending file (`PROVISIONAL_LEVEL_FILE` = 2), verified (level from Component 01).
+Rejected and pending links add nothing. Each skill has `evidence_status`, `evidence_source`
+(`CV` / `GitHub (provisional)` / `Certificate (provisional)` / `Certificate (pending review)`), `evidence_level`
+and `evidence_detail`. Provisional proof therefore also raises the readiness score.
+
+**Component 01 (main verifier):**
+- `service.send_to_component01(evidence)` POSTs the evidence metadata to `C1_EVIDENCE_ENDPOINT` when that env var
+  is set; a reply `{"level": 0-5}` marks it `verified` at that level. Not set: skipped silently. **TODO:** agree the
+  contract with the Component 01 owner.
+- **TODO:** Component 01 should call `service.on_c1_assessment_updated(candidate_id)` after
+  `repository.save_assessment(...)` in `component01_skill/services/profile_service.py`. Until then the same check
+  runs before every C4 analysis (pending/provisional proof becomes verified when the CV level rises).
 
 ## Data provenance and limitations
 
@@ -59,5 +99,8 @@ The models were saved with scikit-learn 1.6.1 / NumPy 2.x; the backend pins scik
 
 ```bash
 cd backend
-.venv\Scripts\python -m unittest tests.component04_roadmap.test_c4 -v
+.venv\Scripts\python -m unittest tests.component04_roadmap.test_c4 -v   # C4 only
+.venv\Scripts\python -m unittest discover -s tests                   # whole backend (as in CI)
 ```
+
+The GitHub API is mocked in the tests; no network calls are made.

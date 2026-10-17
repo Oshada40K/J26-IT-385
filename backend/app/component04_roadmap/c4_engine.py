@@ -66,6 +66,41 @@ ALIASES = {
 LANGUAGE_IDS = {"SK002", "SK003", "SK004", "SK005", "SK006", "SK007", "SK082", "SK083", "SK084", "SK085"}
 RESOURCE_TYPES = {"video", "project", "documentation", "course", "certification", "mixed"}
 
+# Gap severity from CV evidence only, and "claimed but unverified" skills.
+GAP_TOLERANCE = 0.05            # distance <= 0.05 counts as no gap
+CLAIM_CONFIDENCE = 0.75         # self-rating 4-5/5 ((rating - 1) / 4 >= 0.75)
+CLAIM_MAX_PROFICIENCY = 0.2     # CV level 0-1/5
+VERIFY_REASON = "verify claimed skill"
+VERIFY_HOURS = 10.0
+VERIFY_TYPES = ("project", "certification")   # preferred resources for verifying a claim
+# The student may already know this skill, so real gaps come first.
+UNVERIFIED_PRIORITY_FACTOR = 0.6
+
+
+def cv_severity(distance, importance):
+    """Severity from the CV gap only; self-rated confidence can never make a gap smaller."""
+    if distance <= GAP_TOLERANCE + 1e-9:
+        return "none"
+    return "critical" if distance * (0.5 + 0.5 * importance) >= 0.25 else "moderate"
+
+
+def is_unverified(confidence_missing, confidence_norm, proficiency):
+    """Rated 4-5/5 by the student, but CV level 0-1/5."""
+    return (not confidence_missing) and confidence_norm >= CLAIM_CONFIDENCE and proficiency <= CLAIM_MAX_PROFICIENCY + 1e-9
+
+
+def gap_message(status, confidence_norm, proficiency, required_level):
+    """Short plain-English text for the UI."""
+    cv_level = int(round(proficiency * LEVEL_MAX))
+    if status == "unverified":
+        rating = int(round(confidence_norm * 4 + 1))
+        evidence = "no evidence" if cv_level == 0 else "very little evidence"
+        return f"You rated yourself {rating}/5, but your CV shows {evidence}. Add a project or certificate to verify it."
+    if status == "gap":
+        needed = int(math.ceil((required_level - GAP_TOLERANCE) * LEVEL_MAX - 1e-9))
+        return f"Your CV shows level {cv_level}/5, but this career needs about {needed}/5."
+    return "Your CV evidence meets the required level."
+
 
 def _norm(s):
     return re.sub(r"\s+", " ", str(s).strip().lower())
@@ -305,10 +340,11 @@ class C4Engine:
         X = g[A_FEATURES]
         g["p_deficient"] = self.models["A_gap"].predict_proba(X)[:, 1]
         g["is_deficient"] = (g.p_deficient >= self.cfg["A"]["threshold"]).astype(int)
-        sev = self.models["A_severity"].predict(X)
-        g["severity"] = [SEVERITY[int(s)] for s in sev]
-        g.loc[g.is_deficient == 0, "severity"] = "none"
-        g.loc[(g.is_deficient == 1) & (g.severity == "none"), "severity"] = "moderate"
+        # Severity from CV evidence only; a CV gap > 0.05 is always deficient, whatever the model says.
+        g["severity"] = [cv_severity(d, imp) for d, imp in zip(g.competency_distance, g.importance)]
+        g.loc[g.severity != "none", "is_deficient"] = 1
+        g["unverified"] = self.claimed_mask(g, st)
+        g["status"] = np.where(g.unverified, "unverified", np.where(g.is_deficient == 1, "gap", "ok"))
 
         # ---- priorities (transparent learned weighted score)
         gaps = g[g.is_deficient == 1]
@@ -318,7 +354,9 @@ class C4Engine:
         if len(pf):
             contrib = pd.DataFrame({f: pf[f] * w[f] for f in FIVE})
             pf["priority_score"] = contrib.sum(axis=1)
-            pf = pf.join(contrib.add_prefix("contrib_")).sort_values("priority_score", ascending=False)
+            claimed = set(g.loc[g.status == "unverified", "skill_id"])
+            pf["priority_score"] *= [UNVERIFIED_PRIORITY_FACTOR if s in claimed else 1.0 for s in pf.skill_id]
+            pf = pf.join(contrib.add_prefix("contrib_")).sort_values("priority_score", ascending=False)  # re-rank
             pf["priority_rank"] = np.arange(1, len(pf) + 1)
             for r in pf.itertuples():
                 top = sorted(FIVE, key=lambda f: -getattr(r, "contrib_" + f))[:2]
@@ -346,12 +384,19 @@ class C4Engine:
             career_options=st["career_options"],
             career_readiness=dict(score=score, band=band_of(score), base_score=float(cm["base"]),
                                   features=rf, explanation=expl,
-                                  summary=self._readiness_text(score, expl)),
+                                  summary=self._readiness_text(score, expl),
+                                  **self.potential_readiness(g, st["activity"], score, lambda f: float(np.clip(
+                                      cm["model"].predict(pd.DataFrame([f])[C_FEATURES])[0], 0, 100)))),
             skill_gap_report=[dict(skill_id=r.skill_id, skill_name=r.skill_name, current_proficiency=r.current_proficiency,
                                    required_level=r.required_level, importance=r.importance, is_essential=r.is_essential,
                                    confidence=None if r.confidence_missing else r.confidence_norm,
                                    p_deficient=r.p_deficient, is_deficient=r.is_deficient, severity=r.severity,
-                                   hidden_weakness=bool(r.hidden_weakness_flag), overconfident=bool(r.overconfidence_flag))
+                                   hidden_weakness=bool(r.hidden_weakness_flag), overconfident=bool(r.overconfidence_flag),
+                                   status=r.status,
+                                   message=gap_message(r.status, r.confidence_norm, r.current_proficiency, r.required_level),
+                                   evidence_status=st.get("evidence_status", {}).get(r.skill_id, "none"),
+                                   evidence_source=st.get("evidence_source", {}).get(r.skill_id)
+                                   or ("CV" if r.skill_in_c1_profile else "none"))
                               for r in g.sort_values("p_deficient", ascending=False).itertuples()],
             priorities=priorities, roadmap=roadmap,
             skill_mapping=st["skill_mapping"], warnings=st["warnings"],
@@ -360,6 +405,27 @@ class C4Engine:
         out = _clean(out)
         out["_student"] = st
         return out
+
+    def claimed_mask(self, g, st):
+        """Unverified (claimed) skills; a skill whose proof was verified is no longer claimed."""
+        verified = set(st.get("verified_skills", []))
+        return [is_unverified(m, c, p) and s not in verified for s, m, c, p in
+                zip(g.skill_id, g.confidence_missing, g.confidence_norm, g.current_proficiency)]
+
+    def potential_readiness(self, g, activity, score, score_fn):
+        """Readiness with the SAME model if each unverified skill were verified at min(confidence, required level).
+        Returned only when it is at least 1 point above the real (CV-only) score."""
+        mask = (g.status == "unverified").to_numpy()
+        if not mask.any():
+            return {}
+        claimed = np.minimum(g.confidence_norm, g.required_level)
+        g2 = g.copy()
+        g2.loc[mask, "current_proficiency"] = claimed[mask]
+        potential = score_fn(self.readiness_features(g2, activity))
+        if round(potential) < round(score) + 1:
+            return {}
+        skills = [r.skill_name for r, c, m in zip(g.itertuples(), claimed, mask) if m and c > r.current_proficiency]
+        return dict(potential_score=int(round(potential)), potential_skills=skills)
 
     def _readiness_text(self, score, expl):
         up = [e for e in expl if e["points"] > 0.5][:2]
@@ -378,6 +444,10 @@ class C4Engine:
         steps = {r.skill_id: dict(skill_id=r.skill_id, distance=max(r.competency_distance, 0.1), reason="career gap",
                                   priority=prio.get(r.skill_id, 0.0))
                  for r in g[g.is_deficient == 1].itertuples()}
+        deficient = g[g.is_deficient == 1]                                  # claimed but not shown in the CV
+        claimed = {s for s, c in zip(deficient.skill_id, self.claimed_mask(deficient, st)) if c}
+        for sid in claimed:
+            steps[sid]["reason"] = VERIFY_REASON
         for sid in list(steps):                                     # add missing prerequisites (proficiency < 0.5)
             for q in self.anc[sid]:
                 if q not in steps and P.get(q, 0) < 0.5:
@@ -402,16 +472,19 @@ class C4Engine:
         week, out = 0.0, []
         for i, s in enumerate(order, 1):
             lvl = self.level[s]
-            hours = max(4.0, steps[s]["distance"] * BASE_HOURS[lvl])
+            hours = VERIFY_HOURS if s in claimed else max(4.0, steps[s]["distance"] * BASE_HOURS[lvl])
             start = week
             week += hours / hours_pw
             out.append(dict(step=i, skill_id=s, skill_name=self.name[s], stage=lvl, reason=steps[s]["reason"],
                             prerequisites=sorted(self.name[q] for q in self.pre[s] & ids),
                             estimated_hours=round(hours, 1), start_week=int(math.floor(start)) + 1,
-                            end_week=int(math.ceil(week)), resources=self.pick_resources(s, lvl, st["preferences"])))
+                            end_week=int(math.ceil(week)),
+                            resources=self.pick_resources(s, lvl, st["preferences"],
+                                                          first_types=VERIFY_TYPES if s in claimed else ())))
         return out
 
-    def pick_resources(self, sid, stage, prefs, k=2):
+    def pick_resources(self, sid, stage, prefs, k=2, first_types=()):
+        """first_types: resource types ranked before the student's preference (in order)."""
         r = self.res[self.res.skill_id == sid]
         if r.empty:
             return []
@@ -419,6 +492,8 @@ class C4Engine:
         free = int(prefs.get("prefers_free_resources", 0))
         s = ((r.resource_type == pt) * 3.0 + (r.resource_type == st2) * 1.5 + (pt == "mixed") * 1.0
              + (r.level == stage) * 0.7 + (r.is_free * free) * 0.8 + r.rating.fillna(4.0) / 10)
+        for i, t in enumerate(first_types):                         # e.g. project +20, certification +10
+            s = s + (r.resource_type == t) * (20.0 / (i + 1))
         r = r.assign(_s=s).sort_values("_s", ascending=False)
         picks = r.drop_duplicates("resource_type").head(k) if pt == "mixed" else r.head(k)
         return [dict(resource_id=x.resource_id, title=x.title, type=x.resource_type, level=x.level,

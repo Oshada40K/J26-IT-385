@@ -2,7 +2,7 @@
 # Request/response schemas for the C4 Career Readiness Assessment form.
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 LearningMethod = Literal[
     "online_courses", "video_tutorials", "reading", "hands_on_projects",
@@ -106,3 +106,63 @@ class AssessmentRecord(BaseModel):
     readiness_score: float | None = None
     previous_assessment_id: str | None = None
     form: dict
+
+
+# Analysis response (GET /api/roadmap/analysis/{id}). extra="allow" keeps every existing field;
+# only the new skill-gap fields are declared here.
+class SkillGapItem(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    skill_id: str
+    skill_name: str
+    status: Literal["unverified", "gap", "review", "met", "ok"] | None = None
+    message: str | None = None
+    evidence_status: Literal["none", "pending", "provisional", "verified", "rejected"] | None = None
+    evidence_source: str | None = None
+
+
+class SkillGaps(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    skills: list[SkillGapItem] = Field(default_factory=list)
+
+
+class AnalysisResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    skill_gaps: SkillGaps | None = None
+
+
+# Optional proof for a claimed skill (POST /api/roadmap/evidence).
+class EvidenceSubmission(BaseModel):
+    """Sent as multipart/form-data (with "file" for certificate_file) or JSON. "type" is the original
+    field name; "proof_type" is accepted too. Detailed checks (https, GitHub URL, file type/size) are
+    in evidence_check.validate_submission and return 400 with a clear message."""
+    candidate_id: str | None = None
+    skill_id: str = Field(min_length=1, max_length=20)
+    type: str | None = None
+    proof_type: str | None = None
+    url: str | None = Field(default=None, max_length=500)
+    description: str | None = Field(default=None, max_length=500)
+
+
+class EvidenceRecord(BaseModel):
+    evidence_id: str
+    candidate_id: str
+    skill_id: str
+    type: str
+    url: str
+    status: Literal["none", "pending", "provisional", "verified", "rejected"]
+    submitted_at: str
+    proof_type: str | None = None
+    skill_name: str | None = None
+    file_name: str | None = None
+    description: str | None = None
+    provisional_level: float | None = None
+    verified_level: float | None = None
+    check_details: str | None = None
+    created_at: str | None = None
+    analysis: dict | None = None          # regenerated roadmap after this change (POST only)
+
+
+class EvidenceDeleted(BaseModel):
+    deleted: bool
+    evidence_id: str
+    analysis: dict | None = None

@@ -70,6 +70,35 @@
 .c4r-level span { width: 14px; height: 7px; border-radius: 3px; background: var(--color-background); border: 1px solid var(--color-border); }
 .c4r-level span.filled { background: var(--component-accent); border-color: var(--component-accent); }
 .c4r-level span.target { outline: 2px solid var(--color-text); outline-offset: 1px; }
+.c4r-claim-message { margin: 8px 0 0; font-size: 12px; font-weight: 500; color: var(--color-danger-text); }
+.c4r-potential { margin: 0; font-size: 12px; font-weight: 600; color: var(--component-accent); }
+.c4r .table-scroll { position: relative; }   /* keeps absolutely positioned cells inside the scroll box */
+.c4r .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.c4r-evidence-actions { margin-top: 10px; }
+.c4r-evidence-actions .button,.c4r-evidence-actions button,.c4r-evidence-status button,.c4r-remove { min-height: 36px; padding: 6px 12px; font-size: 12px; }
+.c4r-evidence-status { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 0; font-size: 12px; font-weight: 600; }
+.c4r-evidence-status.is-pending { color: #92400E; }
+.c4r-evidence-status.is-provisional { color: var(--color-cyan-text); }
+.c4r-evidence-status.is-verified { color: var(--color-success-text); }
+.c4r-evidence-status.is-rejected { color: var(--color-danger-text); font-weight: 500; }
+.c4r-proof-cell { max-width: 260px; overflow-wrap: anywhere; }
+
+/* proof modal */
+.c4r-modal-backdrop { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; background: rgb(8 18 37 / 55%); }
+.card.c4r-modal { width: min(520px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; padding: 24px; }
+.c4r-modal h3 { margin: 0 0 6px; font-size: 18px; }
+.c4r-modal > p { font-size: 12px; }
+.c4r-evidence-form { display: grid; gap: 8px; margin-top: 12px; }
+.c4r-evidence-form fieldset { display: grid; gap: 8px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.c4r-evidence-form legend,.c4r-evidence-form > label { margin-bottom: 2px; font-size: 13px; font-weight: 600; }
+.c4r-radio { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); cursor: pointer; }
+.c4r-radio:has(input:checked) { background: var(--component-soft); border-color: var(--component-accent); }
+.c4r-radio input { margin-top: 4px; }
+.c4r-radio strong { display: block; font-size: 13px; }
+.c4r-radio small { display: block; font-size: 11px; color: var(--color-text-secondary); }
+.c4r-evidence-form input[type=file] { font-size: 12px; }
+.c4r-modal-actions { justify-content: flex-end; margin-top: 6px; }
+.c4r-step-title small::first-letter { text-transform: uppercase; }
 .c4r-note { margin: 10px 0 0; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--color-background); font-size: 12px; line-height: 1.5; }
 
 /* priorities */

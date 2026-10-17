@@ -1,12 +1,14 @@
 // Owner: Dewmi - Component 04: explainable results for a Career Readiness Assessment.
 // Shows the readiness score, confidence-aware skill gaps, priorities and the staged learning roadmap.
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import Icon from '../../components/Icon.jsx'
-import { getAnalysis } from './assessmentApi.js'
+import { deleteEvidence, getAnalysis, hasCvSession, listEvidence, submitEvidence } from './assessmentApi.js'
 import './RoadmapResults.css'
 
 const STATUS = {
   gap: { label: 'Gap', className: 'is-gap' },
+  unverified: { label: 'Claimed – Not Verified', className: 'is-gap' },
   review: { label: 'Review', className: 'is-review' },
   met: { label: 'Met', className: 'is-met' },
   prerequisite: { label: 'Prerequisite', className: 'is-prereq' },
@@ -48,6 +50,7 @@ function Readiness({ readiness, assessment }) {
         <ScoreRing score={readiness.score} />
         <span className={`c4r-band band-${readiness.band.toLowerCase().replace(/\s+/g, '-')}`}>{readiness.band}</span>
         {previous != null && <small className="c4r-delta">{signed(readiness.score - previous)} since your previous assessment</small>}
+        {readiness.potential_score != null && <p className="c4r-potential">Up to {readiness.potential_score}/100 if you verify: {readiness.potential_skills.join(', ')}</p>}
       </div>
       <div className="c4r-readiness-text">
         <p className="c4r-summary">{readiness.summary}</p>
@@ -76,13 +79,99 @@ function Readiness({ readiness, assessment }) {
   </section>
 }
 
-function SkillGaps({ gaps }) {
+const PROOF_TYPES = [
+  { value: 'github', label: 'GitHub repository', hint: 'https://github.com/<owner>/<repo>' },
+  { value: 'certificate_link', label: 'Certificate link', hint: 'For example a Credly, Coursera or Microsoft Learn link' },
+  { value: 'certificate_file', label: 'Certificate file', hint: 'PDF, PNG or JPG, up to 5 MB' },
+]
+const MAX_PROOF_BYTES = 5 * 1024 * 1024
+
+// Optional proof for a claimed skill. The roadmap never waits for it.
+function ProofModal({ skill, onClose, onSubmitted }) {
+  const [type, setType] = useState('github')
+  const [url, setUrl] = useState('')
+  const [file, setFile] = useState(null)
+  const [description, setDescription] = useState('')
+  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const isFile = type === 'certificate_file'
+  const id = `c4r-proof-${skill.skill_id}`
+
+  useEffect(() => {
+    const onKey = event => { if (event.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    if (isFile && !file) return setError('Choose a certificate file (PDF, PNG or JPG).')
+    if (isFile && file.size > MAX_PROOF_BYTES) return setError('The file is larger than 5 MB.')
+    if (!isFile && !/^https:\/\/\S+$/.test(url.trim())) return setError('The link must be a full https:// address.')
+    setSaving(true)
+    setError('')
+    try {
+      onSubmitted(await submitEvidence(skill.skill_id, type, isFile ? null : url.trim(), { file: isFile ? file : null, description: description.trim() }))
+    } catch (err) {
+      setError(err.message)                                  // validation messages from the API
+      setSaving(false)
+    }
+  }
+
+  return <div className="c4r-modal-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) onClose() }}>
+    <div className="card c4r-modal" role="dialog" aria-modal="true" aria-labelledby={`${id}-title`}>
+      <h3 id={`${id}-title`}>Add proof for {skill.skill_name}</h3>
+      <p className="muted">Optional. A matching GitHub repository or a certificate from a trusted site gives a provisional level of 3/5; Component 01 can confirm a higher level later.</p>
+      <form className="c4r-evidence-form" onSubmit={handleSubmit} noValidate>
+        <fieldset>
+          <legend>Type of proof</legend>
+          {PROOF_TYPES.map((option, i) => <label key={option.value} className="c4r-radio">
+            <input type="radio" name={`${id}-type`} value={option.value} checked={type === option.value} autoFocus={i === 0}
+              onChange={() => { setType(option.value); setError('') }} />
+            <span><strong>{option.label}</strong><small>{option.hint}</small></span>
+          </label>)}
+        </fieldset>
+        {isFile
+          ? <><label htmlFor={`${id}-file`}>Certificate file</label>
+            <input id={`${id}-file`} type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg"
+              onChange={event => { setFile(event.target.files?.[0] || null); setError('') }} /></>
+          : <><label htmlFor={`${id}-url`}>Link</label>
+            <input id={`${id}-url`} type="url" value={url} placeholder="https://" aria-invalid={Boolean(error)}
+              aria-describedby={error ? `${id}-error` : undefined} onChange={event => { setUrl(event.target.value); setError('') }} /></>}
+        <label htmlFor={`${id}-description`}>Description <small className="muted">(optional)</small></label>
+        <textarea id={`${id}-description`} rows={2} maxLength={500} value={description} onChange={event => setDescription(event.target.value)}
+          placeholder="What does this show about your skill?" />
+        {error && <p className="c4-field-error" id={`${id}-error`} role="alert">{error}</p>}
+        <div className="c4r-actions c4r-modal-actions">
+          <button type="button" className="button-secondary" onClick={onClose}>Cancel</button>
+          <button type="submit" disabled={saving}>{saving ? 'Checking…' : 'Submit'}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+function EvidenceBadge({ skill, onRetry }) {
+  const status = skill.evidence_status
+  if (status === 'pending') return <p className="c4r-evidence-status is-pending">Proof submitted – pending review</p>
+  if (status === 'provisional') return <p className="c4r-evidence-status is-provisional">Provisionally verified ({Math.round(skill.evidence_level ?? 3)}/5)</p>
+  if (status === 'verified') return <p className="c4r-evidence-status is-verified">✓ Verified</p>
+  if (status === 'rejected') return <div className="c4r-evidence-status is-rejected">
+    <span>Proof not accepted: {skill.evidence_detail || 'it could not be matched to this skill.'}</span>
+    <button type="button" className="button-secondary" onClick={onRetry}>Try again</button>
+  </div>
+  return null
+}
+
+function SkillGaps({ gaps, onEvidenceChange }) {
   const { summary, skills } = gaps
+  const [proofSkill, setProofSkill] = useState(null)
+  const canAddProof = hasCvSession()
   return <section className="card c4r-section" aria-labelledby="c4r-gaps">
     <div className="c4r-section-title"><span className="step-number">02</span><h2 id="c4r-gaps">Skill gap analysis</h2></div>
     <p className="muted">Your CV evidence (Component 01) compared with the O*NET requirements for this career. Self-ratings are shown alongside but never count as proficiency.</p>
     <div className="c4r-stats">
-      <div><strong>{summary.gaps}</strong><span>Gaps ({summary.critical} critical)</span></div>
+      <div><strong>{summary.gaps + (summary.unverified || 0)}</strong><span>Gaps ({summary.critical} critical)</span></div>
       <div><strong>{summary.review}</strong><span>To review</span></div>
       <div><strong>{summary.met}</strong><span>Met</span></div>
       <div><strong>{summary.required}</strong><span>Required skills</span></div>
@@ -98,16 +187,65 @@ function SkillGaps({ gaps }) {
               {skill.hot_technology && <span className="c4r-tag">O*NET Hot Technology</span>}
               {skill.priority_rank && <span className="c4r-tag">Priority #{skill.priority_rank}</span>}
             </div>
+            {skill.status === 'unverified' && skill.message && <p className="c4r-claim-message">{skill.message}</p>}
+            <EvidenceBadge skill={skill} onRetry={() => setProofSkill(skill)} />
+            {skill.status === 'unverified' && <div className="c4r-actions c4r-evidence-actions">
+              {skill.evidence_status !== 'rejected' && <button type="button" className="button-secondary" disabled={!canAddProof}
+                title={canAddProof ? undefined : 'Upload your CV in Component 01 first'} onClick={() => setProofSkill(skill)}>+ Add proof</button>}
+              <Link className="button button-secondary" to="/component01">Upload updated CV</Link>
+            </div>}
           </div>
         </div>
         <dl className="c4r-skill-facts">
           <div><dt>CV evidence</dt><dd><LevelBar current={skill.current_level} required={skill.required_level} /><small>{skill.current_level}/5 · needed {skill.required_level}/5</small></dd></div>
           <div><dt>Your confidence</dt><dd>{skill.not_studied ? 'Not studied' : skill.self_rating == null ? 'Not rated' : `${skill.self_rating}/5`}</dd></div>
-          <div><dt>Evidence source</dt><dd>{skill.evidence_source === 'none' ? 'Not found in CV' : `${skill.evidence_source}${skill.evidence_strength ? ` (${skill.evidence_strength})` : ''}`}</dd></div>
+          <div><dt>Evidence source</dt><dd>{skill.evidence_source === 'none' ? 'Not found in CV'
+            : skill.evidence_source === 'CV' || skill.evidence_source.startsWith('derived') ? `${skill.evidence_source}${skill.evidence_strength ? ` (${skill.evidence_strength})` : ''}`
+            : skill.evidence_source}</dd></div>
         </dl>
         {skill.notes.filter(n => !n.startsWith('No self-rating')).map(note => <p key={note} className="c4r-note">{note}</p>)}
       </article>)}
     </div>
+    {proofSkill && <ProofModal skill={proofSkill} onClose={() => setProofSkill(null)}
+      onSubmitted={response => { setProofSkill(null); onEvidenceChange(response) }} />}
+  </section>
+}
+
+function EvidencePanel({ version, onEvidenceChange }) {
+  const [items, setItems] = useState([])
+  const [error, setError] = useState('')
+  const [removing, setRemoving] = useState(null)
+
+  useEffect(() => {
+    let active = true
+    listEvidence().then(list => { if (active) { setItems(list); setError('') } }).catch(err => { if (active) setError(err.message) })
+    return () => { active = false }
+  }, [version])
+
+  async function remove(item) {
+    setRemoving(item.evidence_id)
+    try { onEvidenceChange(await deleteEvidence(item.evidence_id)) }
+    catch (err) { setError(err.message) }
+    finally { setRemoving(null) }
+  }
+
+  if (!hasCvSession() || (!items.length && !error)) return null
+  const statusLabel = item => ({ pending: 'Pending review', provisional: `Provisional (${Math.round(item.provisional_level ?? 3)}/5)`,
+    verified: '✓ Verified', rejected: 'Not accepted' })[item.status] || item.status
+  return <section className="card c4r-section" aria-labelledby="c4r-evidence-title">
+    <h2 id="c4r-evidence-title">My evidence</h2>
+    <p className="muted">Proof you added for claimed skills. Removing an item updates your roadmap.</p>
+    {error && <p className="error-message" role="alert">{error}</p>}
+    <div className="table-scroll"><table className="c4r-history">
+      <thead><tr><th>Skill</th><th>Proof</th><th>Status</th><th><span className="sr-only">Actions</span></th></tr></thead>
+      <tbody>{items.map(item => <tr key={item.evidence_id}>
+        <td>{item.skill_name}</td>
+        <td className="c4r-proof-cell">{item.url ? <a href={item.url} target="_blank" rel="noopener noreferrer">{item.url.replace(/^https:\/\//, '')}</a> : item.file_name}</td>
+        <td title={item.check_details || undefined}>{statusLabel(item)}</td>
+        <td><button type="button" className="button-secondary c4r-remove" disabled={removing === item.evidence_id} onClick={() => remove(item)}>
+          {removing === item.evidence_id ? 'Removing…' : 'Remove'}</button></td>
+      </tr>)}</tbody>
+    </table></div>
   </section>
 }
 
@@ -125,7 +263,7 @@ function Priorities({ priorities, method }) {
         <div className="c4r-priority-body">
           <div className="c4r-priority-head"><strong>{p.skill_name}</strong><span>{p.priority_score.toFixed(2)}</span></div>
           <div className="c4r-stack" role="img" aria-label={p.factors.map(f => `${f.label} ${f.points.toFixed(2)}`).join(', ')}>
-            {p.factors.map((f, i) => <span key={f.key} className={FACTOR_CLASS[i]} style={{ width: `${f.points * 100}%` }} />)}
+            {p.factors.map((f, i) => <span key={f.key} className={FACTOR_CLASS[i]} style={{ width: `${f.points * (p.adjustment_factor ?? 1) * 100}%` }} />)}
           </div>
           <small className="muted">{p.why}</small>
         </div>
@@ -170,6 +308,7 @@ function RoadmapStep({ step }) {
 function Roadmap({ roadmap }) {
   return <section className="card c4r-section" aria-labelledby="c4r-roadmap">
     <div className="c4r-section-title"><span className="step-number">04</span><h2 id="c4r-roadmap">Personalised learning roadmap</h2></div>
+    <p className="c4r-caution"><Icon name="spark" size={15} />Your roadmap is based on your CV. Adding proof for claimed skills is optional and will update your roadmap automatically.</p>
     {roadmap.total_steps === 0 ? <p>Your CV evidence already meets every requirement for this career. Keep your skills current and add new evidence to your CV.</p> : <>
       <div className="c4r-stats">
         <div><strong>{roadmap.total_steps}</strong><span>Skills to develop</span></div>
@@ -206,6 +345,14 @@ function Method({ result }) {
 export default function RoadmapResults({ assessmentId, onEdit, onNew }) {
   const [state, setState] = useState({ loading: true, error: '', result: null })
   const [reload, setReload] = useState(0)
+  const [evidenceVersion, setEvidenceVersion] = useState(0)
+
+  // Proof added or removed: use the regenerated roadmap from the response (or reload it).
+  function handleEvidenceChange(response) {
+    if (response?.analysis?.assessment?.assessment_id === assessmentId) setState(s => ({ ...s, result: response.analysis }))
+    else setReload(v => v + 1)
+    setEvidenceVersion(v => v + 1)
+  }
 
   useEffect(() => {
     let active = true
@@ -239,7 +386,8 @@ export default function RoadmapResults({ assessmentId, onEdit, onNew }) {
       {result.inputs.cv_skills_not_in_catalogue.length > 0 && <p className="c4r-notice">CV skills not covered by the C4 skills catalogue (not used): {result.inputs.cv_skills_not_in_catalogue.join(', ')}.</p>}
     </section>
     <Readiness readiness={result.readiness} assessment={assessment} />
-    <SkillGaps gaps={result.skill_gaps} />
+    <SkillGaps gaps={result.skill_gaps} onEvidenceChange={handleEvidenceChange} />
+    <EvidencePanel version={evidenceVersion} onEvidenceChange={handleEvidenceChange} />
     <Priorities priorities={result.priorities} method={result.method} />
     <Roadmap roadmap={result.roadmap} />
     {assessment.history.length > 1 && <section className="card c4r-section" aria-labelledby="c4r-history">

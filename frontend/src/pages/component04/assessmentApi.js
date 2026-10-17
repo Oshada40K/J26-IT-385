@@ -61,6 +61,32 @@ export function getAssessment(assessmentId) {
   return request(`/${encodeURIComponent(assessmentId)}`, { headers: authHeaders() })
 }
 
+// Optional proof for a claimed skill; stored as "pending" until a new CV assessment confirms it.
+// Sent as multipart/form-data; the response includes the regenerated roadmap in "analysis".
+export function submitEvidence(skillId, type, url, { file, description } = {}) {
+  const body = new FormData()
+  body.append('candidate_id', savedSession()?.candidate_id || '')
+  body.append('skill_id', skillId)
+  body.append('proof_type', type)
+  if (url) body.append('url', url)
+  if (file) body.append('file', file)
+  if (description) body.append('description', description)
+  return request('/evidence', { method: 'POST', headers: authHeaders(), body }, ROOT)
+}
+
+export function listEvidence() {
+  const candidateId = savedSession()?.candidate_id
+  return candidateId ? request(`/evidence/${encodeURIComponent(candidateId)}`, { headers: authHeaders() }, ROOT) : Promise.resolve([])
+}
+
+export function deleteEvidence(evidenceId) {
+  return request(`/evidence/${encodeURIComponent(evidenceId)}`, { method: 'DELETE', headers: authHeaders() }, ROOT)
+}
+
+export function hasCvSession() {
+  return Boolean(savedSession()?.access_token)
+}
+
 export function getAnalysis(assessmentId) {
   return request(`/analysis/${encodeURIComponent(assessmentId)}`, { headers: authHeaders() }, ROOT)
 }

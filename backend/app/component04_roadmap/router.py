@@ -1,12 +1,15 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
 
 from . import repository, service
-from .errors import ModelsUnavailable
-from .schemas import AssessmentRecord, AssessmentSaved, AssessmentSubmission, Career, QuestionRequest, QuestionResponse
+from .errors import EvidenceError, ModelsUnavailable
+from .evidence_check import MAX_FILE_BYTES
+from .schemas import (AnalysisResponse, AssessmentRecord, AssessmentSaved, AssessmentSubmission, Career, EvidenceDeleted,
+                      EvidenceRecord, EvidenceSubmission, QuestionRequest, QuestionResponse)
 
 router = APIRouter(prefix="/api/roadmap", tags=["Learning Roadmap & Skill Gap"])
 security = HTTPBearer(auto_error=False)
@@ -92,7 +95,7 @@ async def get_assessment(assessment_id: str, owner: Annotated[str | None, Depend
     return await run_in_threadpool(_owned_record, assessment_id, owner)
 
 
-@router.get("/analysis/{assessment_id}",
+@router.get("/analysis/{assessment_id}", response_model=AnalysisResponse,
             summary="Skill gaps, priorities, resources, roadmap and readiness score for an assessment")
 async def assessment_analysis(assessment_id: str, owner: Annotated[str | None, Depends(_candidate)]):
     record = await run_in_threadpool(_owned_record, assessment_id, owner)
@@ -104,3 +107,66 @@ async def assessment_analysis(assessment_id: str, owner: Annotated[str | None, D
                                  "models are present in backend/app/component04_roadmap/trained_models/.") from exc
     except service.CareerNotSupported as exc:
         raise HTTPException(404, str(exc)) from exc
+
+
+async def _evidence_body(request):
+    """Reads multipart/form-data (with an optional "file") or JSON. Returns (submission, upload)."""
+    upload = None
+    if request.headers.get("content-type", "").startswith(("multipart/form-data", "application/x-www-form-urlencoded")):
+        form = await request.form()
+        data = {k: form.get(k) for k in ("candidate_id", "skill_id", "proof_type", "type", "url", "description")}
+        file = form.get("file")
+        if hasattr(file, "read"):
+            upload = (file.filename or "", await file.read(MAX_FILE_BYTES + 1))   # +1 byte detects oversize files
+            await file.close()
+    else:
+        try:
+            data = await request.json()
+        except ValueError:
+            raise HTTPException(400, "Send the proof as multipart/form-data or JSON.")
+        if not isinstance(data, dict):
+            raise HTTPException(400, "Send the proof as multipart/form-data or JSON.")
+    try:
+        return EvidenceSubmission(**{k: v for k, v in data.items() if v not in (None, "")}), upload
+    except ValidationError as exc:
+        error = exc.errors()[0]
+        raise HTTPException(400, f"{'.'.join(str(x) for x in error['loc']) or 'body'}: {error['msg']}") from exc
+
+
+@router.post("/evidence", response_model=EvidenceRecord, status_code=201,
+             summary="Submit optional proof (GitHub repository, certificate link or certificate file) for a skill",
+             description="multipart/form-data: candidate_id, skill_id, proof_type (github | certificate_link | "
+                         "certificate_file), url or file (PDF/PNG/JPG, max 5 MB), description (optional). JSON with "
+                         "the same fields (\"type\" or \"proof_type\") is also accepted. Runs the simple checks and "
+                         "returns the evidence with the regenerated roadmap in \"analysis\".")
+async def submit_evidence(request: Request, owner: Annotated[str | None, Depends(_candidate)]):
+    if not owner:
+        raise HTTPException(401, "Upload your CV in Component 01 before adding proof.")
+    body, upload = await _evidence_body(request)
+    if body.candidate_id and body.candidate_id != owner:
+        raise HTTPException(403, "You cannot add proof for another candidate.")
+    await run_in_threadpool(_engine_or_503)
+    try:
+        return await run_in_threadpool(service.submit_evidence, body, owner, upload)
+    except EvidenceError as exc:
+        raise HTTPException(exc.status_code, str(exc)) from exc
+
+
+@router.get("/evidence/{candidate_id}", response_model=list[EvidenceRecord], summary="The student's evidence")
+async def list_evidence(candidate_id: str, owner: Annotated[str | None, Depends(_candidate)]):
+    if not owner or owner != candidate_id:
+        raise HTTPException(403 if owner else 401, "You can only see your own evidence.")
+    await run_in_threadpool(_engine_or_503)
+    return await run_in_threadpool(service.list_evidence, candidate_id)
+
+
+@router.delete("/evidence/{evidence_id}", response_model=EvidenceDeleted,
+               summary="Remove your own evidence and return the regenerated roadmap")
+async def delete_evidence(evidence_id: str, owner: Annotated[str | None, Depends(_candidate)]):
+    if not owner:
+        raise HTTPException(401, "Upload your CV in Component 01 to manage your evidence.")
+    await run_in_threadpool(_engine_or_503)
+    try:
+        return await run_in_threadpool(service.delete_evidence, evidence_id, owner)
+    except EvidenceError as exc:
+        raise HTTPException(exc.status_code, str(exc)) from exc
