@@ -11,7 +11,7 @@ from pathlib import Path
 # Columns added after the first evidence release (created on existing databases automatically).
 EVIDENCE_EXTRA_COLUMNS = {"proof_type": "TEXT", "file_path": "TEXT", "file_name": "TEXT", "description": "TEXT",
                           "provisional_level": "REAL", "verified_level": "REAL", "check_details": "TEXT",
-                          "created_at": "TEXT"}
+                          "created_at": "TEXT", "status_reason": "TEXT", "reviewed_at": "TEXT", "review_note": "TEXT"}
 
 
 def database_path():
@@ -106,10 +106,29 @@ EVIDENCE_FIELDS = ("evidence_id", "candidate_id", "skill_id", "type", "url", "st
                    "cv_level_at_submission", "verified_at", "verified_by_c1_assessment_id") + tuple(EVIDENCE_EXTRA_COLUMNS)
 
 
+def _encode(field, value):
+    """check_details is a list of {check, result, detail}; stored as JSON text."""
+    return json.dumps(value) if field == "check_details" and value is not None and not isinstance(value, str) else value
+
+
+def _evidence(row):
+    record = {f: row[f] for f in EVIDENCE_FIELDS}
+    details = record["check_details"]
+    try:
+        parsed = json.loads(details) if details else None
+    except ValueError:
+        parsed = None
+    if details and not isinstance(parsed, list):         # plain text from the first evidence release
+        record["status_reason"] = record["status_reason"] or details
+        parsed = [{"check": "Result", "result": "not_checked", "detail": details}]
+    record["check_details"] = parsed or []
+    return record
+
+
 def save_evidence(record):
     with connection() as db:
         db.execute(f"INSERT INTO c4_evidence ({', '.join(EVIDENCE_FIELDS)}) VALUES ({', '.join('?' * len(EVIDENCE_FIELDS))})",
-                   tuple(record.get(f) for f in EVIDENCE_FIELDS))
+                   tuple(_encode(f, record.get(f)) for f in EVIDENCE_FIELDS))
     return record
 
 
@@ -123,7 +142,7 @@ def evidence_for(candidate_id):
     latest = {}
     for row in rows:
         if latest.get(row["skill_id"], {}).get("status") != "verified":
-            latest[row["skill_id"]] = {f: row[f] for f in EVIDENCE_FIELDS}
+            latest[row["skill_id"]] = _evidence(row)
     return latest
 
 
@@ -145,17 +164,17 @@ def evidence_list(candidate_id):
         return []
     with connection() as db:
         rows = db.execute("SELECT * FROM c4_evidence WHERE candidate_id=? ORDER BY id", (candidate_id,)).fetchall()
-    return [{f: row[f] for f in EVIDENCE_FIELDS} for row in rows]
+    return [_evidence(row) for row in rows]
 
 
 def get_evidence(evidence_id):
     with connection() as db:
         row = db.execute("SELECT * FROM c4_evidence WHERE evidence_id=?", (evidence_id,)).fetchone()
-    return {f: row[f] for f in EVIDENCE_FIELDS} if row else None
+    return _evidence(row) if row else None
 
 
 def update_evidence(evidence_id, **fields):
-    fields = {k: v for k, v in fields.items() if k in EVIDENCE_FIELDS and k != "evidence_id"}
+    fields = {k: _encode(k, v) for k, v in fields.items() if k in EVIDENCE_FIELDS and k != "evidence_id"}
     if fields:
         with connection() as db:
             db.execute(f"UPDATE c4_evidence SET {', '.join(f'{k}=?' for k in fields)} WHERE evidence_id=?",

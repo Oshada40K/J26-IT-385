@@ -79,6 +79,11 @@ export function listEvidence() {
   return candidateId ? request(`/evidence/${encodeURIComponent(candidateId)}`, { headers: authHeaders() }, ROOT) : Promise.resolve([])
 }
 
+// "Check again": re-runs the link checks (e.g. GitHub was unreachable); returns the evidence + regenerated "analysis".
+export function recheckEvidence(evidenceId) {
+  return request(`/evidence/${encodeURIComponent(evidenceId)}/recheck`, { method: 'POST', headers: authHeaders() }, ROOT)
+}
+
 export function deleteEvidence(evidenceId) {
   return request(`/evidence/${encodeURIComponent(evidenceId)}`, { method: 'DELETE', headers: authHeaders() }, ROOT)
 }

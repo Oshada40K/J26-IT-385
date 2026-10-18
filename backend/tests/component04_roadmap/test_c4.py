@@ -1,9 +1,11 @@
 """Component 04 tests: assessment form API, explainable analysis and C1 integration."""
+import base64
 import os
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
+from urllib.parse import unquote
 
 import numpy as np
 import pandas as pd
@@ -16,6 +18,7 @@ from app.component04_roadmap.c4_engine import C_FEATURES
 from app.component04_roadmap.router import router
 
 SOFTWARE_DEVELOPERS = "15-1252.00"
+REAL_GITHUB_GET = evidence_check._github_get                   # the tests patch it; kept for the HTTP-level test
 MODELS = service.engine().models_available()
 needs_models = unittest.skipUnless(MODELS, "trained model files are not present (*.joblib is git-ignored)")
 
@@ -35,6 +38,7 @@ class C4Tests(unittest.TestCase):
         self.env.start()
         os.environ.pop("C1_EVIDENCE_ENDPOINT", None)          # Component 01 verifier not connected in tests
         os.environ.pop("GITHUB_TOKEN", None)
+        os.environ.pop("C4_ALLOW_REVIEW", None)               # reviewer endpoint is off by default
         # Never call the real GitHub API: by default it is "unreachable" (proof stays pending).
         self.github = patch.object(evidence_check, "_github_get",
                                    side_effect=evidence_check.GitHubUnavailable("offline in tests"))
@@ -48,10 +52,12 @@ class C4Tests(unittest.TestCase):
         self.env.stop()
         self.temp.cleanup()
 
-    def candidate(self, skills):
+    def candidate(self, skills, github=None):
+        """github: the GitHub username Component 01 found for this student (external_profiles)."""
         session = c1_repository.create_candidate()
         if skills is not None:
-            c1_repository.save_assessment(session["candidate_id"], b"cv", {"skills": skills})
+            profiles = [{"platform": "github", "handle": github, "url": f"https://github.com/{github}"}] if github else []
+            c1_repository.save_assessment(session["candidate_id"], b"cv", {"skills": skills, "external_profiles": profiles})
         return session["candidate_id"], {"Authorization": f"Bearer {session['access_token']}"}
 
     def questions(self, c1_skills=()):
@@ -340,9 +346,10 @@ class C4Tests(unittest.TestCase):
     PDF = b"%PDF-1.4\n% test certificate\n"
 
     def claimed_java(self):
-        """Candidate whose CV has Python but no Java, and who rates Java 5/5 (so Java is unverified)."""
+        """Candidate whose CV has Python but no Java, and who rates Java 5/5 (so Java is unverified).
+        Component 01 found the GitHub username "student" in the CV."""
         cv = [{"name": "Python", "level": 3, "confidence": "medium"}]
-        candidate_id, headers = self.candidate(cv)
+        candidate_id, headers = self.candidate(cv, github="student")
         confidence = [{"skill_id": s["skill_id"], "rating": 5 if s["skill_id"] == "SK003" else 2} for s in self.questions(cv)]
         saved = self.client.post("/api/roadmap/assessment", headers=headers,
                                  json={**form(confidence), "candidate_id": candidate_id})
@@ -356,11 +363,32 @@ class C4Tests(unittest.TestCase):
         return self.client.post("/api/roadmap/evidence", headers=headers, data=data,
                                 files={"file": file} if file else None)
 
-    def github_repo(self, languages, name="demo-project", description="", topics=()):
+    def github_repo(self, languages, name="demo-project", description="", topics=(), owner=None, contributors=(),
+                    readme=None, files=(), contents=None, fork=False):
+        """Fake GitHub REST API for one repository (no network). owner defaults to the owner in the URL."""
+        encoded = lambda text: None if text is None else {"encoding": "base64",
+                                                          "content": base64.b64encode(text.encode()).decode()}
+
         def fake(path):
-            if path.endswith("/languages"):
+            self.assertTrue(path.startswith("/repos/"), path)
+            parts = path.split("?")[0].split("/")
+            login = owner or parts[2]
+            rest = "/".join(parts[4:])
+            if rest == "":
+                return {"name": parts[3], "full_name": f"{login}/{parts[3]}", "owner": {"login": login},
+                        "description": description, "size": 250, "topics": list(topics), "default_branch": "main",
+                        "fork": fork}
+            if rest == "languages":
                 return languages
-            return {"name": name, "description": description, "size": 250, "topics": list(topics)}
+            if rest == "contributors":
+                return [{"login": c} for c in contributors]
+            if rest == "readme":
+                return encoded(readme)
+            if rest.startswith("git/trees/"):
+                return {"tree": [{"path": p, "type": "blob"} for p in files], "truncated": False}
+            if rest.startswith("contents/"):
+                return encoded((contents or {}).get(unquote(rest.removeprefix("contents/"))))
+            raise AssertionError(f"unexpected GitHub call {path}")
         self.github_get.side_effect = fake
 
     @staticmethod
@@ -427,6 +455,10 @@ class C4Tests(unittest.TestCase):
         self.assertEqual(response.status_code, 201, response.text)
         body = response.json()
         self.assertEqual((body["status"], body["provisional_level"], body["file_name"]), ("pending", 2, "Java Cert.pdf"))
+        self.assertIn("2/5", body["status_reason"])
+        self.assertEqual([(c["check"], c["result"]) for c in body["check_details"]],
+                         [("File type and size", "passed"), ("Reviewer check", "not_checked")])
+        self.assertFalse(body["can_recheck"])                  # files wait for a reviewer
         self.assertNotIn("file_path", body)                    # the private path is never returned
         stored = list((Path(self.temp.name) / "evidence").iterdir())
         self.assertEqual([p.read_bytes() for p in stored], [self.PDF])
@@ -440,7 +472,8 @@ class C4Tests(unittest.TestCase):
         self.github_repo({"Python": 9000}, name="data-scripts")
         body = self.proof(headers, candidate_id, "github", "https://github.com/student/data-scripts").json()
         self.assertEqual(body["status"], "rejected")
-        self.assertIn("does not show Java", body["check_details"])
+        self.assertIn("No signs of Java", body["status_reason"])
+        self.assertEqual(body["check_details"][-1]["result"], "failed")
         after = self.java(body["analysis"])
         self.assertEqual((after["current_proficiency"], after["status"]), (before["current_proficiency"], "unverified"))
         self.assertEqual(after["evidence_status"], "rejected")
@@ -482,7 +515,7 @@ class C4Tests(unittest.TestCase):
         candidate_id, headers, _ = self.claimed_java()
         body = self.proof(headers, candidate_id, "github", "https://github.com/student/java-one").json()
         self.assertEqual((body["status"], body["provisional_level"]), ("pending", None))
-        self.assertIn("could not be checked", body["check_details"])
+        self.assertEqual(body["status_reason"], evidence_check.REASON_UNREACHABLE)
         self.assertEqual(self.java(body["analysis"])["status"], "unverified")      # pending link adds no level
 
     @needs_models
@@ -496,6 +529,209 @@ class C4Tests(unittest.TestCase):
         self.assertEqual((body["status"], body["verified_level"]), ("verified", 4))
         java = self.java(body["analysis"])
         self.assertEqual((java["current_level"], java["evidence_status"]), (4, "verified"))
+
+    # ------------------------------------------------------------------ GitHub ownership / skill usage / recheck / review
+    # These need only the C4 data files (no trained models): the student has no C4 assessment yet, so "analysis" is None.
+    AWS = "SK028"
+
+    def github_student(self):
+        return self.candidate([{"name": "Python", "level": 3, "confidence": "medium"}], github="student")
+
+    @staticmethod
+    def checks(body):
+        return {c["check"]: c["result"] for c in body["check_details"]}
+
+    def test_github_url_is_normalised(self):
+        expected = "https://github.com/student/library-app"
+        for url in ("https://github.com/student/library-app.git", "https://github.com/student/library-app/",
+                    "https://github.com/student/library-app.git/", "https://www.github.com/student/library-app",
+                    "https://github.com/student/library-app/tree/main/src", "https://github.com/student/library-app?tab=x",
+                    "https://github.com/student/library-app/blob/main/README.md#intro"):
+            self.assertEqual(evidence_check.normalize_github_url(url), expected, url)
+        for url in ("https://github.com/student", "https://github.com/student/repo/issues/1",
+                    "http://github.com/student/repo", "https://github.com.evil.example/student/repo",
+                    "https://github.com/student/.git"):
+            self.assertIsNone(evidence_check.normalize_github_url(url), url)
+
+        candidate_id, headers = self.github_student()
+        self.github_repo({"Java": 4000})
+        body = self.proof(headers, candidate_id, "github", "https://github.com/student/library-app.git").json()
+        self.assertEqual(body["url"], expected)                                   # stored without ".git"
+        self.assertEqual(self.github_get.call_args_list[0].args[0], "/repos/student/library-app")
+        self.assertEqual((body["status"], body["provisional_level"]), ("provisional", 3))
+        self.assertEqual(self.checks(body)["Owned by or contributed to by you"], "passed")
+
+    def test_wrong_owner_repo_is_rejected(self):
+        candidate_id, headers = self.github_student()
+        self.github_repo({"Python": 9000}, owner="someone-else", contributors=["someone-else", "helper"],
+                         readme="Deploys to AWS Lambda")
+        body = self.proof(headers, candidate_id, "github", "https://github.com/someone-else/aws-tools.git",
+                          skill_id=self.AWS).json()
+        self.assertEqual((body["status"], body["provisional_level"]), ("rejected", None))
+        self.assertEqual(body["status_reason"], evidence_check.REASON_NOT_OWNER)
+        self.assertEqual(self.checks(body)["Owned by or contributed to by you"], "failed")
+        self.assertEqual(self.checks(body)["Shows AWS"], "not_checked")
+        self.assertTrue(any("someone-else" in c["detail"] for c in body["check_details"]))
+
+        # Someone else's repository is fine when the student is a contributor (GitHub logins ignore case).
+        self.github_repo({"Python": 9000}, owner="team-org", contributors=["team-lead", "Student"],
+                         readme="Deploys to AWS Lambda")
+        body = self.proof(headers, candidate_id, "github", "https://github.com/team-org/aws-tools",
+                          skill_id=self.AWS).json()
+        self.assertEqual(body["status"], "provisional")
+        self.assertIn("contributors list", body["check_details"][3]["detail"])
+
+        # A fork owned by the student but with no commits from them is not proof.
+        self.github_repo({"Python": 9000}, fork=True, contributors=["original-author"], readme="AWS demo")
+        body = self.proof(headers, candidate_id, "github", "https://github.com/student/forked-aws",
+                          skill_id=self.AWS).json()
+        self.assertEqual(body["status_reason"], evidence_check.REASON_NOT_OWNER)
+
+    def test_no_github_username_in_c1_keeps_repo_pending_with_reason(self):
+        candidate_id, headers = self.candidate([{"name": "Python", "level": 3, "confidence": "medium"}])
+        self.github_repo({"Java": 4000})
+        body = self.proof(headers, candidate_id, "github", "https://github.com/student/library-app").json()
+        self.assertEqual((body["status"], body["provisional_level"]), ("pending", None))
+        self.assertEqual(body["status_reason"], evidence_check.REASON_NO_USERNAME)
+        self.assertEqual(self.checks(body)["Owned by or contributed to by you"], "not_checked")
+        self.assertEqual(self.checks(body)["Shows Java"], "passed")
+        self.assertTrue(body["can_recheck"])
+
+    def test_aws_usage_found(self):
+        self.assertEqual(service.engine().name[self.AWS], "AWS")
+        candidate_id, headers = self.github_student()
+        cases = [  # (fake repository, expected sign)
+            (dict(files=["app.py", "requirements.txt"], contents={"requirements.txt": "flask==3.0\nboto3>=1.34\n"}),
+             "boto3 in requirements.txt"),
+            (dict(files=["handler.js", "serverless.yml"]), "file serverless.yml"),
+            (dict(files=["web/package.json"], contents={"web/package.json": '{"dependencies": {"@aws-sdk/client-s3": "3"}}'}),
+             "aws-sdk in web/package.json"),
+            (dict(files=["src/main.py", ".aws/config"]), "file .aws/config"),
+            (dict(readme="# Photo app\nImages are stored on AWS S3."), "'aws' in the README"),
+            (dict(topics=["aws", "serverless"]), "'aws' in the name, description and topics"),
+        ]
+        for repo, sign in cases:
+            self.github_repo({"Python": 5000}, **repo)
+            body = self.proof(headers, candidate_id, "github", "https://github.com/student/photo-app",
+                              skill_id=self.AWS).json()
+            self.assertEqual((body["status"], body["provisional_level"]), ("provisional", 3), sign)
+            step = body["check_details"][-1]
+            self.assertEqual((step["check"], step["result"]), ("Shows AWS", "passed"))
+            self.assertIn(sign, step["detail"])
+
+    def test_aws_usage_not_found(self):
+        candidate_id, headers = self.github_student()
+        self.github_repo({"Python": 5000}, name="todo-app", description="A simple todo list",
+                         readme="# Todo\nRun `python app.py`. Uses a lambda to sort items.",
+                         files=["app.py", "requirements.txt", "templates/index.html"],
+                         contents={"requirements.txt": "flask==3.0\n"})
+        body = self.proof(headers, candidate_id, "github", "https://github.com/student/todo-app",
+                          skill_id=self.AWS).json()
+        self.assertEqual((body["status"], body["provisional_level"]), ("rejected", None))
+        self.assertEqual(body["status_reason"], "No signs of AWS were found in this repository.")
+        step = body["check_details"][-1]
+        self.assertEqual((step["check"], step["result"]), ("Shows AWS", "failed"))
+        for looked_at in ("languages", "README", "3 file names", "requirements.txt"):
+            self.assertIn(looked_at, step["detail"])
+
+    def test_github_unreachable_is_pending_and_can_be_checked_again(self):
+        candidate_id, headers = self.github_student()
+        body = self.proof(headers, candidate_id, "github", "https://github.com/student/library-app.git").json()
+        self.assertEqual((body["status"], body["provisional_level"]), ("pending", None))   # setUp: GitHub offline
+        self.assertEqual(body["status_reason"], "Could not reach GitHub, try again.")
+        self.assertEqual(self.checks(body)["Repository found"], "not_checked")
+        self.assertTrue(body["can_recheck"])
+        recheck = f"/api/roadmap/evidence/{body['evidence_id']}/recheck"
+
+        _, other = self.candidate(None)
+        self.assertEqual(self.client.post(recheck).status_code, 401)
+        self.assertEqual(self.client.post(recheck, headers=other).status_code, 403)
+        self.assertEqual(self.client.post("/api/roadmap/evidence/missing/recheck", headers=headers).status_code, 404)
+
+        self.github_repo({"Java": 4000})                                          # GitHub is back
+        again = self.client.post(recheck, headers=headers)
+        self.assertEqual(again.status_code, 200, again.text)
+        self.assertEqual((again.json()["status"], again.json()["provisional_level"]), ("provisional", 3))
+        listed = self.client.get(f"/api/roadmap/evidence/{candidate_id}", headers=headers).json()
+        self.assertEqual([(e["evidence_id"], e["status"]) for e in listed], [(body["evidence_id"], "provisional")])
+
+        file = self.proof(headers, candidate_id, "certificate_file", file=("cert.pdf", self.PDF, "application/pdf")).json()
+        response = self.client.post(f"/api/roadmap/evidence/{file['evidence_id']}/recheck", headers=headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("reviewer", response.json()["detail"])
+
+    def test_github_rate_limit_and_network_errors_are_unreachable(self):
+        limited = Mock(status_code=403, headers={"x-ratelimit-remaining": "0"})
+        with patch.object(evidence_check.httpx, "get", return_value=limited) as get:
+            with self.assertRaisesRegex(evidence_check.GitHubUnavailable, "rate limit"):
+                REAL_GITHUB_GET("/repos/student/app")
+        self.assertTrue(get.call_args.kwargs["follow_redirects"])                  # renamed repositories (301)
+        with patch.object(evidence_check.httpx, "get", side_effect=evidence_check.httpx.ConnectTimeout("slow")):
+            with self.assertRaisesRegex(evidence_check.GitHubUnavailable, "network error"):
+                REAL_GITHUB_GET("/repos/student/app")
+        with patch.object(evidence_check.httpx, "get", return_value=Mock(status_code=404, headers={})):
+            self.assertIsNone(REAL_GITHUB_GET("/repos/student/app"))
+        # A failure part-way through (e.g. reading the README) also keeps the proof pending.
+        self.github_get.side_effect = lambda path: (
+            {"name": "app", "owner": {"login": "student"}, "size": 10} if path == "/repos/student/app"
+            else {"Python": 10} if path.endswith("/languages") else (_ for _ in ()).throw(
+                evidence_check.GitHubUnavailable("GitHub rate limit reached")))
+        result = evidence_check.check_github("https://github.com/student/app", "AWS", ["student"])
+        self.assertEqual((result["status"], result["status_reason"]), ("pending", evidence_check.REASON_UNREACHABLE))
+        self.assertEqual(result["check_details"][-1], {"check": "Shows AWS", "result": "not_checked",
+                                                       "detail": "GitHub rate limit reached. Nothing was decided."})
+
+    def test_certificate_file_counts_as_level_2(self):
+        result = evidence_check.check("certificate_file", None, "AWS", file_name="aws.png", file_size=2048)
+        self.assertEqual((result["status"], result["provisional_level"]), ("pending", 2))
+        item = {"status": "pending", "type": "certificate_file", "proof_type": "certificate_file", "provisional_level": 2}
+        self.assertEqual(service._usable_level(item), 2)                         # counts in the roadmap
+        self.assertEqual(service._usable_level({**item, "status": "rejected"}), None)
+
+    def test_review_endpoint_is_disabled_by_default(self):
+        candidate_id, headers = self.github_student()
+        file = self.proof(headers, candidate_id, "certificate_file", file=("aws.pdf", self.PDF, "application/pdf"),
+                          skill_id=self.AWS).json()
+        review = f"/api/roadmap/evidence/{file['evidence_id']}/review"
+        response = self.client.post(review, json={"decision": "approve"})
+        self.assertEqual(response.status_code, 403)
+        self.assertIn("C4_ALLOW_REVIEW=1", response.json()["detail"])
+        self.assertEqual(self.client.get(f"/api/roadmap/evidence/{candidate_id}", headers=headers).json()[0]["status"],
+                         "pending")
+
+        with patch.dict(os.environ, {"C4_ALLOW_REVIEW": "1"}):
+            self.assertEqual(self.client.post(review, json={"decision": "maybe"}).status_code, 422)
+            self.assertEqual(self.client.post(review, json={"decision": "approve", "level": 5}).status_code, 422)
+            approved = self.client.post(review, json={"decision": "approve", "note": "Valid AWS certificate"})
+            self.assertEqual(approved.status_code, 200, approved.text)
+            body = approved.json()
+            self.assertEqual((body["status"], body["provisional_level"]), ("provisional", 3))
+            self.assertEqual(self.checks(body)["Reviewer check"], "passed")
+            self.assertIn("Valid AWS certificate", body["status_reason"])
+            self.assertTrue(body["reviewed_at"])
+            self.assertEqual(service.evidence_summary(candidate_id)[self.AWS]["source"], "Certificate (reviewer approved)")
+            rejected = self.client.post(review, json={"decision": "reject", "note": "Name does not match"}).json()
+            self.assertEqual((rejected["status"], rejected["provisional_level"]), ("rejected", None))
+            self.assertEqual(self.client.post("/api/roadmap/evidence/missing/review",
+                                              json={"decision": "reject"}).status_code, 404)
+
+    @needs_models
+    def test_github_proof_updates_the_roadmap_and_rejected_proof_does_not(self):
+        cv = [{"name": "Python", "level": 3, "confidence": "medium"}]
+        candidate_id, headers = self.candidate(cv, github="student")
+        confidence = [{"skill_id": s["skill_id"], "rating": 5 if s["skill_id"] == self.AWS else 2} for s in self.questions(cv)]
+        self.client.post("/api/roadmap/assessment", headers=headers, json={**form(confidence), "candidate_id": candidate_id})
+        aws = lambda body: next(s for s in body["analysis"]["skill_gaps"]["skills"] if s["skill_id"] == self.AWS)
+
+        self.github_repo({"Python": 100}, owner="other-user", readme="AWS")
+        rejected = self.proof(headers, candidate_id, "github", "https://github.com/other-user/aws.git", skill_id=self.AWS).json()
+        self.assertEqual((aws(rejected)["status"], aws(rejected)["evidence_status"]), ("unverified", "rejected"))
+        self.assertEqual(aws(rejected)["evidence_detail"], evidence_check.REASON_NOT_OWNER)
+        self.assertGreater(rejected["analysis"]["roadmap"]["total_steps"], 0)
+
+        self.github_repo({"Python": 100}, files=["serverless.yml"])
+        accepted = self.proof(headers, candidate_id, "github", "https://github.com/student/aws", skill_id=self.AWS).json()
+        self.assertEqual((aws(accepted)["current_level"], aws(accepted)["evidence_status"]), (3, "provisional"))
 
     @needs_models
     def test_model_loading_restores_numpy(self):

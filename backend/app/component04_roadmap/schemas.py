@@ -143,6 +143,13 @@ class EvidenceSubmission(BaseModel):
     description: str | None = Field(default=None, max_length=500)
 
 
+class EvidenceCheck(BaseModel):
+    """One automatic check, in simple English for the student."""
+    check: str
+    result: Literal["passed", "failed", "not_checked"]
+    detail: str | None = None
+
+
 class EvidenceRecord(BaseModel):
     evidence_id: str
     candidate_id: str
@@ -157,9 +164,20 @@ class EvidenceRecord(BaseModel):
     description: str | None = None
     provisional_level: float | None = None
     verified_level: float | None = None
-    check_details: str | None = None
+    status_reason: str | None = None      # one sentence: why the proof has this status
+    check_details: list[EvidenceCheck] = Field(default_factory=list)
+    can_recheck: bool = False             # "Check again" is allowed (links not yet decided)
+    reviewed_at: str | None = None
+    review_note: str | None = None
     created_at: str | None = None
     analysis: dict | None = None          # regenerated roadmap after this change (POST only)
+
+
+class EvidenceReview(BaseModel):
+    """POST /api/roadmap/evidence/{evidence_id}/review (only when C4_ALLOW_REVIEW=1)."""
+    decision: Literal["approve", "reject"]
+    level: int | None = Field(default=None, ge=1, le=3)   # approved level; default and maximum 3/5
+    note: str | None = Field(default=None, max_length=500)
 
 
 class EvidenceDeleted(BaseModel):

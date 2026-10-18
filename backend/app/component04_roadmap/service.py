@@ -165,13 +165,33 @@ def _safe_file_name(name):
     return re.sub(r"[^A-Za-z0-9._ -]", "_", Path(name or "certificate").name)[:100]
 
 
+RECHECKABLE = ("github", "certificate_link")
+
+
+def can_recheck(item):
+    """Links can be checked again (e.g. GitHub was unreachable) until Component 01 or a reviewer decides."""
+    return ((item.get("proof_type") or item["type"]) in RECHECKABLE and item["status"] != "verified"
+            and not item.get("reviewed_at"))
+
+
 def public_evidence(item):
     """Evidence as returned to the student (the private file path is never exposed)."""
     out = {k: v for k, v in item.items() if k not in ("file_path", "verified_by_c1_assessment_id")}
     out["proof_type"] = item.get("proof_type") or item["type"]
     out["created_at"] = item.get("created_at") or item["submitted_at"]
     out["skill_name"] = engine().name.get(item["skill_id"], item["skill_id"])
+    out["can_recheck"] = can_recheck(item)
     return out
+
+
+def github_usernames(candidate_id):
+    """The student's GitHub usernames found by Component 01 in the latest CV assessment (read-only)."""
+    if not candidate_id:
+        return []
+    from app.component01_skill.repository import latest_assessment
+    details = latest_assessment(candidate_id) or {}
+    return sorted({p["handle"] for p in details.get("external_profiles") or []
+                   if isinstance(p, dict) and p.get("platform") == "github" and p.get("handle")})
 
 
 def submit_evidence(submission, candidate_id, upload=None):
@@ -195,7 +215,8 @@ def submit_evidence(submission, candidate_id, upload=None):
         "type": proof_type, "proof_type": proof_type, "url": url or "", "file_path": stored,
         "file_name": _safe_file_name(file_name) if stored else None,
         "description": (submission.description or "").strip() or None,
-        **evidence_check.check(proof_type, url, eng.name[submission.skill_id]),
+        **evidence_check.check(proof_type, url, eng.name[submission.skill_id], github_usernames(candidate_id),
+                               file_name=file_name, file_size=len(content) if content else None),
         "submitted_at": now, "created_at": now,
         "cv_level_at_submission": cv_levels(c1_profile(candidate_id)).get(submission.skill_id, 0.0),
     }
@@ -204,17 +225,70 @@ def submit_evidence(submission, candidate_id, upload=None):
     return {**public_evidence(repository.get_evidence(evidence_id)), "analysis": regenerate(candidate_id)}
 
 
+def recheck_evidence(evidence_id, owner):
+    """"Check again": re-runs the link checks (for example after GitHub was unreachable, or after the student
+    added their GitHub username in Component 01) and regenerates the roadmap."""
+    item = _own_evidence(evidence_id, owner)
+    proof_type = item.get("proof_type") or item["type"]
+    if proof_type not in RECHECKABLE:
+        raise EvidenceError("Uploaded files cannot be checked automatically; they wait for a reviewer.", 400)
+    if not can_recheck(item):
+        raise EvidenceError("This proof has already been decided, so it cannot be checked again.", 409)
+    url = item["url"]
+    if proof_type == "github":                               # older rows may still end with ".git" etc.
+        url = evidence_check.normalize_github_url(url) or url
+    result = evidence_check.check(proof_type, url, engine().name.get(item["skill_id"], item["skill_id"]),
+                                  github_usernames(owner))
+    repository.update_evidence(evidence_id, url=url, **result)
+    send_to_component01(repository.get_evidence(evidence_id))
+    return {**public_evidence(repository.get_evidence(evidence_id)), "analysis": regenerate(owner)}
+
+
+def review_allowed():
+    return os.getenv("C4_ALLOW_REVIEW", "").strip() == "1"
+
+
+def review_evidence(evidence_id, decision, level=None, note=None):
+    """Manual reviewer decision (only when C4_ALLOW_REVIEW=1; the router enforces it). Approved proof is
+    provisional at `level` (default and maximum 3/5: C4 never goes above the provisional cap; Component 01
+    is the main verifier). Rejected proof adds nothing."""
+    if not review_allowed():
+        raise EvidenceError("Reviewing is turned off. Set C4_ALLOW_REVIEW=1 on the backend to enable it.", 403)
+    item = repository.get_evidence(evidence_id)
+    if not item:
+        raise EvidenceError("Evidence not found.", 404)
+    if item["status"] == "verified":
+        raise EvidenceError("This proof was already verified by Component 01.", 409)
+    note = (note or "").strip() or None
+    approved = decision == "approve"
+    level = min(float(level or evidence_check.PROVISIONAL_LEVEL_LINK), evidence_check.PROVISIONAL_LEVEL_LINK)
+    steps = [s for s in item["check_details"] if s.get("check") != "Reviewer check"]
+    steps.append({"check": "Reviewer check", "result": "passed" if approved else "failed",
+                  "detail": note or ("A reviewer approved this proof." if approved else "A reviewer rejected this proof.")})
+    reason = (f"Approved by a reviewer. Counts as level {level:g}/5." if approved else "Rejected by a reviewer.") + (
+        f" Note: {note}" if note else "")
+    repository.update_evidence(evidence_id, status="provisional" if approved else "rejected",
+                               provisional_level=level if approved else None, check_details=steps,
+                               status_reason=reason, reviewed_at=_now(), review_note=note)
+    return {**public_evidence(repository.get_evidence(evidence_id)), "analysis": regenerate(item["candidate_id"])}
+
+
 def list_evidence(candidate_id):
     return [public_evidence(item) for item in repository.evidence_list(candidate_id)]
 
 
-def delete_evidence(evidence_id, owner):
-    """Students can remove their own evidence; the roadmap is regenerated without it."""
+def _own_evidence(evidence_id, owner):
     item = repository.get_evidence(evidence_id)
     if not item:
         raise EvidenceError("Evidence not found.", 404)
     if item["candidate_id"] != owner:
-        raise EvidenceError("You can only remove your own evidence.", 403)
+        raise EvidenceError("You can only manage your own evidence.", 403)
+    return item
+
+
+def delete_evidence(evidence_id, owner):
+    """Students can remove their own evidence; the roadmap is regenerated without it."""
+    _own_evidence(evidence_id, owner)
     repository.delete_evidence(evidence_id)
     return {"deleted": True, "evidence_id": evidence_id, "analysis": regenerate(owner)}
 
@@ -240,8 +314,11 @@ def send_to_component01(evidence):
         return None                                          # Component 01 unavailable: keep the C4 result
     if isinstance(level, bool) or not isinstance(level, (int, float)) or not 0 <= level <= 5:
         return None
+    steps = list(evidence.get("check_details") or []) + [
+        {"check": "Component 01 check", "result": "passed", "detail": f"Component 01 confirmed level {level:g}/5."}]
     repository.update_evidence(evidence["evidence_id"], status="verified", verified_level=float(level),
-                               verified_at=_now(), check_details="Verified by Component 01.")
+                               verified_at=_now(), check_details=steps,
+                               status_reason=f"Verified by Component 01 at level {level:g}/5.")
     return float(level)
 
 
@@ -266,12 +343,14 @@ def evidence_summary(candidate_id):
                                                   "detail": None, "evidence_id": None, "rank": -1})
         rank = EVIDENCE_STATUS_ORDER.get(item["status"], 0)
         if rank >= entry["rank"]:
-            entry.update(status=item["status"], detail=item.get("check_details"),
+            entry.update(status=item["status"], detail=item.get("status_reason"),
                          evidence_id=item["evidence_id"], rank=rank)
         level = _usable_level(item)
         if level is not None and (entry["level"] is None or level > entry["level"]):
             entry["level"] = float(level)
-            entry["source"] = "Component 01 (verified)" if item["status"] == "verified" else EVIDENCE_SOURCE[proof_type]
+            entry["source"] = ("Component 01 (verified)" if item["status"] == "verified"
+                               else "Certificate (reviewer approved)" if proof_type == "certificate_file"
+                               and item["status"] == "provisional" else EVIDENCE_SOURCE[proof_type])
     for entry in out.values():
         entry.pop("rank")
     return out
@@ -299,6 +378,8 @@ def sync_evidence(candidate_id, c1=None):
     for item in open_items:
         if levels.get(item["skill_id"], 0.0) > item["cv_level_at_submission"]:
             repository.set_evidence_status(item["evidence_id"], "verified", now, c1["assessment_id"])
+            repository.update_evidence(item["evidence_id"],
+                                       status_reason="Confirmed: your updated CV in Component 01 now shows this skill.")
             verified.append(item["skill_id"])
     return verified
 

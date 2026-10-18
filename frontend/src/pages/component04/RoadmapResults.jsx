@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Icon from '../../components/Icon.jsx'
-import { deleteEvidence, getAnalysis, hasCvSession, listEvidence, submitEvidence } from './assessmentApi.js'
+import { deleteEvidence, getAnalysis, hasCvSession, listEvidence, recheckEvidence, submitEvidence } from './assessmentApi.js'
 import './RoadmapResults.css'
 
 const STATUS = {
@@ -80,7 +80,7 @@ function Readiness({ readiness, assessment }) {
 }
 
 const PROOF_TYPES = [
-  { value: 'github', label: 'GitHub repository', hint: 'https://github.com/<owner>/<repo>' },
+  { value: 'github', label: 'GitHub repository', hint: 'https://github.com/<owner>/<repo> – a repository you own or contributed to' },
   { value: 'certificate_link', label: 'Certificate link', hint: 'For example a Credly, Coursera or Microsoft Learn link' },
   { value: 'certificate_file', label: 'Certificate file', hint: 'PDF, PNG or JPG, up to 5 MB' },
 ]
@@ -121,7 +121,8 @@ function ProofModal({ skill, onClose, onSubmitted }) {
   return <div className="c4r-modal-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) onClose() }}>
     <div className="card c4r-modal" role="dialog" aria-modal="true" aria-labelledby={`${id}-title`}>
       <h3 id={`${id}-title`}>Add proof for {skill.skill_name}</h3>
-      <p className="muted">Optional. A matching GitHub repository or a certificate from a trusted site gives a provisional level of 3/5; Component 01 can confirm a higher level later.</p>
+      <p className="muted">Optional. A GitHub repository that is yours and uses this skill, or a certificate from a trusted site, gives a provisional level of 3/5. An uploaded certificate file counts as 2/5 until a reviewer checks it. Component 01 can confirm a higher level later.</p>
+      {type === 'github' && <p className="muted">We compare the repository owner and contributors with the GitHub username in your Component 01 CV upload, then look for signs of {skill.skill_name} in its languages, topics, README and files.</p>}
       <form className="c4r-evidence-form" onSubmit={handleSubmit} noValidate>
         <fieldset>
           <legend>Type of proof</legend>
@@ -153,7 +154,10 @@ function ProofModal({ skill, onClose, onSubmitted }) {
 
 function EvidenceBadge({ skill, onRetry }) {
   const status = skill.evidence_status
-  if (status === 'pending') return <p className="c4r-evidence-status is-pending">Proof submitted – pending review</p>
+  if (status === 'pending') return <div className="c4r-evidence-status is-pending">
+    <span>Proof submitted – pending{skill.evidence_level ? ` (counts as ${Math.round(skill.evidence_level)}/5 for now)` : ''}</span>
+    {skill.evidence_detail && <small className="c4r-evidence-reason">{skill.evidence_detail} See “My evidence” below.</small>}
+  </div>
   if (status === 'provisional') return <p className="c4r-evidence-status is-provisional">Provisionally verified ({Math.round(skill.evidence_level ?? 3)}/5)</p>
   if (status === 'verified') return <p className="c4r-evidence-status is-verified">✓ Verified</p>
   if (status === 'rejected') return <div className="c4r-evidence-status is-rejected">
@@ -211,10 +215,26 @@ function SkillGaps({ gaps, onEvidenceChange }) {
   </section>
 }
 
+const CHECK_RESULT = {
+  passed: { icon: '✓', label: 'Passed', className: 'is-passed' },
+  failed: { icon: '✗', label: 'Failed', className: 'is-failed' },
+  not_checked: { icon: '–', label: 'Not checked', className: 'is-skipped' },
+}
+const PROOF_LABEL = { github: 'GitHub repository', certificate_link: 'Certificate link', certificate_file: 'Certificate file' }
+
+function evidenceStatusLabel(item) {
+  if (item.status === 'pending') return item.proof_type === 'certificate_file'
+    ? `Pending review (counts as ${Math.round(item.provisional_level ?? 2)}/5)` : 'Pending'
+  if (item.status === 'provisional') return `Provisionally verified (${Math.round(item.provisional_level ?? 3)}/5)`
+  if (item.status === 'verified') return `✓ Verified${item.verified_level != null ? ` (${Math.round(item.verified_level)}/5)` : ''}`
+  if (item.status === 'rejected') return 'Not accepted'
+  return item.status
+}
+
 function EvidencePanel({ version, onEvidenceChange }) {
   const [items, setItems] = useState([])
   const [error, setError] = useState('')
-  const [removing, setRemoving] = useState(null)
+  const [busy, setBusy] = useState(null)                     // { id, action: 'remove' | 'recheck' }
 
   useEffect(() => {
     let active = true
@@ -222,30 +242,51 @@ function EvidencePanel({ version, onEvidenceChange }) {
     return () => { active = false }
   }, [version])
 
-  async function remove(item) {
-    setRemoving(item.evidence_id)
-    try { onEvidenceChange(await deleteEvidence(item.evidence_id)) }
+  async function run(item, action) {
+    setBusy({ id: item.evidence_id, action })
+    setError('')
+    try { onEvidenceChange(await (action === 'remove' ? deleteEvidence : recheckEvidence)(item.evidence_id)) }
     catch (err) { setError(err.message) }
-    finally { setRemoving(null) }
+    finally { setBusy(null) }
   }
 
   if (!hasCvSession() || (!items.length && !error)) return null
-  const statusLabel = item => ({ pending: 'Pending review', provisional: `Provisional (${Math.round(item.provisional_level ?? 3)}/5)`,
-    verified: '✓ Verified', rejected: 'Not accepted' })[item.status] || item.status
+  const isBusy = (item, action) => busy?.id === item.evidence_id && busy.action === action
   return <section className="card c4r-section" aria-labelledby="c4r-evidence-title">
     <h2 id="c4r-evidence-title">My evidence</h2>
-    <p className="muted">Proof you added for claimed skills. Removing an item updates your roadmap.</p>
+    <p className="muted">Proof you added for claimed skills, with what was checked. Removing or re-checking an item updates your roadmap.</p>
     {error && <p className="error-message" role="alert">{error}</p>}
-    <div className="table-scroll"><table className="c4r-history">
-      <thead><tr><th>Skill</th><th>Proof</th><th>Status</th><th><span className="sr-only">Actions</span></th></tr></thead>
-      <tbody>{items.map(item => <tr key={item.evidence_id}>
-        <td>{item.skill_name}</td>
-        <td className="c4r-proof-cell">{item.url ? <a href={item.url} target="_blank" rel="noopener noreferrer">{item.url.replace(/^https:\/\//, '')}</a> : item.file_name}</td>
-        <td title={item.check_details || undefined}>{statusLabel(item)}</td>
-        <td><button type="button" className="button-secondary c4r-remove" disabled={removing === item.evidence_id} onClick={() => remove(item)}>
-          {removing === item.evidence_id ? 'Removing…' : 'Remove'}</button></td>
-      </tr>)}</tbody>
-    </table></div>
+    <ul className="c4r-evidence-list">
+      {items.map(item => <li key={item.evidence_id} className={`c4r-evidence-item is-${item.status}`}>
+        <div className="c4r-evidence-head">
+          <div>
+            <strong>{item.skill_name}</strong>
+            <small className="muted"> · {PROOF_LABEL[item.proof_type] || item.proof_type}</small>
+            <p className="c4r-proof-cell">{item.url
+              ? <a href={item.url} target="_blank" rel="noopener noreferrer">{item.url.replace(/^https:\/\//, '')}</a>
+              : item.file_name}</p>
+          </div>
+          <span className={`c4r-evidence-status is-${item.status}`}>{evidenceStatusLabel(item)}</span>
+        </div>
+        {item.status_reason && <p className="c4r-evidence-reason">{item.status_reason}</p>}
+        {item.check_details?.length > 0 && <details className="c4r-checks" open={item.status !== 'provisional' && item.status !== 'verified'}>
+          <summary>What we checked</summary>
+          <ul>{item.check_details.map((step, i) => {
+            const result = CHECK_RESULT[step.result] || CHECK_RESULT.not_checked
+            return <li key={`${step.check}-${i}`} className={result.className}>
+              <span className="c4r-check-icon" aria-hidden="true">{result.icon}</span>
+              <span><strong>{step.check}</strong> <span className="sr-only">{result.label}</span>{step.detail && <small>{step.detail}</small>}</span>
+            </li>
+          })}</ul>
+        </details>}
+        <div className="c4r-actions c4r-evidence-actions">
+          {item.can_recheck && <button type="button" className="button-secondary" disabled={Boolean(busy)} onClick={() => run(item, 'recheck')}>
+            {isBusy(item, 'recheck') ? 'Checking…' : 'Check again'}</button>}
+          <button type="button" className="button-secondary c4r-remove" disabled={Boolean(busy)} onClick={() => run(item, 'remove')}>
+            {isBusy(item, 'remove') ? 'Removing…' : 'Remove'}</button>
+        </div>
+      </li>)}
+    </ul>
   </section>
 }
 

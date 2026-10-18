@@ -9,7 +9,7 @@ from . import repository, service
 from .errors import EvidenceError, ModelsUnavailable
 from .evidence_check import MAX_FILE_BYTES
 from .schemas import (AnalysisResponse, AssessmentRecord, AssessmentSaved, AssessmentSubmission, Career, EvidenceDeleted,
-                      EvidenceRecord, EvidenceSubmission, QuestionRequest, QuestionResponse)
+                      EvidenceRecord, EvidenceReview, EvidenceSubmission, QuestionRequest, QuestionResponse)
 
 router = APIRouter(prefix="/api/roadmap", tags=["Learning Roadmap & Skill Gap"])
 security = HTTPBearer(auto_error=False)
@@ -158,6 +158,35 @@ async def list_evidence(candidate_id: str, owner: Annotated[str | None, Depends(
         raise HTTPException(403 if owner else 401, "You can only see your own evidence.")
     await run_in_threadpool(_engine_or_503)
     return await run_in_threadpool(service.list_evidence, candidate_id)
+
+
+@router.post("/evidence/{evidence_id}/recheck", response_model=EvidenceRecord,
+             summary="Check your own GitHub / certificate link again and return the regenerated roadmap",
+             description="Use when GitHub could not be reached, or after adding your GitHub username in Component 01. "
+                         "Uploaded files cannot be re-checked (400); decided proof cannot be re-checked (409).")
+async def recheck_evidence(evidence_id: str, owner: Annotated[str | None, Depends(_candidate)]):
+    if not owner:
+        raise HTTPException(401, "Upload your CV in Component 01 to manage your evidence.")
+    await run_in_threadpool(_engine_or_503)
+    try:
+        return await run_in_threadpool(service.recheck_evidence, evidence_id, owner)
+    except EvidenceError as exc:
+        raise HTTPException(exc.status_code, str(exc)) from exc
+
+
+@router.post("/evidence/{evidence_id}/review", response_model=EvidenceRecord,
+             summary="Reviewer: approve or reject proof (only when C4_ALLOW_REVIEW=1)",
+             description="Disabled (403) unless the backend runs with C4_ALLOW_REVIEW=1. There is no reviewer login "
+                         "yet, so keep it off outside local testing. Approve sets a provisional level (default and "
+                         "maximum 3/5); reject removes the proof's level. Returns the regenerated roadmap.")
+async def review_evidence(evidence_id: str, body: EvidenceReview):
+    if not service.review_allowed():
+        raise HTTPException(403, "Reviewing is turned off. Set C4_ALLOW_REVIEW=1 on the backend to enable it.")
+    await run_in_threadpool(_engine_or_503)
+    try:
+        return await run_in_threadpool(service.review_evidence, evidence_id, body.decision, body.level, body.note)
+    except EvidenceError as exc:
+        raise HTTPException(exc.status_code, str(exc)) from exc
 
 
 @router.delete("/evidence/{evidence_id}", response_model=EvidenceDeleted,

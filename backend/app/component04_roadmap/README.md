@@ -55,23 +55,29 @@ Owner: Dewmi. Frontend: `frontend/src/pages/component04/`. Route: `/component04`
 | POST | `/api/roadmap/evidence` | multipart/form-data (or JSON): `candidate_id`, `skill_id`, `proof_type` = github \| certificate_link \| certificate_file, `url` or `file` (PDF/PNG/JPG, max 5 MB), `description`. Returns the evidence + regenerated `analysis`. |
 | GET | `/api/roadmap/evidence/{candidate_id}` | The student's evidence (own candidate only). |
 | DELETE | `/api/roadmap/evidence/{evidence_id}` | Removes own evidence (and its file); returns the regenerated `analysis`. |
+| POST | `/api/roadmap/evidence/{evidence_id}/recheck` | "Check again" for own GitHub / certificate links (e.g. GitHub was unreachable). Files: 400; already decided (verified or reviewed): 409. Returns the evidence + `analysis`. |
+| POST | `/api/roadmap/evidence/{evidence_id}/review` | Reviewer decision `{"decision": "approve" \| "reject", "level": 1-3, "note": "..."}`. **403 unless `C4_ALLOW_REVIEW=1`.** There is no reviewer login yet, so keep it off outside local testing. Approve: `provisional` at `level` (default and max 3/5); reject: adds nothing. |
 
 Invalid input returns **400** with a clear message (`errors.EvidenceError`). Files are stored in the private folder
 `backend/.data/component04_evidence/` (override `C4_EVIDENCE_DIR`), named by evidence ID; the path is never returned.
 
-**Simple checks** (`evidence_check.py`, run right after upload):
+Each evidence item has `status_reason` (one sentence: why it has this status), `check_details` (a list of
+`{check, result: passed | failed | not_checked, detail}`), and `can_recheck`. Older rows whose `check_details` was a
+plain string are returned as a one-item list.
+
+**Simple checks** (`evidence_check.py`, run right after upload and on "Check again"):
 
 | Proof | Check | Result |
 |---|---|---|
-| github | only `https://github.com/<owner>/<repo>`; GitHub REST API (`GITHUB_TOKEN` optional, 5 s timeout): exists, not empty, languages/name/description/topics match the skill (`SKILL_RULES`) | match: `provisional` 3/5; no match/not found/empty: `rejected` + reason; API error: `pending` |
+| github | Link cleaned to `https://github.com/<owner>/<repo>` (removes `.git`, trailing `/`, `/tree/...`, `/blob/...`, query). GitHub REST API (`GITHUB_TOKEN` optional but recommended: 60 calls/hour without it; 5 s timeout, follows redirects for renamed repos): **1.** exists and not empty; **2.** ownership: the owner is one of the student's GitHub usernames from the latest C1 assessment (`external_profiles`), or one of them is in the contributors list (a fork alone does not count); **3.** skill usage (`SKILL_RULES`): languages, name/description/topics, README, file names (e.g. `serverless.yml`, `.aws/`), and up to 3 dependency files (e.g. `boto3`, `aws-sdk` in `requirements.txt` / `package.json`). | all pass: `provisional` 3/5; not found / empty / not the student's / no skill signs: `rejected` + reason; no GitHub username in C1: `pending` ("add your GitHub username in Component 01, then Check again"); network error / rate limit: `pending` ("Could not reach GitHub, try again.") |
 | certificate_link | URL is never fetched; domain must be on `TRUSTED_CERTIFICATE_DOMAINS` | trusted: `provisional` 3/5; otherwise `pending` |
-| certificate_file | cannot be checked automatically | `pending`, level 2/5 |
+| certificate_file | cannot be checked automatically | `pending` review, counts as 2/5 until a reviewer decides |
 
 **In the analysis:** proficiency = max(CV level, best usable proof level) / 5. Usable: provisional (capped at
 `PROVISIONAL_LEVEL_LINK` = 3), pending file (`PROVISIONAL_LEVEL_FILE` = 2), verified (level from Component 01).
 Rejected and pending links add nothing. Each skill has `evidence_status`, `evidence_source`
-(`CV` / `GitHub (provisional)` / `Certificate (provisional)` / `Certificate (pending review)`), `evidence_level`
-and `evidence_detail`. Provisional proof therefore also raises the readiness score.
+(`CV` / `GitHub (provisional)` / `Certificate (provisional)` / `Certificate (pending review)` /
+`Certificate (reviewer approved)`), `evidence_level` and `evidence_detail` (the evidence's `status_reason`). Provisional proof therefore also raises the readiness score.
 
 **Component 01 (main verifier):**
 - `service.send_to_component01(evidence)` POSTs the evidence metadata to `C1_EVIDENCE_ENDPOINT` when that env var
