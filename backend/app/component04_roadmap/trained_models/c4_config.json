@@ -1,0 +1,84 @@
+{
+  "versions": {
+    "c4": "2.0",
+    "trained_at": "2026-10-17 08:17",
+    "training_data": "synthetic, 800 students in real C1/C3/form format",
+    "onet": "31.0"
+  },
+  "A": {
+    "model": "RandomForest",
+    "threshold": 0.35999999999999993,
+    "features": [
+      "current_proficiency",
+      "required_level",
+      "importance",
+      "is_essential",
+      "skill_level_ord",
+      "confidence_norm",
+      "confidence_missing",
+      "not_studied",
+      "competency_distance",
+      "confidence_proficiency_gap",
+      "hidden_weakness_flag",
+      "overconfidence_flag",
+      "skill_in_c1_profile",
+      "c1_evidence_strength",
+      "prereqs_met_ratio"
+    ],
+    "severity_classes": [
+      "none",
+      "moderate",
+      "critical"
+    ]
+  },
+  "B": {
+    "method": "learned transparent weighted score",
+    "weights": {
+      "f_gap_severity": 0.0712,
+      "f_demand_velocity": 0.0985,
+      "f_skill_dependency": 0.3159,
+      "f_career_relevance": 0.1689,
+      "f_user_confidence_inverse": 0.3455
+    },
+    "features": [
+      "f_gap_severity",
+      "f_demand_velocity",
+      "f_skill_dependency",
+      "f_career_relevance",
+      "f_user_confidence_inverse"
+    ]
+  },
+  "C": {
+    "model": "LinearRegression",
+    "features": [
+      "coverage_ratio",
+      "weighted_proficiency_ratio",
+      "essential_coverage_ratio",
+      "critical_gap_count",
+      "hot_technology_coverage",
+      "hidden_weakness_count",
+      "num_projects",
+      "num_certifications",
+      "num_internships",
+      "academic_year"
+    ]
+  },
+  "D": {
+    "model": "Ridge",
+    "features": [
+      "share_t",
+      "share_lag1",
+      "share_lag2",
+      "share_lag3",
+      "share_lag4",
+      "share_lag5",
+      "share_lag6",
+      "rolling_mean_3",
+      "rolling_mean_6",
+      "growth_1m",
+      "growth_3m",
+      "month_of_year"
+    ]
+  },
+  "inputs": "/content/drive/MyDrive/C4_research/C4_final/inputs"
+}
