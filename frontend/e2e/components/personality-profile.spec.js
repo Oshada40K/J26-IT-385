@@ -154,6 +154,70 @@ test.describe('Component 02 - Personality analysis', () => {
     await expect(page.getByText('7 of 52 answered')).toBeVisible()
   })
 
+  test('resets the questionnaire after confirmation, including the saved draft', async ({ page }) => {
+    await page.goto('/component02')
+    const reset = page.getByRole('button', { name: 'Reset Big Five questionnaire' })
+    await expect(page.getByText('Page 1 of 7 · 0 of 52 answered')).toBeVisible()
+    await expect(reset).toBeDisabled() // nothing to clear yet
+
+    await answerQuestionnairePage(page)
+    await page.getByRole('button', { name: 'Next page' }).click()
+    await page.locator('form').getByRole('group').first().getByRole('radio', { name: 'Agree', exact: true }).check()
+    await expect(page.getByText('Page 2 of 7 · 8 of 52 answered')).toBeVisible()
+
+    // Cancel keeps everything.
+    await reset.click()
+    const dialog = page.getByRole('alertdialog', { name: 'Reset Big Five questionnaire?' })
+    await expect(dialog).toContainText('Are you sure? Your answers for this part will be cleared.')
+    await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeFocused()
+    await dialog.getByRole('button', { name: 'Cancel' }).click()
+    await expect(dialog).toBeHidden()
+    await expect(page.getByText('Page 2 of 7 · 8 of 52 answered')).toBeVisible()
+
+    await reset.click()
+    await dialog.getByRole('button', { name: 'Reset' }).click()
+    await expect(dialog).toBeHidden()
+    await expect(page.getByText('Page 1 of 7 · 0 of 52 answered')).toBeVisible()
+    await expect(page.locator('form').getByRole('radio', { checked: true })).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: 'Big Five questionnaire' })).toBeFocused()
+
+    await page.reload()
+    await expect(page.getByText('Page 1 of 7 · 0 of 52 answered')).toBeVisible()
+  })
+
+  test('resets scored scenarios and removes them from the profile so far', async ({ page }) => {
+    await page.goto('/component02')
+    await completeScenarios(page)
+    await expectMeters(page, 'scenario choices')
+
+    await page.getByRole('button', { name: 'Reset Situational judgement' }).click()
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Reset' }).click()
+    await expect(page.getByRole('meter')).toHaveCount(0)
+    await expect(page.getByText('Complete any of the three parts')).toBeVisible()
+    await expect(stage(page, 'Situational judgement')).toContainText('To do')
+    await expect(stage(page, 'Your profile')).toBeDisabled()
+    await expect(page.locator('form').getByRole('radio', { checked: true })).toHaveCount(0)
+
+    await page.reload()
+    await expect(page.getByText(/^0 of \d+ scenarios answered$/)).toBeVisible()
+    await expect(page.getByText('Complete any of the three parts')).toBeVisible()
+  })
+
+  test('resets the written answers', async ({ page }) => {
+    await page.goto('/component02')
+    await stage(page, 'Behavioural answers').click()
+    await page.getByRole('textbox', { name: /Problem solving/ }).fill(ANSWERS.problem)
+    await page.getByRole('textbox', { name: /Teamwork/ }).fill(ANSWERS.team)
+
+    await page.getByRole('button', { name: 'Reset Behavioural answers' }).click()
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Reset' }).click()
+    for (const box of await page.getByRole('textbox').all()) await expect(box).toHaveValue('')
+    await expect(page.getByText('0 words in total · at least 20 needed')).toBeVisible()
+
+    await page.reload()
+    await expect(page.getByRole('textbox', { name: /Problem solving/ })).toHaveValue('')
+  })
+
   test('scores the situational judgement scenarios', async ({ page }) => {
     await page.goto('/component02')
     await completeScenarios(page)
