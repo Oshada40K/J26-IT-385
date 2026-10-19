@@ -4,7 +4,7 @@ import { analyseTextAnswers, assessProfile, getQuestionnaire, getScenarios, scor
 import './PersonalityProfile.css'
 
 const MIN_WORDS = 20 // the backend rejects shorter text
-const PAGE_SIZE = 13
+const MAX_PAGE_SIZE = 8 // pages are balanced, so 52 statements become 7 pages of 7-8
 const DRAFT_KEY = 'careernova-personality-draft'
 
 const QUESTIONS = [
@@ -23,7 +23,7 @@ const TRAITS = [
 ]
 
 const STAGES = [
-  { id: 'questionnaire', name: 'Big Five questionnaire', detail: '50 statements about how you see yourself', ready: true },
+  { id: 'questionnaire', name: 'Big Five questionnaire', detail: '52 statements (2 attention checks) · about 6 minutes', ready: true },
   { id: 'writing', name: 'Behavioural answers', detail: 'Short written answers about how you work', ready: true },
   { id: 'sjt', name: 'Situational judgement', detail: 'Realistic workplace scenarios', ready: true },
   { id: 'final', name: 'Your profile', detail: 'Combined result and consistency', ready: true },
@@ -102,8 +102,9 @@ function Questionnaire({ answers, onAnswer, onScored }) {
   if (loadError) return <div className="card"><p className="error-message" role="alert">{loadError}</p></div>
   if (!data) return <div className="card" role="status">Loading the questionnaire…</div>
 
-  const pages = Math.ceil(data.items.length / PAGE_SIZE)
-  const shown = data.items.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  const pages = Math.ceil(data.items.length / MAX_PAGE_SIZE)
+  const pageStart = n => Math.round(n * data.items.length / pages)
+  const shown = data.items.slice(pageStart(page), pageStart(page + 1))
   const answered = data.items.filter(i => answers[i.id]).length
   const pageDone = shown.every(i => answers[i.id])
   const allDone = answered === data.items.length
@@ -122,23 +123,37 @@ function Questionnaire({ answers, onAnswer, onScored }) {
     document.getElementById('personality-stage')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
+  // On a first answer, bring the next unanswered statement (or the page buttons) into view.
+  // Changing an earlier answer does not move the page.
+  function choose(id, value) {
+    const first = !answers[id]
+    onAnswer(id, value)
+    if (!first) return
+    const rest = shown.slice(shown.findIndex(i => i.id === id) + 1)
+    const target = rest.find(i => !answers[i.id])
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    requestAnimationFrame(() => document.getElementById(target ? `likert-${target.id}` : 'personality-questionnaire-actions')
+      ?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }))
+  }
+
   return <form className="card personality-form" onSubmit={submit}>
     <h2>Big Five questionnaire</h2>
-    <p className="muted">How well does each statement describe you as you generally are now, not as you wish to be? There are no right or wrong answers.</p>
+    <p className="personality-duration">About 6 minutes · {data.items.length} statements</p>
+    <p className="muted">How well does each statement describe you as you generally are now, not as you wish to be? There are no right or wrong answers. Two statements are attention checks that tell you exactly which answer to pick.</p>
     <div className="personality-progress" aria-label={`${answered} of ${data.items.length} answered`}>
       <span style={{ width: `${(answered / data.items.length) * 100}%` }} />
     </div>
     <p className="personality-progress-label muted">Page {page + 1} of {pages} · {answered} of {data.items.length} answered</p>
-    {shown.map((item, i) => <fieldset key={item.id} className="personality-likert">
-      <legend><span className="personality-likert-number">{page * PAGE_SIZE + i + 1}</span>{item.text}</legend>
+    {shown.map((item, i) => <fieldset key={item.id} id={`likert-${item.id}`} className="personality-likert">
+      <legend><span className="personality-likert-number">{pageStart(page) + i + 1}</span>{item.text}</legend>
       <div className="personality-likert-options">
         {data.scale_labels.map((label, index) => <label key={label} className={answers[item.id] === index + 1 ? 'is-selected' : ''}>
-          <input type="radio" name={item.id} value={index + 1} checked={answers[item.id] === index + 1} onChange={() => onAnswer(item.id, index + 1)} disabled={loading} />
+          <input type="radio" name={item.id} value={index + 1} checked={answers[item.id] === index + 1} onChange={() => choose(item.id, index + 1)} disabled={loading} />
           {label}
         </label>)}
       </div>
     </fieldset>)}
-    <div className="personality-submit">
+    <div className="personality-submit" id="personality-questionnaire-actions">
       <button type="button" className="button-secondary" onClick={() => goTo(page - 1)} disabled={page === 0 || loading}>Back</button>
       {page < pages - 1
         ? <button type="button" onClick={() => goTo(page + 1)} disabled={!pageDone}>Next page <Icon name="arrow" size={16} /></button>
@@ -346,13 +361,9 @@ export default function PersonalityProfile() {
       })}
     </nav>
 
+    {/* The profile comes first in the DOM so it sits above the form on one-column layouts;
+        on wide screens CSS places it in the right column. */}
     {draft.stage === 'final' && sources ? <FinalProfile draft={draft} /> : <div className="personality-layout">
-      {draft.stage === 'writing'
-        ? <Writing answers={draft.text} onAnswer={answer('text')} onScored={r => update({ writing: r })} />
-        : draft.stage === 'sjt'
-          ? <Scenarios answers={draft.choices} onAnswer={answer('choices')} onScored={r => update({ sjt: r })} />
-          : <Questionnaire answers={draft.likert} onAnswer={answer('likert')} onScored={r => update({ questionnaire: r })} />}
-
       <section className="card personality-results" aria-live="polite">
         <h2>Your profile so far</h2>
         {!sources ? <div className="personality-empty">
@@ -374,6 +385,12 @@ export default function PersonalityProfile() {
           {sources === 3 && <button type="button" className="button-ai personality-see-profile" onClick={() => update({ stage: 'final' })}>See my combined profile <Icon name="arrow" size={16} /></button>}
         </>}
       </section>
+
+      {draft.stage === 'writing'
+        ? <Writing answers={draft.text} onAnswer={answer('text')} onScored={r => update({ writing: r })} />
+        : draft.stage === 'sjt'
+          ? <Scenarios answers={draft.choices} onAnswer={answer('choices')} onScored={r => update({ sjt: r })} />
+          : <Questionnaire answers={draft.likert} onAnswer={answer('likert')} onScored={r => update({ questionnaire: r })} />}
     </div>}
   </div>
 }

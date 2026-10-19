@@ -75,12 +75,62 @@ test.describe('Component 02 - Personality analysis', () => {
 
   test('requires every statement on a questionnaire page before moving on', async ({ page }) => {
     await page.goto('/component02')
-    await expect(page.getByText('Page 1 of 4 · 0 of 52 answered')).toBeVisible()
+    await expect(page.getByText('Page 1 of 7 · 0 of 52 answered')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Next page' })).toBeDisabled()
     await answerQuestionnairePage(page)
-    await expect(page.getByText('Page 1 of 4 · 13 of 52 answered')).toBeVisible()
+    await expect(page.getByText('Page 1 of 7 · 7 of 52 answered')).toBeVisible()
     await page.getByRole('button', { name: 'Next page' }).click()
-    await expect(page.getByText('Page 2 of 4')).toBeVisible()
+    await expect(page.getByText('Page 2 of 7')).toBeVisible()
+  })
+
+  test('states the length, including the attention checks, and keeps pages short', async ({ page }) => {
+    await page.goto('/component02')
+    await expect(stage(page, 'Big Five questionnaire')).toContainText('52 statements (2 attention checks) · about 6 minutes')
+    await expect(page.getByText('About 6 minutes · 52 statements')).toBeVisible()
+    await expect(page.getByText(/Two statements are attention checks/)).toBeVisible()
+
+    const groups = page.locator('form').getByRole('group')
+    let total = 0
+    for (let n = 1; ; n++) {
+      await expect(page.getByText(`Page ${n} of 7`)).toBeVisible()
+      const count = await groups.count()
+      expect(count, `statements on page ${n}`).toBeGreaterThanOrEqual(7)
+      expect(count, `statements on page ${n}`).toBeLessThanOrEqual(8)
+      total += count
+      await answerQuestionnairePage(page)
+      const next = page.getByRole('button', { name: 'Next page' })
+      if (!await next.isVisible()) break
+      await next.click()
+    }
+    expect(total).toBe(52)
+  })
+
+  test('moves to the next statement after an answer', async ({ page }) => {
+    await page.goto('/component02')
+    const groups = page.locator('form').getByRole('group')
+    const offCentre = index => groups.nth(index).evaluate(el => {
+      const box = el.getBoundingClientRect()
+      return Math.abs(box.top + box.height / 2 - window.innerHeight / 2)
+    })
+    await groups.nth(0).getByRole('radio', { name: 'Agree', exact: true }).check()
+    await expect.poll(() => offCentre(1)).toBeLessThan(40)
+    await groups.nth(1).getByRole('radio', { name: 'Neutral', exact: true }).check()
+    await expect.poll(() => offCentre(2)).toBeLessThan(40)
+  })
+
+  test('keeps "Your profile so far" in view on wide screens and above the form on narrow ones', async ({ page }) => {
+    const profile = page.getByRole('heading', { name: 'Your profile so far' })
+    await page.goto('/component02')
+    await expect(page.getByText('Page 1 of 7')).toBeVisible()
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+    await expect(page.getByRole('button', { name: 'Next page' })).toBeInViewport()
+    await expect(profile).toBeInViewport()
+
+    await page.setViewportSize({ width: 1024, height: 800 })
+    await page.evaluate(() => window.scrollTo(0, 0))
+    await expect(profile).toBeInViewport()
+    const profileTop = (await profile.boundingBox()).y
+    expect(profileTop).toBeLessThan((await page.getByRole('heading', { name: 'Big Five questionnaire' }).boundingBox()).y)
   })
 
   test('scores the completed questionnaire into Big Five traits', async ({ page }) => {
@@ -101,7 +151,7 @@ test.describe('Component 02 - Personality analysis', () => {
     await page.goto('/component02')
     await answerQuestionnairePage(page)
     await page.reload()
-    await expect(page.getByText('13 of 52 answered')).toBeVisible()
+    await expect(page.getByText('7 of 52 answered')).toBeVisible()
   })
 
   test('scores the situational judgement scenarios', async ({ page }) => {

@@ -12,6 +12,7 @@
 .personality-form h2,.personality-results h2 { margin: 0 0 6px; }
 
 /* questionnaire */
+.personality-duration { margin: 0 0 6px; color: var(--component-accent); font-size: 12px; font-weight: 600; }
 .personality-progress { height: 6px; margin-top: 18px; border-radius: 999px; background: var(--color-background); overflow: hidden; }
 .personality-progress span { display: block; height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-ai)); transition: width var(--motion); }
 .personality-progress-label { margin: 8px 0 0; font-size: 12px; }
@@ -51,7 +52,9 @@
 .personality-form > p[role],.personality-form > .personality-hint { margin: 12px 0 0; font-size: 12px; }
 
 /* results */
-.personality-results { position: sticky; top: 24px; }
+/* First in the DOM; placed at the top of the right column and kept in view (scrolls inside if taller than the screen). */
+.personality-layout > .personality-results { grid-column: 2; grid-row: 1; position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; }
+.personality-layout > :not(.personality-results) { grid-column: 1; grid-row: 1; }
 .personality-empty { display: grid; justify-items: center; text-align: center; gap: 12px; padding: 36px 12px; }
 .personality-empty p { max-width: 260px; margin: 0; }
 .personality-legend { display: grid; gap: 6px; margin: 4px 0 6px; font-size: 12px; color: var(--color-text-secondary); }
@@ -115,7 +118,10 @@
 }
 @media (max-width: 1100px) {
   .personality-layout { grid-template-columns: 1fr; }
-  .personality-results { position: static; }
+  .personality-layout > .personality-results,.personality-layout > :not(.personality-results) { grid-column: auto; grid-row: auto; }
+  .personality-layout > .personality-results { position: static; max-height: none; overflow: visible; }
+  .personality-empty { grid-template-columns: auto 1fr; justify-items: start; text-align: left; padding: 8px 0 0; }
+  .personality-empty p { max-width: none; }
 }
 @media (max-width: 760px) {
   .card.personality-stages { grid-template-columns: 1fr; }
