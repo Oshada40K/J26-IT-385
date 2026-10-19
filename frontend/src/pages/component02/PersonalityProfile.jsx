@@ -88,6 +88,21 @@ function TraitRow({ trait, level, choices, writing }) {
 
 const smoothScroll = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
 
+// Answer handler shared by the questionnaire and the scenarios. On a first answer, bring the next
+// unanswered item on the page (or, after the last one, the page's buttons) into view.
+// Changing an earlier answer does not move the page.
+function answerAndAdvance({ items, answers, onAnswer, elementId, actionsId }) {
+  return (id, value) => {
+    const first = !answers[id]
+    onAnswer(id, value)
+    if (!first) return
+    const rest = items.slice(items.findIndex(i => i.id === id) + 1)
+    const target = rest.find(i => !answers[i.id])
+    requestAnimationFrame(() => document.getElementById(target ? elementId(target.id) : actionsId)
+      ?.scrollIntoView({ behavior: smoothScroll(), block: 'center' }))
+  }
+}
+
 // After a reset: move focus to the part's heading and scroll back to the start of the form.
 function returnToStart(headingId) {
   requestAnimationFrame(() => {
@@ -166,17 +181,7 @@ function Questionnaire({ answers, onAnswer, onScored, canReset, onReset }) {
     document.getElementById('personality-stage')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  // On a first answer, bring the next unanswered statement (or the page buttons) into view.
-  // Changing an earlier answer does not move the page.
-  function choose(id, value) {
-    const first = !answers[id]
-    onAnswer(id, value)
-    if (!first) return
-    const rest = shown.slice(shown.findIndex(i => i.id === id) + 1)
-    const target = rest.find(i => !answers[i.id])
-    requestAnimationFrame(() => document.getElementById(target ? `likert-${target.id}` : 'personality-questionnaire-actions')
-      ?.scrollIntoView({ behavior: smoothScroll(), block: 'center' }))
-  }
+  const choose = answerAndAdvance({ items: shown, answers, onAnswer, elementId: id => `likert-${id}`, actionsId: 'personality-questionnaire-actions' })
 
   function reset() {
     onReset()
@@ -243,6 +248,9 @@ function Scenarios({ answers, onAnswer, onScored, canReset, onReset }) {
     finally { setLoading(false) }
   }
 
+  // All scenarios are on one page, so the last one leads to the "Score my choices" row.
+  const choose = answerAndAdvance({ items: data.scenarios, answers, onAnswer, elementId: id => `scenario-${id}`, actionsId: 'personality-sjt-actions' })
+
   function reset() {
     onReset()
     setError('')
@@ -259,17 +267,17 @@ function Scenarios({ answers, onAnswer, onScored, canReset, onReset }) {
       <span style={{ width: `${(answered / data.scenarios.length) * 100}%` }} />
     </div>
     <p className="personality-progress-label muted">{answered} of {data.scenarios.length} scenarios answered</p>
-    {data.scenarios.map((s, i) => <fieldset key={s.id} className="personality-scenario">
+    {data.scenarios.map((s, i) => <fieldset key={s.id} id={`scenario-${s.id}`} className="personality-scenario">
       <legend><span className="step-number">{String(i + 1).padStart(2, '0')}</span><span><small>{s.topic}</small>{s.text}</span></legend>
       <div className="personality-scenario-options">
         {s.options.map(o => <label key={o.id} className={answers[s.id] === o.id ? 'is-selected' : ''}>
-          <input type="radio" name={s.id} value={o.id} checked={answers[s.id] === o.id} onChange={() => onAnswer(s.id, o.id)} disabled={loading} />
+          <input type="radio" name={s.id} value={o.id} checked={answers[s.id] === o.id} onChange={() => choose(s.id, o.id)} disabled={loading} />
           <span className="personality-option-letter" aria-hidden="true">{o.id}</span>
           <span>{o.text}</span>
         </label>)}
       </div>
     </fieldset>)}
-    <div className="personality-submit">
+    <div className="personality-submit" id="personality-sjt-actions">
       <span className={allDone ? 'muted' : 'personality-hint'}>{allDone ? 'All scenarios answered' : `${data.scenarios.length - answered} scenarios left`}</span>
       <button type="submit" className="button-ai" disabled={!allDone || loading}>{loading ? 'Scoring…' : <>Score my choices <Icon name="spark" size={16} /></>}</button>
     </div>

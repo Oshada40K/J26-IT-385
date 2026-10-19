@@ -59,6 +59,23 @@ async function completeWriting(page) {
   await page.getByRole('button', { name: 'Analyse my answers' }).click()
 }
 
+// Distance in px between an element's centre and the middle of the viewport (auto-scroll centres the next item).
+const offCentre = locator => locator.evaluate(el => {
+  const box = el.getBoundingClientRect()
+  return Math.abs(box.top + box.height / 2 - window.innerHeight / 2)
+})
+
+// scrollY once any smooth scroll has finished (unchanged across 300 ms).
+async function settledScrollY(page) {
+  let last = await page.evaluate(() => window.scrollY)
+  for (;;) {
+    await page.waitForTimeout(300)
+    const now = await page.evaluate(() => window.scrollY)
+    if (now === last) return now
+    last = now
+  }
+}
+
 async function expectMeters(page, source) {
   for (const trait of TRAITS) {
     await expect(page.getByRole('meter', { name: new RegExp(`^${trait} from ${source}`) })).toBeVisible()
@@ -108,14 +125,37 @@ test.describe('Component 02 - Personality analysis', () => {
   test('moves to the next statement after an answer', async ({ page }) => {
     await page.goto('/component02')
     const groups = page.locator('form').getByRole('group')
-    const offCentre = index => groups.nth(index).evaluate(el => {
-      const box = el.getBoundingClientRect()
-      return Math.abs(box.top + box.height / 2 - window.innerHeight / 2)
-    })
     await groups.nth(0).getByRole('radio', { name: 'Agree', exact: true }).check()
-    await expect.poll(() => offCentre(1)).toBeLessThan(40)
+    await expect.poll(() => offCentre(groups.nth(1))).toBeLessThan(40)
     await groups.nth(1).getByRole('radio', { name: 'Neutral', exact: true }).check()
-    await expect.poll(() => offCentre(2)).toBeLessThan(40)
+    await expect.poll(() => offCentre(groups.nth(2))).toBeLessThan(40)
+  })
+
+  test('moves to the next scenario after an answer, but not when an answer is changed', async ({ page }) => {
+    await page.goto('/component02')
+    await stage(page, 'Situational judgement').click()
+    const scenarios = page.locator('form').getByRole('group')
+    await expect(scenarios.first()).toBeVisible()
+    const count = await scenarios.count()
+
+    await scenarios.nth(0).getByRole('radio').first().check()
+    await expect.poll(() => offCentre(scenarios.nth(1))).toBeLessThan(40)
+
+    // Changing an answer already given leaves the page where it is.
+    const changed = scenarios.nth(0).getByRole('radio').nth(1)
+    await changed.scrollIntoViewIfNeeded()
+    const before = await settledScrollY(page)
+    await changed.check()
+    expect(await settledScrollY(page)).toBe(before)
+
+    for (let i = 1; i < count - 1; i++) {
+      await scenarios.nth(i).getByRole('radio').first().check()
+      await expect.poll(() => offCentre(scenarios.nth(i + 1))).toBeLessThan(40)
+    }
+    // After the last scenario, the button row comes fully into view (it sits too near the
+    // end of the page to be centred).
+    await scenarios.nth(count - 1).getByRole('radio').first().check()
+    await expect(page.getByRole('button', { name: 'Score my choices' })).toBeInViewport({ ratio: 1 })
   })
 
   test('keeps "Your profile so far" in view on wide screens and above the form on narrow ones', async ({ page }) => {
