@@ -1,4 +1,4 @@
-"""Turn the exporter's SHAP output into plain-language sentences for candidates.
+"""Turn the exporter's SHAP output into plain-language content for candidates.
 
 The model, its scores and its SHAP values are unchanged; this only rewords them.
 """
@@ -14,19 +14,33 @@ TECH_GAPS = {
     "technology_category_coverage": "you cover only some of this job's tool categories",
     "in_demand_category_coverage": "you are missing some of this job's in-demand tools",
 }
+TECH_LABELS = {
+    "technology_relevance": "Technical skills used in this job",
+    "technology_category_coverage": "Tool category coverage",
+    "in_demand_category_coverage": "In-demand tool coverage",
+}
+
+
+def _is_soft(factor):
+    return factor["feature"].startswith(SOFT_PREFIX)
 
 
 def _phrase(factor):
-    name = factor["feature"]
-    if name.startswith(SOFT_PREFIX):
+    if _is_soft(factor):
         return factor["meaning"].split(":")[0]
-    return TECH_PHRASES.get(name, factor["meaning"])
+    return TECH_PHRASES.get(factor["feature"], factor["meaning"])
 
 
 def _gap(factor):
-    if factor["feature"].startswith(SOFT_PREFIX):
+    if _is_soft(factor):
         return f"less evidence of {_phrase(factor)} than this job expects"
     return TECH_GAPS.get(factor["feature"], factor["meaning"])
+
+
+def _label(factor):
+    if _is_soft(factor):
+        return _phrase(factor)
+    return TECH_LABELS.get(factor["feature"], factor["meaning"])
 
 
 def _join(items):
@@ -41,6 +55,21 @@ def _impact(points, total):
     return "the main reason" if share >= 0.5 else "a strong reason" if share >= 0.15 else "a small boost"
 
 
+def _key_reasons(job):
+    positives = job["positive_shap_factors"]
+    total = sum(f["shap_score_points"] for f in positives)
+    tech = [f for f in positives if not _is_soft(f)]
+    soft = [f for f in positives if _is_soft(f)]
+    reasons = [f"{_impact(f['shap_score_points'], total).capitalize()} for this match: {_phrase(f)}."
+               for f in tech[:2]]
+    if soft:
+        reasons.append(f"Your soft skills also fit what this job needs, especially {_join(_phrase(f) for f in soft[:3])}.")
+    negatives = job["negative_shap_factors"][:2]
+    if negatives:
+        reasons.append(f"What lowered your score: {_join(_gap(f) for f in negatives)}.")
+    return reasons
+
+
 def friendly_explanation(job, eligible_occupations):
     title = job["job_title"]
     points = [f"{title} is your best match out of {eligible_occupations} occupations, "
@@ -52,22 +81,27 @@ def friendly_explanation(job, eligible_occupations):
         extra = f" and {len(matched) - 4} more" if len(matched) > 4 else ""
         points.append(f"Your technical skills in {names}{extra} are used in this job.")
 
-    positives = job["positive_shap_factors"]
-    total = sum(f["shap_score_points"] for f in positives)
-    tech = [f for f in positives if not f["feature"].startswith(SOFT_PREFIX)]
-    soft = [f for f in positives if f["feature"].startswith(SOFT_PREFIX)]
-    for f in tech[:2]:
-        points.append(f"{_impact(f['shap_score_points'], total).capitalize()} for this match: "
-                      f"{_phrase(f)}.")
-    if soft:
-        points.append(f"Your soft skills also fit what this job needs, especially {_join(_phrase(f) for f in soft[:3])}.")
-
-    negatives = job["negative_shap_factors"][:2]
-    if negatives:
-        points.append(f"What lowered your score: {_join(_gap(f) for f in negatives)}.")
+    points.extend(_key_reasons(job))
 
     missing = job["unobserved_in_demand_technology_examples"][:5]
     if missing:
         points.append(f"To become a stronger candidate, consider learning {_join(missing)}, "
                       f"which are in demand for {title} roles.")
     return points
+
+
+def explanation_details(job, eligible_occupations):
+    """Structured, plain-language pieces of the same explanation for the UI."""
+    matched = sorted(job["matched_technologies"], key=lambda t: -t["candidate_level_0_to_5"])
+    factors = [{"label": _label(f), "points": round(f["shap_score_points"], 2), "effect": effect}
+               for effect, group, limit in [("positive", job["positive_shap_factors"], 5),
+                                            ("negative", job["negative_shap_factors"], 3)]
+               for f in group[:limit]]
+    return {
+        "friendly_explanation": friendly_explanation(job, eligible_occupations),
+        "key_reasons": _key_reasons(job),
+        "match_score": job["match_score_0_to_100"],
+        "matched_technologies": [t["technology"] for t in matched],
+        "skills_to_learn": job["unobserved_in_demand_technology_examples"][:8],
+        "factors": factors,
+    }

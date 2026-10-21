@@ -1,156 +1,145 @@
 // Owner: Oshada - Component 03: Explainable Career Recommendation.
-// Calls the three career APIs and shows their responses. The backend builds the
-// recommendation from the Component 01 and 02 profiles for the saved candidate.
-import { useState } from 'react'
-import { useLocation } from 'react-router-dom'
+// Loads the three career APIs and presents them as one result view. The backend
+// builds the recommendation from the Component 01 and 02 profiles for the saved candidate.
+import { useEffect, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { API_BASE_URL } from '../../api/client.js'
 import { savedSession } from '../component01/skillApi.js'
 import { ENDPOINTS, describeCareerError, getCareerResult } from './careerApi.js'
+import './CareerRecommendation.css'
 
-const styles = {
-  card: { background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 16, padding: 24, marginBottom: 20 },
-  button: { padding: '8px 14px', border: 'none', borderRadius: 8, color: 'var(--color-surface)', cursor: 'pointer' },
-  buttonDisabled: { opacity: 0.6, cursor: 'not-allowed' },
-  muted: { color: 'var(--color-text-secondary)', margin: '0 0 12px' },
-  error: { color: 'var(--color-danger-text)', background: 'var(--color-danger-soft)', border: '1px solid var(--color-border)', borderRadius: 8, padding: 10 },
-  pre: { background: 'var(--color-background)', border: '1px solid var(--color-border)', borderRadius: 8, padding: 10, overflowX: 'auto', fontSize: 11 },
-  bestJob: { fontSize: 22, fontWeight: 'bold', color: 'var(--color-primary)', margin: '8px 0' },
-  table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', borderBottom: '1px solid var(--color-border)', padding: '6px 8px' },
-  td: { borderBottom: '1px solid var(--color-border)', padding: '6px 8px' },
-  barTrack: { background: 'var(--color-primary-soft)', borderRadius: 8, height: 10, width: '100%' },
-  meta: { display: 'grid', gridTemplateColumns: 'minmax(100px, 160px) minmax(0, 1fr)', gap: '4px 16px', margin: 0 },
-}
-
-function Button({ loading, onClick, children }) {
+function ScoreRing({ score }) {
+  const radius = 64
+  const circumference = 2 * Math.PI * radius
+  const [shown, setShown] = useState(0)
+  useEffect(() => { const id = requestAnimationFrame(() => setShown(score)); return () => cancelAnimationFrame(id) }, [score])
   return (
-    <button
-      className="button-ai"
-      style={{ ...styles.button, ...(loading ? styles.buttonDisabled : {}) }}
-      onClick={onClick}
-      disabled={loading}
-    >
-      {loading ? 'Loading...' : children}
-    </button>
-  )
-}
-
-function RawJson({ data }) {
-  return (
-    <details style={{ marginTop: 12 }}>
-      <summary style={{ cursor: 'pointer' }}>Raw JSON response</summary>
-      <pre style={styles.pre}>{JSON.stringify(data, null, 2)}</pre>
-    </details>
-  )
-}
-
-function ApiSection({ title, endpoint, state, onLoad, children }) {
-  return (
-    <div className={`card api-card ${title === 'Explanation' ? 'ai-section' : ''}`} style={{ ...styles.card, background: undefined }}>
-      <h2 style={{ margin: '0 0 4px' }}>{title}</h2>
-      <p style={styles.muted}>
-        GET <code>{endpoint}</code>
-      </p>
-      {state.error && <p role="alert" style={styles.error}>{state.error}</p>}
-      {state.data && (
-        <>
-          {children(state.data)}
-          <RawJson data={state.data} />
-        </>
-      )}
-      <div style={{ marginTop: 12 }}>
-        <Button loading={state.loading} onClick={onLoad}>
-          {state.data ? 'Reload' : 'Load'}
-        </Button>
+    <div className="c3-ring" role="img" aria-label={`Match score ${Math.round(score)} out of 100`}>
+      <svg width="100%" height="100%" viewBox="0 0 150 150">
+        <circle className="c3-ring-track" cx="75" cy="75" r={radius} fill="none" strokeWidth="12" />
+        <circle className="c3-ring-fill" cx="75" cy="75" r={radius} fill="none" strokeWidth="12"
+          strokeDasharray={circumference} strokeDashoffset={circumference * (1 - shown / 100)} />
+      </svg>
+      <div className="c3-ring-value">
+        <strong>{Math.round(score)}</strong>
+        <small>MATCH / 100</small>
       </div>
     </div>
   )
 }
 
-function BestJob({ data }) {
+function Hero({ title, score, occupations, matchedCount }) {
   return (
-    <>
-      <div className="best-match-label">Your strongest career match</div>
-      <div className="best-job-name" style={styles.bestJob}>{data.best_job}</div>
-      {data.unrecognised_skills?.length > 0 && (
-        <p>Unrecognised skills: {data.unrecognised_skills.join(', ')}</p>
-      )}
-    </>
+    <section className="c3-hero">
+      <div>
+        <div className="c3-hero-label">★ YOUR BEST CAREER MATCH</div>
+        <h2>{title}</h2>
+        <p>Ranked first out of {occupations} occupations by comparing your CV skills and soft skills with O*NET job requirements.</p>
+        <div className="c3-hero-meta">
+          {matchedCount > 0 && <span>{matchedCount} of your skills used in this job</span>}
+          <span>Explained with SHAP</span>
+        </div>
+      </div>
+      {score != null && <ScoreRing score={score} />}
+    </section>
   )
 }
 
-function TopJobs({ data }) {
+function WhyCard({ reasons }) {
   return (
-    <div className="table-scroll"><table style={{ ...styles.table, minWidth: 500 }}>
-      <thead>
-        <tr>
-          <th style={styles.th}>Rank</th>
-          <th style={styles.th}>Job</th>
-          <th style={{ ...styles.th, width: '35%' }}>Score (0-100)</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.jobs.map((job) => (
-          <tr key={job.ranking} className={job.ranking === 1 ? 'top-job-row' : ''}>
-            <td style={styles.td}><span className="rank-badge">{job.ranking}</span></td>
-            <td style={{ ...styles.td, fontWeight: job.ranking === 1 ? 'bold' : 'normal' }}>{job.job}</td>
-            <td style={styles.td}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={styles.barTrack}>
-                  <div className="score-fill" style={{ width: `${job.score}%` }} />
-                </div>
-                <span className="score-value" style={{ minWidth: 44, textAlign: 'right' }}>{job.score.toFixed(2)}</span>
-              </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table></div>
-  )
-}
-
-function Explanation({ data }) {
-  // The backend returns one paragraph; show each sentence as its own point.
-  const sentences = data.explanation.split(/(?<=\.)\s+/).filter(Boolean)
-  const friendly = data.friendly_explanation || []
-  return (
-    <>
-      <div className="eyebrow">WHY THIS CAREER</div>
-      <ul className="explanation-list">
-        {(friendly.length ? friendly : sentences).map((s, i) => (
-          <li key={i} style={{ marginBottom: 4 }}>{s}</li>
-        ))}
+    <div className="c3-card">
+      <h3>Why this career?</h3>
+      <p className="c3-card-sub">The main reasons behind your recommendation</p>
+      <ul className="c3-reasons">
+        {reasons.map((reason) => {
+          const down = reason.startsWith('What lowered')
+          return (
+            <li key={reason}>
+              <span className={`c3-reason-icon ${down ? 'down' : ''}`}>{down ? '−' : '✓'}</span>
+              <span>{reason}</span>
+            </li>
+          )
+        })}
       </ul>
-      {friendly.length > 0 && (
-        <details style={{ marginTop: 8 }}>
-          <summary className="eyebrow" style={{ cursor: 'pointer' }}>TECHNICAL DETAILS (SHAP)</summary>
-          <ul className="explanation-list">
-            {sentences.map((s, i) => (
-              <li key={i} style={{ marginBottom: 4 }}>{s}</li>
-            ))}
-          </ul>
-        </details>
-      )}
-    </>
+    </div>
   )
 }
 
-function ModelInfo({ data }) {
+function FactorChart({ factors, shapText }) {
+  const max = Math.max(...factors.map((f) => Math.abs(f.points)), 1)
   return (
-    <div className="card api-card" style={styles.card}>
-      <h2 style={{ margin: '0 0 12px' }}>Model information</h2>
-      <dl style={styles.meta}>
-        <dt>Candidate ID</dt>
-        <dd style={{ margin: 0 }}>{data.candidate_id}</dd>
-        <dt>Model</dt>
-        <dd style={{ margin: 0 }}>{data.model_type}</dd>
-        <dt>O*NET version</dt>
-        <dd style={{ margin: 0 }}>{data.onet_version}</dd>
-        <dt>Occupations compared</dt>
-        <dd style={{ margin: 0 }}>{data.eligible_occupations}</dd>
-        <dt>Score meaning</dt>
-        <dd style={{ margin: 0 }}>{data.score_meaning}</dd>
-      </dl>
+    <div className="c3-card">
+      <h3>What shaped your score</h3>
+      <p className="c3-card-sub">Each factor's effect on the match score, in points</p>
+      {factors.map((f) => (
+        <div className="c3-factor" key={`${f.effect}-${f.label}`}>
+          <span className="c3-factor-label" title={f.label}>{f.label}</span>
+          <div className="c3-factor-track">
+            <div className={`c3-factor-bar ${f.effect}`} style={{ width: `${Math.max((Math.abs(f.points) / max) * 100, 2)}%` }} />
+          </div>
+          <span className={`c3-factor-points ${f.effect}`}>{f.points > 0 ? '+' : ''}{f.points.toFixed(1)}</span>
+        </div>
+      ))}
+      <div className="c3-legend"><span><i />Raised the score</span><span><i className="negative" />Lowered the score</span></div>
+      <details className="c3-details">
+        <summary>Technical details (SHAP)</summary>
+        <ul>{shapText.map((s) => <li key={s}>{s}</li>)}</ul>
+      </details>
+    </div>
+  )
+}
+
+function SkillsCard({ title, subtitle, skills, kind, children }) {
+  return (
+    <div className="c3-card">
+      <h3>{title}</h3>
+      <p className="c3-card-sub">{subtitle}</p>
+      {skills.length ? (
+        <div className="c3-chips">{skills.map((s) => <span key={s} className={`c3-chip ${kind}`}>{s}</span>)}</div>
+      ) : <p className="muted" style={{ margin: 0 }}>None found.</p>}
+      {children}
+    </div>
+  )
+}
+
+function TopJobs({ jobs }) {
+  return (
+    <div className="c3-card c3-full">
+      <h3>Your top 5 career matches</h3>
+      <p className="c3-card-sub">Alternatives worth exploring, ranked by match score</p>
+      <div className="c3-jobs">
+        {jobs.map((job) => (
+          <div key={job.ranking} className={`c3-job ${job.ranking === 1 ? 'best' : ''}`}>
+            <span className="c3-rank">{job.ranking}</span>
+            <span className="c3-job-title">
+              {job.job}
+              <span className="c3-job-tag">{job.ranking === 1 ? 'Best match' : `Alternative ${job.ranking - 1}`}</span>
+            </span>
+            <div className="c3-bar"><div style={{ width: `${job.score}%` }} /></div>
+            <span className="c3-job-score">{job.score.toFixed(1)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ModelCard({ data }) {
+  return (
+    <div className="c3-card c3-full">
+      <h3>How this recommendation works</h3>
+      <p className="c3-card-sub">{data.score_meaning}.</p>
+      <div className="c3-stats">
+        <div className="c3-stat"><small>Model</small><strong>XGBoost + SHAP</strong></div>
+        <div className="c3-stat"><small>Job data</small><strong>O*NET {data.onet_version}</strong></div>
+        <div className="c3-stat"><small>Occupations compared</small><strong>{data.eligible_occupations}</strong></div>
+        <div className="c3-stat"><small>Features per job</small><strong>21</strong></div>
+      </div>
+      <div className="c3-pipeline">
+        <span>CV skills (C01)</span><b>+</b><span>Soft skills (C02)</span><b>→</b>
+        <span>21 match features × {data.eligible_occupations} jobs</span><b>→</b>
+        <span>XGBoost score</span><b>→</b><span>SHAP explanation</span>
+      </div>
     </div>
   )
 }
@@ -177,47 +166,85 @@ export default function CareerRecommendation() {
   }
 
   const loadAll = () => Promise.all(Object.keys(ENDPOINTS).map(load))
-  const anyLoading = Object.values(results).some((r) => r.loading)
-  // All three responses share the same model metadata; show it from whichever loaded.
-  const metadata = results.bestJob.data || results.topJobs.data || results.explanation.data
+  const states = Object.values(results)
+  const anyLoading = states.some((r) => r.loading)
+  const errors = [...new Set(states.map((r) => r.error).filter(Boolean))]
+  const nothingYet = states.every((r) => !r.data && !r.error && !r.loading)
+
+  // Load automatically unless results were passed from the CV upload.
+  useEffect(() => { if (nothingYet) loadAll() }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const best = results.bestJob.data
+  const top = results.topJobs.data
+  const why = results.explanation.data
+  const metadata = best || top || why
+  const isSample = !savedSession()?.candidate_id
 
   return (
     <div className="page accent-career">
-      <p className="eyebrow">COMPONENT 03 / EXPLAINABLE CAREER INTELLIGENCE</p>
-      <h1 style={{ marginTop: 0 }}>Find your direction. Understand why.</h1>
-      <p className="page-description" style={{ marginBottom: 20 }}>Explore your strongest career match, compare five ranked possibilities, and discover the evidence behind the recommendation.</p>
-      <p style={styles.muted}>
-        {savedSession()?.candidate_id
-          ? 'Recommendations use your CV skills and the current sample personality profile.'
-          : 'Showing sample recommendations. Upload your CV in Component 01 to use your own profile.'}
-      </p>
-      <p style={styles.muted}>
-        Component 03 · Backend: <code>{API_BASE_URL}</code>
-      </p>
-      <div style={{ marginBottom: 16 }}>
-        <Button loading={anyLoading} onClick={loadAll}>
-          Load all recommendations
-        </Button>
+      <div className="c3-header">
+        <div>
+          <p className="eyebrow">COMPONENT 03 / EXPLAINABLE CAREER INTELLIGENCE</p>
+          <h1>Find your direction. Understand why.</h1>
+          <p className="page-description">Your strongest career match, five ranked possibilities, and the evidence behind the recommendation.</p>
+          <span className={`c3-pill ${isSample ? 'sample' : ''}`}>
+            {isSample ? 'Sample profile: upload your CV in Skill assessment to personalise' : '● Based on your CV skills and personality profile'}
+          </span>
+        </div>
+        <button className="button-secondary c3-refresh" onClick={loadAll} disabled={anyLoading}>
+          {anyLoading ? 'Analysing…' : '↻ Refresh'}
+        </button>
       </div>
 
-      <ApiSection title="Best Job" endpoint={ENDPOINTS.bestJob} state={results.bestJob} onLoad={() => load('bestJob')}>
-        {(data) => <BestJob data={data} />}
-      </ApiSection>
+      {errors.map((error) => (
+        <div className="c3-error" role="alert" key={error}>
+          <span>{error}</span>
+          <button className="button-secondary" onClick={loadAll} disabled={anyLoading}>Try again</button>
+        </div>
+      ))}
 
-      <ApiSection title="Top 5 Jobs" endpoint={ENDPOINTS.topJobs} state={results.topJobs} onLoad={() => load('topJobs')}>
-        {(data) => <TopJobs data={data} />}
-      </ApiSection>
+      {anyLoading && !metadata && (
+        <>
+          <div className="c3-skeleton" style={{ height: 220 }} />
+          <div className="c3-grid"><div className="c3-skeleton" style={{ height: 260, margin: 0 }} /><div className="c3-skeleton" style={{ height: 260, margin: 0 }} /></div>
+        </>
+      )}
 
-      <ApiSection
-        title="Explanation"
-        endpoint={ENDPOINTS.explanation}
-        state={results.explanation}
-        onLoad={() => load('explanation')}
-      >
-        {(data) => <Explanation data={data} />}
-      </ApiSection>
+      {(best || top) && (
+        <Hero
+          title={best?.best_job || top.jobs[0].job}
+          score={why?.match_score ?? top?.jobs[0].score}
+          occupations={metadata.eligible_occupations}
+          matchedCount={why?.matched_technologies.length || 0}
+        />
+      )}
 
-      {metadata && <ModelInfo data={metadata} />}
+      {why && (
+        <>
+          <div className="c3-grid">
+            <WhyCard reasons={why.key_reasons} />
+            <FactorChart factors={why.factors} shapText={why.explanation.split(/(?<=\.)\s+/).filter(Boolean)} />
+          </div>
+          <div className="c3-grid">
+            <SkillsCard title="Your matching skills" subtitle="Skills from your CV that this job uses" skills={why.matched_technologies} kind="have" />
+            <SkillsCard title="Skills to learn next" subtitle="In-demand tools for this job that your CV doesn't show yet" skills={why.skills_to_learn} kind="learn">
+              {why.skills_to_learn.length > 0 && (
+                <p className="c3-note">Turn these into a step-by-step plan in your <Link to="/component04">Learning roadmap →</Link></p>
+              )}
+            </SkillsCard>
+          </div>
+        </>
+      )}
+
+      {top && <TopJobs jobs={top.jobs} />}
+
+      {best?.unrecognised_skills?.length > 0 && (
+        <p className="c3-note" style={{ marginTop: -8, marginBottom: 20 }}>
+          Not used in matching (not in the O*NET skill catalogue): {best.unrecognised_skills.join(', ')}
+        </p>
+      )}
+
+      {metadata && <ModelCard data={metadata} />}
     </div>
   )
 }

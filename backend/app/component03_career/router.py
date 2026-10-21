@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Query, Request
 
 from . import service
-from .explanation_text import friendly_explanation
+from .explanation_text import explanation_details
 from .schemas import BestJobResponse, ErrorResponse, ExplanationResponse, TopJobsResponse
 
 router = APIRouter(prefix="/api/career", tags=["Explainable Career Recommendation"])
@@ -38,4 +38,4 @@ async def explanation(request: Request, candidate_id: str | None = Query(default
     result = await service.recommend(request, candidate_id)
     fields = ["candidate_id", "onet_version", "model_type", "score_meaning", "eligible_occupations"]
     return {**{key: result[key] for key in fields}, "explanation": result["best_job"]["explanation"],
-            "friendly_explanation": friendly_explanation(result["best_job"], result["eligible_occupations"])}
+            **explanation_details(result["best_job"], result["eligible_occupations"])}
