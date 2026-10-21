@@ -6,3 +6,4 @@
 #Model evaluation
 #regenerate roadmap when evidence or CV changes
 #Supporting datasets and resources, if changed
+#show only real C1 skills in the confidence form
