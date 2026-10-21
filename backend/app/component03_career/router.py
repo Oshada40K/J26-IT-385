@@ -1,3 +1,12 @@
+"""Component 3 REST APIs (see all of them at /docs).
+
+All three endpoints run the SAME recommendation (service.recommend) and return a
+different part of it, so the results are always consistent with each other:
+  GET /api/career/best-job     -> the best job title
+  GET /api/career/top-jobs     -> exactly 5 ranked jobs with 0-100 match scores
+  GET /api/career/explanation  -> why the best job was chosen (SHAP + plain language)
+Pass ?candidate_id=... with the user's login token to use their real CV profile.
+"""
 from fastapi import APIRouter, Query, Request
 
 from . import service

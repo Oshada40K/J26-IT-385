@@ -1,6 +1,8 @@
 // Owner: Oshada - Component 03: Explainable Career Recommendation.
 // Loads the three career APIs and presents them as one result view. The backend
 // builds the recommendation from the Component 01 and 02 profiles for the saved candidate.
+// Page sections: best-job hero + score ring, "Why this career?" reasons, SHAP factor
+// chart, matched skills / skills to learn (-> Component 04), top 5 jobs, model summary.
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { API_BASE_URL } from '../../api/client.js'

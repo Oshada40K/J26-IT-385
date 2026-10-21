@@ -1,4 +1,9 @@
-"""Response contracts preserve the exported score and SHAP fields."""
+"""Response contracts preserve the exported score and SHAP fields.
+
+Pydantic models that validate every input and output. Bad data (e.g. a skill level
+outside 0-5, or an empty candidate ID) is rejected with an error instead of producing
+a wrong recommendation. They also generate the API documentation at /docs.
+"""
 from typing import Annotated, Literal
 from pydantic import BaseModel, Field
 

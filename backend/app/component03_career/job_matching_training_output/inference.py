@@ -1,4 +1,16 @@
-"""O*NET XGBoost/SHAP prototype inference. Load the saved catalogue and model first."""
+"""O*NET XGBoost/SHAP prototype inference. Load the saved catalogue and model first.
+
+HOW IT WORKS (short answer for the panel):
+1. Read the candidate's soft skills (Component 2) and technical skills (Component 1).
+2. For EACH of the 889 O*NET occupations, build 21 numbers ("features") that
+   describe how well the candidate fits that job (pair_features).
+3. The trained XGBoost model turns those 21 numbers into a 0-100 match score.
+4. Sort all jobs by score -> best job + 4 alternatives.
+5. SHAP explains each score: how many points each feature added or removed.
+
+Why XGBoost? Strong on tabular numeric features, fast on CPU (889 jobs per request),
+and SHAP's TreeExplainer gives EXACT explanations for tree models.
+"""
 import json, re
 from pathlib import Path
 import numpy as np
@@ -6,6 +18,8 @@ import pandas as pd
 import xgboost as xgb
 import shap
 
+# Normalise skill names so "JavaScript", "javascript " and "JAVASCRIPT" all match.
+# tech_key also maps aliases (e.g. "js" -> javascript) using the saved catalogue.
 def norm(text):
     return re.sub(r"[^a-z0-9+#]+", " ", str(text).lower()).strip()
 
@@ -20,6 +34,11 @@ def read_input(value):
     raise TypeError("Input must be a dictionary, JSON string, or JSON file path.")
 
 def parse_candidate(soft_input, tech_input):
+    # Validate both inputs and convert them into model-ready values.
+    # - Skill levels (0-5) are scaled to 0-1 (level / 5).
+    # - Skills not in the O*NET catalogue are NOT guessed: they are excluded and
+    #   reported back as "unrecognised_skills" (shown in the audit table).
+    # - Both inputs must belong to the same candidate_id.
     soft, tech = read_input(soft_input), read_input(tech_input)
     for obj, field in [(soft, "soft_skills"), (tech, "technical_skills")]:
         if obj.get("schema_version") != "1.0": raise ValueError("schema_version must be '1.0'.")
@@ -57,6 +76,21 @@ def parse_candidate(soft_input, tech_input):
     return {"id": soft["candidate_id"], "soft": s, "observed": observed, "tech": t}, pd.DataFrame(audit)
 
 def pair_features(c, job):
+    # Build the 21 features for ONE (candidate, job) pair:
+    #
+    # [1-18] Soft-skill alignment (one per O*NET soft skill, e.g. Critical Thinking):
+    #        min(candidate level / job's required level, 1) x skill importance share.
+    #        -> meeting the requirement gives full credit; exceeding it gives no extra.
+    #        -> skills important to THIS job count more.
+    #
+    # [19] Technology relevance: what share of the candidate's tech skills this job uses,
+    #      weighted by IDF (Inverse Document Frequency). Rare/specific tools (e.g. TensorFlow)
+    #      count more than tools used by almost every job (e.g. MS Excel).
+    #
+    # [20] Technology-category coverage: across the job's tool categories
+    #      (e.g. databases, web frameworks), how well the candidate covers each one.
+    #
+    # [21] In-demand category coverage: same as [20] but only for tools O*NET marks "in demand".
     required = np.asarray(job["soft_level"])
     weights = np.asarray(job["soft_importance"])
     shares = weights / max(weights.sum(), 1e-8)
@@ -77,6 +111,13 @@ def pair_features(c, job):
     return np.asarray([*alignment, relevance, coverage, demand], dtype=np.float32)
 
 def policy_score(X):
+    # The expert scoring rule used to CREATE TRAINING LABELS (no real hiring data existed).
+    # Weights: 50% technology relevance, 25% soft-skill alignment,
+    #          15% category coverage, 10% in-demand coverage.
+    # XGBoost was trained on 1,600 synthetic candidates x 16 jobs labelled with this rule.
+    # Benefit: the same pipeline can later be retrained on REAL outcome labels
+    # (e.g. expert/HR ratings) without changing the features, API or SHAP.
+    # Here it is only reported as "direct_policy_score" for comparison.
     X = np.asarray(X)
     return 100 * (POLICY_WEIGHTS["soft_alignment"] * X[..., :len(SOFT_NAMES)].sum(axis=-1)
         + POLICY_WEIGHTS["technology_relevance"] * X[..., -3]
@@ -89,12 +130,17 @@ def candidate_matrix(c):
 def recommend_jobs(soft_input, tech_input, n_alternatives=4):
     if not isinstance(n_alternatives, int) or not 0 <= n_alternatives < len(jobs):
         raise ValueError("n_alternatives must be an integer from 0 to number_of_jobs - 1.")
+    # Step 1: clean inputs. Step 2: 21 features for every one of the 889 jobs.
     c, audit = parse_candidate(soft_input, tech_input)
     matrix = candidate_matrix(c)
+    # Step 3: XGBoost predicts a score per job; displayed score is kept inside 0-100.
     raw = model.predict(matrix)
     scores = np.clip(raw, 0, 100)
     # Raw score breaks clipped-score ties; SOC code is the deterministic final tie breaker.
     order = sorted(range(len(jobs)), key=lambda i: (-float(scores[i]), -float(raw[i]), jobs[i]["code"]))[:n_alternatives + 1]
+    # Step 4: SHAP explains the top 5 jobs. For each job:
+    #   baseline (average score) + sum of all feature contributions = model score.
+    # The assert below PROVES this adds up, so the explanation is exact, not approximate.
     sv = explainer(matrix.iloc[order], check_additivity=True)
     np.testing.assert_allclose(sv.base_values + sv.values.sum(axis=1), raw[order], atol=1e-3)
     records = []
@@ -106,6 +152,9 @@ def recommend_jobs(soft_input, tech_input, n_alternatives=4):
         def factor(i):
             return {"feature": FEATURE_NAMES[i], "meaning": FEATURE_LABELS[i],
                     "feature_value": float(matrix.iloc[ji, i]), "shap_score_points": float(contributions[i])}
+        # Positives = features that raised the score; negatives = features that lowered it.
+        # matched = candidate tech this job uses; missing = in-demand tools the candidate
+        # lacks (these become the skill gaps passed to Component 4's learning roadmap).
         matched = [{"technology": job["tech"][k]["label"], "candidate_level_0_to_5": round(v * 5, 2)}
                    for k, v in c["tech"].items() if k in job["tech"] and v > 0]
         missing = [item["label"] for k, item in job["tech"].items()
@@ -135,7 +184,14 @@ def recommend_jobs(soft_input, tech_input, n_alternatives=4):
             "best_job": records[0], "alternative_jobs": records[1:]}, sv
 
 def load_saved_matcher(folder="job_matching_output"):
-    """Run after importing the exported inference helper, or in this notebook."""
+    """Run after importing the exported inference helper, or in this notebook.
+
+    Loads ONCE at server startup (not per request):
+    - preprocessing_catalogue.json: 889 jobs, 8,506 technologies + IDF weights,
+      skill aliases, feature names and policy weights (built from O*NET 30.0).
+    - xgboost_job_matcher.json: the trained XGBoost model.
+    Then creates the SHAP TreeExplainer for that model.
+    """
     global model, explainer, jobs, SOFT_NAMES, SOFT_ALIASES, TECH_ALIASES
     global IDF, TECH_LABELS, FEATURE_NAMES, FEATURE_LABELS, POLICY_WEIGHTS, ONET_VERSION
     folder = Path(folder)

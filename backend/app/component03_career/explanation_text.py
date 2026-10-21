@@ -1,6 +1,11 @@
 """Turn the exporter's SHAP output into plain-language content for candidates.
 
 The model, its scores and its SHAP values are unchanged; this only rewords them.
+
+Example: SHAP says "technology_relevance: +43.8 points relative to baseline".
+This turns it into "The main reason for this match: how many of your technical
+skills this job actually uses." It also lists matched skills, what lowered the
+score, and in-demand skills to learn next (used by Component 4's roadmap).
 """
 
 SOFT_PREFIX = "soft_alignment__"
@@ -50,6 +55,7 @@ def _join(items):
     return ", ".join(items[:-1]) + " and " + items[-1]
 
 
+# Describe a factor by its share of all the points that raised the score.
 def _impact(points, total):
     share = points / total if total > 0 else 0
     return "the main reason" if share >= 0.5 else "a strong reason" if share >= 0.15 else "a small boost"
