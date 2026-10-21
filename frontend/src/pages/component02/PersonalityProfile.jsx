@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import Icon from '../../components/Icon.jsx'
 import { analyseTextAnswers, assessProfile, getQuestionnaire, getScenarios, scoreQuestionnaire, scoreScenarios } from './personalityApi.js'
 import './PersonalityProfile.css'
 
 const MIN_WORDS = 20 // the backend rejects shorter text
-const PAGE_SIZE = 13
+const MAX_PAGE_SIZE = 8 // pages are balanced, so 52 statements become 7 pages of 7-8
 const DRAFT_KEY = 'careernova-personality-draft'
 
 const QUESTIONS = [
@@ -23,7 +23,7 @@ const TRAITS = [
 ]
 
 const STAGES = [
-  { id: 'questionnaire', name: 'Big Five questionnaire', detail: '50 statements about how you see yourself', ready: true },
+  { id: 'questionnaire', name: 'Big Five questionnaire', detail: '52 statements (2 attention checks) · about 6 minutes', ready: true },
   { id: 'writing', name: 'Behavioural answers', detail: 'Short written answers about how you work', ready: true },
   { id: 'sjt', name: 'Situational judgement', detail: 'Realistic workplace scenarios', ready: true },
   { id: 'final', name: 'Your profile', detail: 'Combined result and consistency', ready: true },
@@ -86,7 +86,65 @@ function TraitRow({ trait, level, choices, writing }) {
   </div>
 }
 
-function Questionnaire({ answers, onAnswer, onScored }) {
+const smoothScroll = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+
+// Answer handler shared by the questionnaire and the scenarios. On a first answer, bring the next
+// unanswered item on the page (or, after the last one, the page's buttons) into view.
+// Changing an earlier answer does not move the page.
+function answerAndAdvance({ items, answers, onAnswer, elementId, actionsId }) {
+  return (id, value) => {
+    const first = !answers[id]
+    onAnswer(id, value)
+    if (!first) return
+    const rest = items.slice(items.findIndex(i => i.id === id) + 1)
+    const target = rest.find(i => !answers[i.id])
+    requestAnimationFrame(() => document.getElementById(target ? elementId(target.id) : actionsId)
+      ?.scrollIntoView({ behavior: smoothScroll(), block: 'center' }))
+  }
+}
+
+// After a reset: move focus to the part's heading and scroll back to the start of the form.
+function returnToStart(headingId) {
+  requestAnimationFrame(() => {
+    const heading = document.getElementById(headingId)
+    heading?.focus({ preventScroll: true })
+    heading?.closest('form')?.scrollIntoView({ behavior: smoothScroll(), block: 'start' })
+  })
+}
+
+// Secondary "Reset" button with a confirmation dialog. Native <dialog> keeps focus inside and closes on Escape.
+function ResetPart({ part, disabled, onReset }) {
+  const dialog = useRef(null)
+  const cancel = useRef(null)
+  const id = useId()
+
+  function open() {
+    dialog.current.showModal()
+    cancel.current.focus() // the safe choice is focused first
+  }
+
+  function confirm() {
+    dialog.current.close()
+    onReset()
+  }
+
+  return <>
+    <button type="button" className="button-secondary personality-reset" aria-label={`Reset ${part}`} disabled={disabled} onClick={open}>Reset</button>
+    <dialog ref={dialog} className="personality-dialog" role="alertdialog" aria-labelledby={`${id}-title`} aria-describedby={`${id}-text`}
+      onClick={event => { if (event.target === dialog.current) dialog.current.close() }}>
+      <div className="personality-dialog-body">
+        <h3 id={`${id}-title`}>Reset {part}?</h3>
+        <p id={`${id}-text`}>Are you sure? Your answers for this part will be cleared.</p>
+        <div className="personality-dialog-actions">
+          <button ref={cancel} type="button" className="button-secondary" onClick={() => dialog.current.close()}>Cancel</button>
+          <button type="button" className="personality-confirm-reset" onClick={confirm}>Reset</button>
+        </div>
+      </div>
+    </dialog>
+  </>
+}
+
+function Questionnaire({ answers, onAnswer, onScored, canReset, onReset }) {
   const [data, setData] = useState(null)
   const [loadError, setLoadError] = useState('')
   const [page, setPage] = useState(0)
@@ -102,8 +160,9 @@ function Questionnaire({ answers, onAnswer, onScored }) {
   if (loadError) return <div className="card"><p className="error-message" role="alert">{loadError}</p></div>
   if (!data) return <div className="card" role="status">Loading the questionnaire…</div>
 
-  const pages = Math.ceil(data.items.length / PAGE_SIZE)
-  const shown = data.items.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  const pages = Math.ceil(data.items.length / MAX_PAGE_SIZE)
+  const pageStart = n => Math.round(n * data.items.length / pages)
+  const shown = data.items.slice(pageStart(page), pageStart(page + 1))
   const answered = data.items.filter(i => answers[i.id]).length
   const pageDone = shown.every(i => answers[i.id])
   const allDone = answered === data.items.length
@@ -122,23 +181,36 @@ function Questionnaire({ answers, onAnswer, onScored }) {
     document.getElementById('personality-stage')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
+  const choose = answerAndAdvance({ items: shown, answers, onAnswer, elementId: id => `likert-${id}`, actionsId: 'personality-questionnaire-actions' })
+
+  function reset() {
+    onReset()
+    setPage(0)
+    setError('')
+    returnToStart('personality-questionnaire-title')
+  }
+
   return <form className="card personality-form" onSubmit={submit}>
-    <h2>Big Five questionnaire</h2>
-    <p className="muted">How well does each statement describe you as you generally are now, not as you wish to be? There are no right or wrong answers.</p>
+    <div className="personality-form-heading">
+      <h2 id="personality-questionnaire-title" tabIndex={-1}>Big Five questionnaire</h2>
+      <ResetPart part="Big Five questionnaire" disabled={!canReset || loading} onReset={reset} />
+    </div>
+    <p className="personality-duration">About 6 minutes · {data.items.length} statements</p>
+    <p className="muted">How well does each statement describe you as you generally are now, not as you wish to be? There are no right or wrong answers. Two statements are attention checks that tell you exactly which answer to pick.</p>
     <div className="personality-progress" aria-label={`${answered} of ${data.items.length} answered`}>
       <span style={{ width: `${(answered / data.items.length) * 100}%` }} />
     </div>
     <p className="personality-progress-label muted">Page {page + 1} of {pages} · {answered} of {data.items.length} answered</p>
-    {shown.map((item, i) => <fieldset key={item.id} className="personality-likert">
-      <legend><span className="personality-likert-number">{page * PAGE_SIZE + i + 1}</span>{item.text}</legend>
+    {shown.map((item, i) => <fieldset key={item.id} id={`likert-${item.id}`} className="personality-likert">
+      <legend><span className="personality-likert-number">{pageStart(page) + i + 1}</span>{item.text}</legend>
       <div className="personality-likert-options">
         {data.scale_labels.map((label, index) => <label key={label} className={answers[item.id] === index + 1 ? 'is-selected' : ''}>
-          <input type="radio" name={item.id} value={index + 1} checked={answers[item.id] === index + 1} onChange={() => onAnswer(item.id, index + 1)} disabled={loading} />
+          <input type="radio" name={item.id} value={index + 1} checked={answers[item.id] === index + 1} onChange={() => choose(item.id, index + 1)} disabled={loading} />
           {label}
         </label>)}
       </div>
     </fieldset>)}
-    <div className="personality-submit">
+    <div className="personality-submit" id="personality-questionnaire-actions">
       <button type="button" className="button-secondary" onClick={() => goTo(page - 1)} disabled={page === 0 || loading}>Back</button>
       {page < pages - 1
         ? <button type="button" onClick={() => goTo(page + 1)} disabled={!pageDone}>Next page <Icon name="arrow" size={16} /></button>
@@ -149,7 +221,7 @@ function Questionnaire({ answers, onAnswer, onScored }) {
   </form>
 }
 
-function Scenarios({ answers, onAnswer, onScored }) {
+function Scenarios({ answers, onAnswer, onScored, canReset, onReset }) {
   const [data, setData] = useState(null)
   const [loadError, setLoadError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -176,24 +248,36 @@ function Scenarios({ answers, onAnswer, onScored }) {
     finally { setLoading(false) }
   }
 
+  // All scenarios are on one page, so the last one leads to the "Score my choices" row.
+  const choose = answerAndAdvance({ items: data.scenarios, answers, onAnswer, elementId: id => `scenario-${id}`, actionsId: 'personality-sjt-actions' })
+
+  function reset() {
+    onReset()
+    setError('')
+    returnToStart('personality-sjt-title')
+  }
+
   return <form className="card personality-form" onSubmit={submit}>
-    <h2>Situational judgement</h2>
+    <div className="personality-form-heading">
+      <h2 id="personality-sjt-title" tabIndex={-1}>Situational judgement</h2>
+      <ResetPart part="Situational judgement" disabled={!canReset || loading} onReset={reset} />
+    </div>
     <p className="muted">{data.instruction}</p>
     <div className="personality-progress" aria-label={`${answered} of ${data.scenarios.length} answered`}>
       <span style={{ width: `${(answered / data.scenarios.length) * 100}%` }} />
     </div>
     <p className="personality-progress-label muted">{answered} of {data.scenarios.length} scenarios answered</p>
-    {data.scenarios.map((s, i) => <fieldset key={s.id} className="personality-scenario">
+    {data.scenarios.map((s, i) => <fieldset key={s.id} id={`scenario-${s.id}`} className="personality-scenario">
       <legend><span className="step-number">{String(i + 1).padStart(2, '0')}</span><span><small>{s.topic}</small>{s.text}</span></legend>
       <div className="personality-scenario-options">
         {s.options.map(o => <label key={o.id} className={answers[s.id] === o.id ? 'is-selected' : ''}>
-          <input type="radio" name={s.id} value={o.id} checked={answers[s.id] === o.id} onChange={() => onAnswer(s.id, o.id)} disabled={loading} />
+          <input type="radio" name={s.id} value={o.id} checked={answers[s.id] === o.id} onChange={() => choose(s.id, o.id)} disabled={loading} />
           <span className="personality-option-letter" aria-hidden="true">{o.id}</span>
           <span>{o.text}</span>
         </label>)}
       </div>
     </fieldset>)}
-    <div className="personality-submit">
+    <div className="personality-submit" id="personality-sjt-actions">
       <span className={allDone ? 'muted' : 'personality-hint'}>{allDone ? 'All scenarios answered' : `${data.scenarios.length - answered} scenarios left`}</span>
       <button type="submit" className="button-ai" disabled={!allDone || loading}>{loading ? 'Scoring…' : <>Score my choices <Icon name="spark" size={16} /></>}</button>
     </div>
@@ -201,7 +285,7 @@ function Scenarios({ answers, onAnswer, onScored }) {
   </form>
 }
 
-function Writing({ answers, onAnswer, onScored }) {
+function Writing({ answers, onAnswer, onScored, canReset, onReset }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const totalWords = QUESTIONS.reduce((sum, q) => sum + countWords(answers[q.id] || ''), 0)
@@ -215,8 +299,17 @@ function Writing({ answers, onAnswer, onScored }) {
     finally { setLoading(false) }
   }
 
+  function reset() {
+    onReset()
+    setError('')
+    returnToStart('personality-writing-title')
+  }
+
   return <form className="card personality-form" onSubmit={submit}>
-    <h2>Behavioural answers</h2>
+    <div className="personality-form-heading">
+      <h2 id="personality-writing-title" tabIndex={-1}>Behavioural answers</h2>
+      <ResetPart part="Behavioural answers" disabled={!canReset || loading} onReset={reset} />
+    </div>
     <p className="muted">Answer in your own words with real examples. There are no right or wrong answers. Aim for 80–150 words per question.</p>
     {QUESTIONS.map((q, i) => <label key={q.id} className="personality-question">
       <span className="personality-question-label"><span className="step-number">0{i + 1}</span>{q.label}</span>
@@ -320,6 +413,9 @@ export default function PersonalityProfile() {
   useEffect(() => saveDraft(draft), [draft])
   const update = patch => setDraft(prev => ({ ...prev, ...patch }))
   const answer = field => (id, v) => setDraft(prev => ({ ...prev, [field]: { ...prev[field], [id]: v } }))
+  // Clears a part's answers and its scored result; the effect above also saves this to sessionStorage.
+  const reset = (field, part) => () => update({ [field]: {}, [part]: null })
+  const hasAnswers = (field, part) => Boolean(draft[part]) || Object.values(draft[field]).some(v => String(v).trim())
 
   const { questionnaire, writing, sjt } = draft
   const sources = [questionnaire, sjt, writing].filter(Boolean).length
@@ -346,13 +442,9 @@ export default function PersonalityProfile() {
       })}
     </nav>
 
+    {/* The profile comes first in the DOM so it sits above the form on one-column layouts;
+        on wide screens CSS places it in the right column. */}
     {draft.stage === 'final' && sources ? <FinalProfile draft={draft} /> : <div className="personality-layout">
-      {draft.stage === 'writing'
-        ? <Writing answers={draft.text} onAnswer={answer('text')} onScored={r => update({ writing: r })} />
-        : draft.stage === 'sjt'
-          ? <Scenarios answers={draft.choices} onAnswer={answer('choices')} onScored={r => update({ sjt: r })} />
-          : <Questionnaire answers={draft.likert} onAnswer={answer('likert')} onScored={r => update({ questionnaire: r })} />}
-
       <section className="card personality-results" aria-live="polite">
         <h2>Your profile so far</h2>
         {!sources ? <div className="personality-empty">
@@ -374,6 +466,15 @@ export default function PersonalityProfile() {
           {sources === 3 && <button type="button" className="button-ai personality-see-profile" onClick={() => update({ stage: 'final' })}>See my combined profile <Icon name="arrow" size={16} /></button>}
         </>}
       </section>
+
+      {draft.stage === 'writing'
+        ? <Writing answers={draft.text} onAnswer={answer('text')} onScored={r => update({ writing: r })}
+          canReset={hasAnswers('text', 'writing')} onReset={reset('text', 'writing')} />
+        : draft.stage === 'sjt'
+          ? <Scenarios answers={draft.choices} onAnswer={answer('choices')} onScored={r => update({ sjt: r })}
+            canReset={hasAnswers('choices', 'sjt')} onReset={reset('choices', 'sjt')} />
+          : <Questionnaire answers={draft.likert} onAnswer={answer('likert')} onScored={r => update({ questionnaire: r })}
+            canReset={hasAnswers('likert', 'questionnaire')} onReset={reset('likert', 'questionnaire')} />}
     </div>}
   </div>
 }
