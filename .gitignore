@@ -40,3 +40,7 @@ dist/
 # Component 03 saved models (keep the folder via .gitkeep)
 backend/app/component03_career/ml/saved_models/*
 !backend/app/component03_career/ml/saved_models/.gitkeep
+
+# Component 04 runtime data and trained models (required by the backend)
+!backend/app/component04_roadmap/inputs/*.csv
+!backend/app/component04_roadmap/trained_models/*.joblib
