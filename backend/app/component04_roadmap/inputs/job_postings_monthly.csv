@@ -1,0 +1,2041 @@
+skill_id,skill_name,period,posting_count,total_postings,posting_share,region,source
+SK001,Programming Fundamentals,2024-10,2750,120000,0.022917,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2024-11,3000,122508,0.024488,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2024-12,3370,124198,0.027134,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2025-01,3146,124497,0.02527,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2025-02,3135,123208,0.025445,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2025-03,2834,120564,0.023506,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2025-04,2799,117154,0.023892,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2025-05,2865,113769,0.025183,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2025-06,2678,111188,0.024085,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2025-07,2770,109968,0.025189,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2025-08,2663,110302,0.024143,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2025-09,2847,111963,0.025428,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2025-10,2832,114376,0.02476,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2025-11,3008,116767,0.025761,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2025-12,2972,118377,0.025106,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2026-01,2708,118662,0.022821,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2026-02,2680,117434,0.022821,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2026-03,3054,114914,0.026576,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2026-04,2916,111663,0.026114,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2026-05,2553,108437,0.023544,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2026-06,2458,105977,0.023194,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2026-07,2640,104815,0.025187,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2026-08,2669,105132,0.025387,Global (synthetic),synthetic
+SK001,Programming Fundamentals,2026-09,2810,106716,0.026331,Global (synthetic),synthetic
+SK002,Python,2024-10,6251,120000,0.052092,Global (synthetic),synthetic
+SK002,Python,2024-11,6555,122508,0.053506,Global (synthetic),synthetic
+SK002,Python,2024-12,6985,124198,0.056241,Global (synthetic),synthetic
+SK002,Python,2025-01,6836,124497,0.054909,Global (synthetic),synthetic
+SK002,Python,2025-02,6739,123208,0.054696,Global (synthetic),synthetic
+SK002,Python,2025-03,6165,120564,0.051134,Global (synthetic),synthetic
+SK002,Python,2025-04,6474,117154,0.05526,Global (synthetic),synthetic
+SK002,Python,2025-05,6494,113769,0.05708,Global (synthetic),synthetic
+SK002,Python,2025-06,6241,111188,0.05613,Global (synthetic),synthetic
+SK002,Python,2025-07,6202,109968,0.056398,Global (synthetic),synthetic
+SK002,Python,2025-08,6462,110302,0.058584,Global (synthetic),synthetic
+SK002,Python,2025-09,6618,111963,0.059108,Global (synthetic),synthetic
+SK002,Python,2025-10,6569,114376,0.057433,Global (synthetic),synthetic
+SK002,Python,2025-11,7106,116767,0.060856,Global (synthetic),synthetic
+SK002,Python,2025-12,7017,118377,0.059276,Global (synthetic),synthetic
+SK002,Python,2026-01,7363,118662,0.06205,Global (synthetic),synthetic
+SK002,Python,2026-02,7356,117434,0.062639,Global (synthetic),synthetic
+SK002,Python,2026-03,7012,114914,0.06102,Global (synthetic),synthetic
+SK002,Python,2026-04,6960,111663,0.06233,Global (synthetic),synthetic
+SK002,Python,2026-05,7358,108437,0.067855,Global (synthetic),synthetic
+SK002,Python,2026-06,6629,105977,0.062551,Global (synthetic),synthetic
+SK002,Python,2026-07,6201,104815,0.059161,Global (synthetic),synthetic
+SK002,Python,2026-08,6556,105132,0.062359,Global (synthetic),synthetic
+SK002,Python,2026-09,7202,106716,0.067487,Global (synthetic),synthetic
+SK003,Java,2024-10,8239,120000,0.068658,Global (synthetic),synthetic
+SK003,Java,2024-11,8451,122508,0.068983,Global (synthetic),synthetic
+SK003,Java,2024-12,9039,124198,0.072779,Global (synthetic),synthetic
+SK003,Java,2025-01,8187,124497,0.065761,Global (synthetic),synthetic
+SK003,Java,2025-02,8003,123208,0.064955,Global (synthetic),synthetic
+SK003,Java,2025-03,7998,120564,0.066338,Global (synthetic),synthetic
+SK003,Java,2025-04,8031,117154,0.068551,Global (synthetic),synthetic
+SK003,Java,2025-05,8044,113769,0.070704,Global (synthetic),synthetic
+SK003,Java,2025-06,7507,111188,0.067516,Global (synthetic),synthetic
+SK003,Java,2025-07,6701,109968,0.060935,Global (synthetic),synthetic
+SK003,Java,2025-08,6914,110302,0.062682,Global (synthetic),synthetic
+SK003,Java,2025-09,7215,111963,0.064441,Global (synthetic),synthetic
+SK003,Java,2025-10,7324,114376,0.064034,Global (synthetic),synthetic
+SK003,Java,2025-11,7605,116767,0.065129,Global (synthetic),synthetic
+SK003,Java,2025-12,7723,118377,0.06524,Global (synthetic),synthetic
+SK003,Java,2026-01,7620,118662,0.064216,Global (synthetic),synthetic
+SK003,Java,2026-02,7734,117434,0.065858,Global (synthetic),synthetic
+SK003,Java,2026-03,7435,114914,0.064701,Global (synthetic),synthetic
+SK003,Java,2026-04,7030,111663,0.062957,Global (synthetic),synthetic
+SK003,Java,2026-05,7124,108437,0.065697,Global (synthetic),synthetic
+SK003,Java,2026-06,6501,105977,0.061343,Global (synthetic),synthetic
+SK003,Java,2026-07,6822,104815,0.065086,Global (synthetic),synthetic
+SK003,Java,2026-08,6887,105132,0.065508,Global (synthetic),synthetic
+SK003,Java,2026-09,6565,106716,0.061518,Global (synthetic),synthetic
+SK004,JavaScript,2024-10,9449,120000,0.078742,Global (synthetic),synthetic
+SK004,JavaScript,2024-11,8935,122508,0.072933,Global (synthetic),synthetic
+SK004,JavaScript,2024-12,8937,124198,0.071957,Global (synthetic),synthetic
+SK004,JavaScript,2025-01,9835,124497,0.078998,Global (synthetic),synthetic
+SK004,JavaScript,2025-02,9110,123208,0.073939,Global (synthetic),synthetic
+SK004,JavaScript,2025-03,8707,120564,0.072219,Global (synthetic),synthetic
+SK004,JavaScript,2025-04,8656,117154,0.073885,Global (synthetic),synthetic
+SK004,JavaScript,2025-05,8407,113769,0.073895,Global (synthetic),synthetic
+SK004,JavaScript,2025-06,7801,111188,0.07016,Global (synthetic),synthetic
+SK004,JavaScript,2025-07,8067,109968,0.073357,Global (synthetic),synthetic
+SK004,JavaScript,2025-08,7939,110302,0.071975,Global (synthetic),synthetic
+SK004,JavaScript,2025-09,8669,111963,0.077427,Global (synthetic),synthetic
+SK004,JavaScript,2025-10,8439,114376,0.073783,Global (synthetic),synthetic
+SK004,JavaScript,2025-11,8724,116767,0.074713,Global (synthetic),synthetic
+SK004,JavaScript,2025-12,8800,118377,0.074338,Global (synthetic),synthetic
+SK004,JavaScript,2026-01,9175,118662,0.07732,Global (synthetic),synthetic
+SK004,JavaScript,2026-02,9180,117434,0.078171,Global (synthetic),synthetic
+SK004,JavaScript,2026-03,8341,114914,0.072585,Global (synthetic),synthetic
+SK004,JavaScript,2026-04,8118,111663,0.0727,Global (synthetic),synthetic
+SK004,JavaScript,2026-05,8828,108437,0.081411,Global (synthetic),synthetic
+SK004,JavaScript,2026-06,8016,105977,0.075639,Global (synthetic),synthetic
+SK004,JavaScript,2026-07,7834,104815,0.074741,Global (synthetic),synthetic
+SK004,JavaScript,2026-08,8200,105132,0.077997,Global (synthetic),synthetic
+SK004,JavaScript,2026-09,8398,106716,0.078695,Global (synthetic),synthetic
+SK005,TypeScript,2024-10,685,120000,0.005708,Global (synthetic),synthetic
+SK005,TypeScript,2024-11,739,122508,0.006032,Global (synthetic),synthetic
+SK005,TypeScript,2024-12,827,124198,0.006659,Global (synthetic),synthetic
+SK005,TypeScript,2025-01,733,124497,0.005888,Global (synthetic),synthetic
+SK005,TypeScript,2025-02,797,123208,0.006469,Global (synthetic),synthetic
+SK005,TypeScript,2025-03,833,120564,0.006909,Global (synthetic),synthetic
+SK005,TypeScript,2025-04,763,117154,0.006513,Global (synthetic),synthetic
+SK005,TypeScript,2025-05,760,113769,0.00668,Global (synthetic),synthetic
+SK005,TypeScript,2025-06,767,111188,0.006898,Global (synthetic),synthetic
+SK005,TypeScript,2025-07,707,109968,0.006429,Global (synthetic),synthetic
+SK005,TypeScript,2025-08,770,110302,0.006981,Global (synthetic),synthetic
+SK005,TypeScript,2025-09,804,111963,0.007181,Global (synthetic),synthetic
+SK005,TypeScript,2025-10,763,114376,0.006671,Global (synthetic),synthetic
+SK005,TypeScript,2025-11,839,116767,0.007185,Global (synthetic),synthetic
+SK005,TypeScript,2025-12,847,118377,0.007155,Global (synthetic),synthetic
+SK005,TypeScript,2026-01,923,118662,0.007778,Global (synthetic),synthetic
+SK005,TypeScript,2026-02,853,117434,0.007264,Global (synthetic),synthetic
+SK005,TypeScript,2026-03,866,114914,0.007536,Global (synthetic),synthetic
+SK005,TypeScript,2026-04,875,111663,0.007836,Global (synthetic),synthetic
+SK005,TypeScript,2026-05,969,108437,0.008936,Global (synthetic),synthetic
+SK005,TypeScript,2026-06,838,105977,0.007907,Global (synthetic),synthetic
+SK005,TypeScript,2026-07,945,104815,0.009016,Global (synthetic),synthetic
+SK005,TypeScript,2026-08,867,105132,0.008247,Global (synthetic),synthetic
+SK005,TypeScript,2026-09,948,106716,0.008883,Global (synthetic),synthetic
+SK006,C#,2024-10,9737,120000,0.081142,Global (synthetic),synthetic
+SK006,C#,2024-11,9930,122508,0.081055,Global (synthetic),synthetic
+SK006,C#,2024-12,10432,124198,0.083995,Global (synthetic),synthetic
+SK006,C#,2025-01,10021,124497,0.080492,Global (synthetic),synthetic
+SK006,C#,2025-02,9971,123208,0.080928,Global (synthetic),synthetic
+SK006,C#,2025-03,9308,120564,0.077204,Global (synthetic),synthetic
+SK006,C#,2025-04,9668,117154,0.082524,Global (synthetic),synthetic
+SK006,C#,2025-05,9138,113769,0.08032,Global (synthetic),synthetic
+SK006,C#,2025-06,8775,111188,0.07892,Global (synthetic),synthetic
+SK006,C#,2025-07,9005,109968,0.081887,Global (synthetic),synthetic
+SK006,C#,2025-08,8854,110302,0.08027,Global (synthetic),synthetic
+SK006,C#,2025-09,8989,111963,0.080285,Global (synthetic),synthetic
+SK006,C#,2025-10,10059,114376,0.087947,Global (synthetic),synthetic
+SK006,C#,2025-11,9625,116767,0.082429,Global (synthetic),synthetic
+SK006,C#,2025-12,9270,118377,0.078309,Global (synthetic),synthetic
+SK006,C#,2026-01,8977,118662,0.075652,Global (synthetic),synthetic
+SK006,C#,2026-02,9233,117434,0.078622,Global (synthetic),synthetic
+SK006,C#,2026-03,9422,114914,0.081992,Global (synthetic),synthetic
+SK006,C#,2026-04,8954,111663,0.080187,Global (synthetic),synthetic
+SK006,C#,2026-05,9370,108437,0.086409,Global (synthetic),synthetic
+SK006,C#,2026-06,8628,105977,0.081414,Global (synthetic),synthetic
+SK006,C#,2026-07,9156,104815,0.087354,Global (synthetic),synthetic
+SK006,C#,2026-08,8842,105132,0.084103,Global (synthetic),synthetic
+SK006,C#,2026-09,8736,106716,0.081862,Global (synthetic),synthetic
+SK007,C++,2024-10,5441,120000,0.045342,Global (synthetic),synthetic
+SK007,C++,2024-11,5400,122508,0.044078,Global (synthetic),synthetic
+SK007,C++,2024-12,5752,124198,0.046313,Global (synthetic),synthetic
+SK007,C++,2025-01,6018,124497,0.048339,Global (synthetic),synthetic
+SK007,C++,2025-02,5850,123208,0.04748,Global (synthetic),synthetic
+SK007,C++,2025-03,5206,120564,0.04318,Global (synthetic),synthetic
+SK007,C++,2025-04,5023,117154,0.042875,Global (synthetic),synthetic
+SK007,C++,2025-05,5287,113769,0.046471,Global (synthetic),synthetic
+SK007,C++,2025-06,4635,111188,0.041686,Global (synthetic),synthetic
+SK007,C++,2025-07,4566,109968,0.041521,Global (synthetic),synthetic
+SK007,C++,2025-08,4674,110302,0.042374,Global (synthetic),synthetic
+SK007,C++,2025-09,4843,111963,0.043255,Global (synthetic),synthetic
+SK007,C++,2025-10,4957,114376,0.043339,Global (synthetic),synthetic
+SK007,C++,2025-11,4905,116767,0.042007,Global (synthetic),synthetic
+SK007,C++,2025-12,5004,118377,0.042271,Global (synthetic),synthetic
+SK007,C++,2026-01,5105,118662,0.043021,Global (synthetic),synthetic
+SK007,C++,2026-02,4842,117434,0.041231,Global (synthetic),synthetic
+SK007,C++,2026-03,5419,114914,0.047157,Global (synthetic),synthetic
+SK007,C++,2026-04,4874,111663,0.043649,Global (synthetic),synthetic
+SK007,C++,2026-05,4768,108437,0.04397,Global (synthetic),synthetic
+SK007,C++,2026-06,4412,105977,0.041632,Global (synthetic),synthetic
+SK007,C++,2026-07,4358,104815,0.041578,Global (synthetic),synthetic
+SK007,C++,2026-08,4322,105132,0.04111,Global (synthetic),synthetic
+SK007,C++,2026-09,4083,106716,0.03826,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2024-10,2995,120000,0.024958,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2024-11,3337,122508,0.027239,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2024-12,3338,124198,0.026876,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2025-01,3274,124497,0.026298,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2025-02,3504,123208,0.028439,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2025-03,3252,120564,0.026973,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2025-04,3014,117154,0.025727,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2025-05,3007,113769,0.026431,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2025-06,2822,111188,0.02538,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2025-07,2927,109968,0.026617,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2025-08,2781,110302,0.025213,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2025-09,3196,111963,0.028545,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2025-10,3037,114376,0.026553,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2025-11,3056,116767,0.026172,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2025-12,3273,118377,0.027649,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2026-01,2862,118662,0.024119,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2026-02,2826,117434,0.024064,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2026-03,3051,114914,0.02655,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2026-04,2872,111663,0.02572,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2026-05,2780,108437,0.025637,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2026-06,2613,105977,0.024656,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2026-07,2760,104815,0.026332,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2026-08,2998,105132,0.028516,Global (synthetic),synthetic
+SK008,Object-Oriented Programming,2026-09,2872,106716,0.026912,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2024-10,5851,120000,0.048758,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2024-11,6621,122508,0.054045,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2024-12,6324,124198,0.050918,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2025-01,6196,124497,0.049768,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2025-02,6487,123208,0.05265,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2025-03,6050,120564,0.050181,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2025-04,5835,117154,0.049806,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2025-05,5773,113769,0.050743,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2025-06,5426,111188,0.0488,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2025-07,5816,109968,0.052888,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2025-08,5850,110302,0.053036,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2025-09,5761,111963,0.051454,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2025-10,5706,114376,0.049888,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2025-11,5780,116767,0.0495,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2025-12,5910,118377,0.049925,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2026-01,6176,118662,0.052047,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2026-02,5997,117434,0.051067,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2026-03,6238,114914,0.054284,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2026-04,5365,111663,0.048046,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2026-05,5762,108437,0.053137,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2026-06,5588,105977,0.052728,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2026-07,5608,104815,0.053504,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2026-08,5174,105132,0.049214,Global (synthetic),synthetic
+SK009,Data Structures and Algorithms,2026-09,5923,106716,0.055502,Global (synthetic),synthetic
+SK010,SQL,2024-10,5228,120000,0.043567,Global (synthetic),synthetic
+SK010,SQL,2024-11,5289,122508,0.043172,Global (synthetic),synthetic
+SK010,SQL,2024-12,5368,124198,0.043221,Global (synthetic),synthetic
+SK010,SQL,2025-01,5186,124497,0.041656,Global (synthetic),synthetic
+SK010,SQL,2025-02,5026,123208,0.040792,Global (synthetic),synthetic
+SK010,SQL,2025-03,5101,120564,0.042309,Global (synthetic),synthetic
+SK010,SQL,2025-04,4638,117154,0.039589,Global (synthetic),synthetic
+SK010,SQL,2025-05,4890,113769,0.042982,Global (synthetic),synthetic
+SK010,SQL,2025-06,4728,111188,0.042522,Global (synthetic),synthetic
+SK010,SQL,2025-07,4687,109968,0.042621,Global (synthetic),synthetic
+SK010,SQL,2025-08,4160,110302,0.037715,Global (synthetic),synthetic
+SK010,SQL,2025-09,4658,111963,0.041603,Global (synthetic),synthetic
+SK010,SQL,2025-10,5145,114376,0.044983,Global (synthetic),synthetic
+SK010,SQL,2025-11,5130,116767,0.043933,Global (synthetic),synthetic
+SK010,SQL,2025-12,5187,118377,0.043817,Global (synthetic),synthetic
+SK010,SQL,2026-01,4939,118662,0.041622,Global (synthetic),synthetic
+SK010,SQL,2026-02,5548,117434,0.047243,Global (synthetic),synthetic
+SK010,SQL,2026-03,4986,114914,0.043389,Global (synthetic),synthetic
+SK010,SQL,2026-04,5020,111663,0.044956,Global (synthetic),synthetic
+SK010,SQL,2026-05,5265,108437,0.048553,Global (synthetic),synthetic
+SK010,SQL,2026-06,4955,105977,0.046755,Global (synthetic),synthetic
+SK010,SQL,2026-07,4702,104815,0.04486,Global (synthetic),synthetic
+SK010,SQL,2026-08,4637,105132,0.044106,Global (synthetic),synthetic
+SK010,SQL,2026-09,4832,106716,0.045279,Global (synthetic),synthetic
+SK011,Database Design,2024-10,5056,120000,0.042133,Global (synthetic),synthetic
+SK011,Database Design,2024-11,4967,122508,0.040544,Global (synthetic),synthetic
+SK011,Database Design,2024-12,5578,124198,0.044912,Global (synthetic),synthetic
+SK011,Database Design,2025-01,5364,124497,0.043085,Global (synthetic),synthetic
+SK011,Database Design,2025-02,5230,123208,0.042448,Global (synthetic),synthetic
+SK011,Database Design,2025-03,5155,120564,0.042757,Global (synthetic),synthetic
+SK011,Database Design,2025-04,4672,117154,0.039879,Global (synthetic),synthetic
+SK011,Database Design,2025-05,4966,113769,0.04365,Global (synthetic),synthetic
+SK011,Database Design,2025-06,5145,111188,0.046273,Global (synthetic),synthetic
+SK011,Database Design,2025-07,4767,109968,0.043349,Global (synthetic),synthetic
+SK011,Database Design,2025-08,4722,110302,0.04281,Global (synthetic),synthetic
+SK011,Database Design,2025-09,4881,111963,0.043595,Global (synthetic),synthetic
+SK011,Database Design,2025-10,5036,114376,0.04403,Global (synthetic),synthetic
+SK011,Database Design,2025-11,4800,116767,0.041107,Global (synthetic),synthetic
+SK011,Database Design,2025-12,4851,118377,0.040979,Global (synthetic),synthetic
+SK011,Database Design,2026-01,5098,118662,0.042962,Global (synthetic),synthetic
+SK011,Database Design,2026-02,5004,117434,0.042611,Global (synthetic),synthetic
+SK011,Database Design,2026-03,5360,114914,0.046644,Global (synthetic),synthetic
+SK011,Database Design,2026-04,4813,111663,0.043103,Global (synthetic),synthetic
+SK011,Database Design,2026-05,4298,108437,0.039636,Global (synthetic),synthetic
+SK011,Database Design,2026-06,4559,105977,0.043019,Global (synthetic),synthetic
+SK011,Database Design,2026-07,4067,104815,0.038802,Global (synthetic),synthetic
+SK011,Database Design,2026-08,4480,105132,0.042613,Global (synthetic),synthetic
+SK011,Database Design,2026-09,4668,106716,0.043742,Global (synthetic),synthetic
+SK012,PostgreSQL,2024-10,8715,120000,0.072625,Global (synthetic),synthetic
+SK012,PostgreSQL,2024-11,9226,122508,0.075309,Global (synthetic),synthetic
+SK012,PostgreSQL,2024-12,9876,124198,0.079518,Global (synthetic),synthetic
+SK012,PostgreSQL,2025-01,8840,124497,0.071006,Global (synthetic),synthetic
+SK012,PostgreSQL,2025-02,9872,123208,0.080124,Global (synthetic),synthetic
+SK012,PostgreSQL,2025-03,10074,120564,0.083557,Global (synthetic),synthetic
+SK012,PostgreSQL,2025-04,9197,117154,0.078503,Global (synthetic),synthetic
+SK012,PostgreSQL,2025-05,9204,113769,0.0809,Global (synthetic),synthetic
+SK012,PostgreSQL,2025-06,8712,111188,0.078354,Global (synthetic),synthetic
+SK012,PostgreSQL,2025-07,9027,109968,0.082087,Global (synthetic),synthetic
+SK012,PostgreSQL,2025-08,8230,110302,0.074613,Global (synthetic),synthetic
+SK012,PostgreSQL,2025-09,8477,111963,0.075712,Global (synthetic),synthetic
+SK012,PostgreSQL,2025-10,9823,114376,0.085883,Global (synthetic),synthetic
+SK012,PostgreSQL,2025-11,9559,116767,0.081864,Global (synthetic),synthetic
+SK012,PostgreSQL,2025-12,9774,118377,0.082566,Global (synthetic),synthetic
+SK012,PostgreSQL,2026-01,9722,118662,0.08193,Global (synthetic),synthetic
+SK012,PostgreSQL,2026-02,9598,117434,0.081731,Global (synthetic),synthetic
+SK012,PostgreSQL,2026-03,9783,114914,0.085133,Global (synthetic),synthetic
+SK012,PostgreSQL,2026-04,9692,111663,0.086796,Global (synthetic),synthetic
+SK012,PostgreSQL,2026-05,9701,108437,0.089462,Global (synthetic),synthetic
+SK012,PostgreSQL,2026-06,9609,105977,0.09067,Global (synthetic),synthetic
+SK012,PostgreSQL,2026-07,9624,104815,0.091819,Global (synthetic),synthetic
+SK012,PostgreSQL,2026-08,9535,105132,0.090695,Global (synthetic),synthetic
+SK012,PostgreSQL,2026-09,10278,106716,0.096311,Global (synthetic),synthetic
+SK013,MongoDB,2024-10,5922,120000,0.04935,Global (synthetic),synthetic
+SK013,MongoDB,2024-11,5747,122508,0.046911,Global (synthetic),synthetic
+SK013,MongoDB,2024-12,5790,124198,0.046619,Global (synthetic),synthetic
+SK013,MongoDB,2025-01,5872,124497,0.047166,Global (synthetic),synthetic
+SK013,MongoDB,2025-02,6201,123208,0.050329,Global (synthetic),synthetic
+SK013,MongoDB,2025-03,5870,120564,0.048688,Global (synthetic),synthetic
+SK013,MongoDB,2025-04,5700,117154,0.048654,Global (synthetic),synthetic
+SK013,MongoDB,2025-05,5479,113769,0.048159,Global (synthetic),synthetic
+SK013,MongoDB,2025-06,5126,111188,0.046102,Global (synthetic),synthetic
+SK013,MongoDB,2025-07,5499,109968,0.050005,Global (synthetic),synthetic
+SK013,MongoDB,2025-08,4983,110302,0.045176,Global (synthetic),synthetic
+SK013,MongoDB,2025-09,5539,111963,0.049471,Global (synthetic),synthetic
+SK013,MongoDB,2025-10,5635,114376,0.049267,Global (synthetic),synthetic
+SK013,MongoDB,2025-11,6315,116767,0.054082,Global (synthetic),synthetic
+SK013,MongoDB,2025-12,5523,118377,0.046656,Global (synthetic),synthetic
+SK013,MongoDB,2026-01,5809,118662,0.048954,Global (synthetic),synthetic
+SK013,MongoDB,2026-02,6295,117434,0.053604,Global (synthetic),synthetic
+SK013,MongoDB,2026-03,5883,114914,0.051195,Global (synthetic),synthetic
+SK013,MongoDB,2026-04,5455,111663,0.048852,Global (synthetic),synthetic
+SK013,MongoDB,2026-05,5357,108437,0.049402,Global (synthetic),synthetic
+SK013,MongoDB,2026-06,5169,105977,0.048775,Global (synthetic),synthetic
+SK013,MongoDB,2026-07,5147,104815,0.049105,Global (synthetic),synthetic
+SK013,MongoDB,2026-08,4978,105132,0.04735,Global (synthetic),synthetic
+SK013,MongoDB,2026-09,5300,106716,0.049664,Global (synthetic),synthetic
+SK014,Git,2024-10,6913,120000,0.057608,Global (synthetic),synthetic
+SK014,Git,2024-11,7179,122508,0.0586,Global (synthetic),synthetic
+SK014,Git,2024-12,7247,124198,0.05835,Global (synthetic),synthetic
+SK014,Git,2025-01,6956,124497,0.055873,Global (synthetic),synthetic
+SK014,Git,2025-02,7161,123208,0.058121,Global (synthetic),synthetic
+SK014,Git,2025-03,7383,120564,0.061237,Global (synthetic),synthetic
+SK014,Git,2025-04,6446,117154,0.055021,Global (synthetic),synthetic
+SK014,Git,2025-05,6704,113769,0.058926,Global (synthetic),synthetic
+SK014,Git,2025-06,6356,111188,0.057164,Global (synthetic),synthetic
+SK014,Git,2025-07,6622,109968,0.060217,Global (synthetic),synthetic
+SK014,Git,2025-08,6513,110302,0.059047,Global (synthetic),synthetic
+SK014,Git,2025-09,7181,111963,0.064137,Global (synthetic),synthetic
+SK014,Git,2025-10,7047,114376,0.061613,Global (synthetic),synthetic
+SK014,Git,2025-11,6735,116767,0.057679,Global (synthetic),synthetic
+SK014,Git,2025-12,7231,118377,0.061084,Global (synthetic),synthetic
+SK014,Git,2026-01,7006,118662,0.059041,Global (synthetic),synthetic
+SK014,Git,2026-02,7013,117434,0.059718,Global (synthetic),synthetic
+SK014,Git,2026-03,7047,114914,0.061324,Global (synthetic),synthetic
+SK014,Git,2026-04,6605,111663,0.059151,Global (synthetic),synthetic
+SK014,Git,2026-05,6915,108437,0.063769,Global (synthetic),synthetic
+SK014,Git,2026-06,6412,105977,0.060504,Global (synthetic),synthetic
+SK014,Git,2026-07,6360,104815,0.060678,Global (synthetic),synthetic
+SK014,Git,2026-08,6537,105132,0.062178,Global (synthetic),synthetic
+SK014,Git,2026-09,6542,106716,0.061303,Global (synthetic),synthetic
+SK015,Linux,2024-10,7117,120000,0.059308,Global (synthetic),synthetic
+SK015,Linux,2024-11,7246,122508,0.059147,Global (synthetic),synthetic
+SK015,Linux,2024-12,6871,124198,0.055323,Global (synthetic),synthetic
+SK015,Linux,2025-01,7601,124497,0.061054,Global (synthetic),synthetic
+SK015,Linux,2025-02,7386,123208,0.059947,Global (synthetic),synthetic
+SK015,Linux,2025-03,7249,120564,0.060126,Global (synthetic),synthetic
+SK015,Linux,2025-04,7266,117154,0.062021,Global (synthetic),synthetic
+SK015,Linux,2025-05,6498,113769,0.057116,Global (synthetic),synthetic
+SK015,Linux,2025-06,6211,111188,0.05586,Global (synthetic),synthetic
+SK015,Linux,2025-07,6833,109968,0.062136,Global (synthetic),synthetic
+SK015,Linux,2025-08,6747,110302,0.061168,Global (synthetic),synthetic
+SK015,Linux,2025-09,7008,111963,0.062592,Global (synthetic),synthetic
+SK015,Linux,2025-10,6809,114376,0.059532,Global (synthetic),synthetic
+SK015,Linux,2025-11,7494,116767,0.064179,Global (synthetic),synthetic
+SK015,Linux,2025-12,7793,118377,0.065832,Global (synthetic),synthetic
+SK015,Linux,2026-01,7628,118662,0.064283,Global (synthetic),synthetic
+SK015,Linux,2026-02,7318,117434,0.062316,Global (synthetic),synthetic
+SK015,Linux,2026-03,6768,114914,0.058896,Global (synthetic),synthetic
+SK015,Linux,2026-04,7455,111663,0.066763,Global (synthetic),synthetic
+SK015,Linux,2026-05,7169,108437,0.066112,Global (synthetic),synthetic
+SK015,Linux,2026-06,7010,105977,0.066146,Global (synthetic),synthetic
+SK015,Linux,2026-07,6535,104815,0.062348,Global (synthetic),synthetic
+SK015,Linux,2026-08,6978,105132,0.066373,Global (synthetic),synthetic
+SK015,Linux,2026-09,7160,106716,0.067094,Global (synthetic),synthetic
+SK016,Bash Scripting,2024-10,2974,120000,0.024783,Global (synthetic),synthetic
+SK016,Bash Scripting,2024-11,2931,122508,0.023925,Global (synthetic),synthetic
+SK016,Bash Scripting,2024-12,2870,124198,0.023108,Global (synthetic),synthetic
+SK016,Bash Scripting,2025-01,2917,124497,0.02343,Global (synthetic),synthetic
+SK016,Bash Scripting,2025-02,2610,123208,0.021184,Global (synthetic),synthetic
+SK016,Bash Scripting,2025-03,2772,120564,0.022992,Global (synthetic),synthetic
+SK016,Bash Scripting,2025-04,2708,117154,0.023115,Global (synthetic),synthetic
+SK016,Bash Scripting,2025-05,2711,113769,0.023829,Global (synthetic),synthetic
+SK016,Bash Scripting,2025-06,2454,111188,0.022071,Global (synthetic),synthetic
+SK016,Bash Scripting,2025-07,2621,109968,0.023834,Global (synthetic),synthetic
+SK016,Bash Scripting,2025-08,2841,110302,0.025756,Global (synthetic),synthetic
+SK016,Bash Scripting,2025-09,2539,111963,0.022677,Global (synthetic),synthetic
+SK016,Bash Scripting,2025-10,2590,114376,0.022645,Global (synthetic),synthetic
+SK016,Bash Scripting,2025-11,2521,116767,0.02159,Global (synthetic),synthetic
+SK016,Bash Scripting,2025-12,2902,118377,0.024515,Global (synthetic),synthetic
+SK016,Bash Scripting,2026-01,2721,118662,0.022931,Global (synthetic),synthetic
+SK016,Bash Scripting,2026-02,2681,117434,0.02283,Global (synthetic),synthetic
+SK016,Bash Scripting,2026-03,2723,114914,0.023696,Global (synthetic),synthetic
+SK016,Bash Scripting,2026-04,2689,111663,0.024081,Global (synthetic),synthetic
+SK016,Bash Scripting,2026-05,2490,108437,0.022963,Global (synthetic),synthetic
+SK016,Bash Scripting,2026-06,2516,105977,0.023741,Global (synthetic),synthetic
+SK016,Bash Scripting,2026-07,2651,104815,0.025292,Global (synthetic),synthetic
+SK016,Bash Scripting,2026-08,2645,105132,0.025159,Global (synthetic),synthetic
+SK016,Bash Scripting,2026-09,2661,106716,0.024935,Global (synthetic),synthetic
+SK017,HTML and CSS,2024-10,1904,120000,0.015867,Global (synthetic),synthetic
+SK017,HTML and CSS,2024-11,1853,122508,0.015125,Global (synthetic),synthetic
+SK017,HTML and CSS,2024-12,2131,124198,0.017158,Global (synthetic),synthetic
+SK017,HTML and CSS,2025-01,2029,124497,0.016298,Global (synthetic),synthetic
+SK017,HTML and CSS,2025-02,1934,123208,0.015697,Global (synthetic),synthetic
+SK017,HTML and CSS,2025-03,1906,120564,0.015809,Global (synthetic),synthetic
+SK017,HTML and CSS,2025-04,1915,117154,0.016346,Global (synthetic),synthetic
+SK017,HTML and CSS,2025-05,1735,113769,0.01525,Global (synthetic),synthetic
+SK017,HTML and CSS,2025-06,1729,111188,0.01555,Global (synthetic),synthetic
+SK017,HTML and CSS,2025-07,1718,109968,0.015623,Global (synthetic),synthetic
+SK017,HTML and CSS,2025-08,1798,110302,0.016301,Global (synthetic),synthetic
+SK017,HTML and CSS,2025-09,1749,111963,0.015621,Global (synthetic),synthetic
+SK017,HTML and CSS,2025-10,1842,114376,0.016105,Global (synthetic),synthetic
+SK017,HTML and CSS,2025-11,1676,116767,0.014353,Global (synthetic),synthetic
+SK017,HTML and CSS,2025-12,1853,118377,0.015653,Global (synthetic),synthetic
+SK017,HTML and CSS,2026-01,1923,118662,0.016206,Global (synthetic),synthetic
+SK017,HTML and CSS,2026-02,1900,117434,0.016179,Global (synthetic),synthetic
+SK017,HTML and CSS,2026-03,1751,114914,0.015237,Global (synthetic),synthetic
+SK017,HTML and CSS,2026-04,1661,111663,0.014875,Global (synthetic),synthetic
+SK017,HTML and CSS,2026-05,1635,108437,0.015078,Global (synthetic),synthetic
+SK017,HTML and CSS,2026-06,1586,105977,0.014965,Global (synthetic),synthetic
+SK017,HTML and CSS,2026-07,1564,104815,0.014922,Global (synthetic),synthetic
+SK017,HTML and CSS,2026-08,1594,105132,0.015162,Global (synthetic),synthetic
+SK017,HTML and CSS,2026-09,1607,106716,0.015059,Global (synthetic),synthetic
+SK018,React,2024-10,7578,120000,0.06315,Global (synthetic),synthetic
+SK018,React,2024-11,7560,122508,0.06171,Global (synthetic),synthetic
+SK018,React,2024-12,7932,124198,0.063865,Global (synthetic),synthetic
+SK018,React,2025-01,8585,124497,0.068957,Global (synthetic),synthetic
+SK018,React,2025-02,8555,123208,0.069435,Global (synthetic),synthetic
+SK018,React,2025-03,8311,120564,0.068934,Global (synthetic),synthetic
+SK018,React,2025-04,7664,117154,0.065418,Global (synthetic),synthetic
+SK018,React,2025-05,8173,113769,0.071838,Global (synthetic),synthetic
+SK018,React,2025-06,7529,111188,0.067714,Global (synthetic),synthetic
+SK018,React,2025-07,8223,109968,0.074776,Global (synthetic),synthetic
+SK018,React,2025-08,9048,110302,0.082029,Global (synthetic),synthetic
+SK018,React,2025-09,8460,111963,0.07556,Global (synthetic),synthetic
+SK018,React,2025-10,8741,114376,0.076423,Global (synthetic),synthetic
+SK018,React,2025-11,8506,116767,0.072846,Global (synthetic),synthetic
+SK018,React,2025-12,8390,118377,0.070875,Global (synthetic),synthetic
+SK018,React,2026-01,8877,118662,0.074809,Global (synthetic),synthetic
+SK018,React,2026-02,8737,117434,0.074399,Global (synthetic),synthetic
+SK018,React,2026-03,8465,114914,0.073664,Global (synthetic),synthetic
+SK018,React,2026-04,9252,111663,0.082856,Global (synthetic),synthetic
+SK018,React,2026-05,8679,108437,0.080037,Global (synthetic),synthetic
+SK018,React,2026-06,8613,105977,0.081272,Global (synthetic),synthetic
+SK018,React,2026-07,8355,104815,0.079712,Global (synthetic),synthetic
+SK018,React,2026-08,8665,105132,0.08242,Global (synthetic),synthetic
+SK018,React,2026-09,9303,106716,0.087175,Global (synthetic),synthetic
+SK019,Angular,2024-10,3742,120000,0.031183,Global (synthetic),synthetic
+SK019,Angular,2024-11,3858,122508,0.031492,Global (synthetic),synthetic
+SK019,Angular,2024-12,3963,124198,0.031909,Global (synthetic),synthetic
+SK019,Angular,2025-01,3962,124497,0.031824,Global (synthetic),synthetic
+SK019,Angular,2025-02,4026,123208,0.032676,Global (synthetic),synthetic
+SK019,Angular,2025-03,4049,120564,0.033584,Global (synthetic),synthetic
+SK019,Angular,2025-04,3577,117154,0.030532,Global (synthetic),synthetic
+SK019,Angular,2025-05,3562,113769,0.031309,Global (synthetic),synthetic
+SK019,Angular,2025-06,3553,111188,0.031955,Global (synthetic),synthetic
+SK019,Angular,2025-07,3364,109968,0.03059,Global (synthetic),synthetic
+SK019,Angular,2025-08,3573,110302,0.032393,Global (synthetic),synthetic
+SK019,Angular,2025-09,3430,111963,0.030635,Global (synthetic),synthetic
+SK019,Angular,2025-10,3439,114376,0.030067,Global (synthetic),synthetic
+SK019,Angular,2025-11,3360,116767,0.028775,Global (synthetic),synthetic
+SK019,Angular,2025-12,3396,118377,0.028688,Global (synthetic),synthetic
+SK019,Angular,2026-01,3482,118662,0.029344,Global (synthetic),synthetic
+SK019,Angular,2026-02,3439,117434,0.029284,Global (synthetic),synthetic
+SK019,Angular,2026-03,3409,114914,0.029666,Global (synthetic),synthetic
+SK019,Angular,2026-04,3420,111663,0.030628,Global (synthetic),synthetic
+SK019,Angular,2026-05,3229,108437,0.029778,Global (synthetic),synthetic
+SK019,Angular,2026-06,3059,105977,0.028865,Global (synthetic),synthetic
+SK019,Angular,2026-07,3284,104815,0.031331,Global (synthetic),synthetic
+SK019,Angular,2026-08,3019,105132,0.028716,Global (synthetic),synthetic
+SK019,Angular,2026-09,2799,106716,0.026228,Global (synthetic),synthetic
+SK020,Node.js,2024-10,3166,120000,0.026383,Global (synthetic),synthetic
+SK020,Node.js,2024-11,2983,122508,0.024349,Global (synthetic),synthetic
+SK020,Node.js,2024-12,3275,124198,0.026369,Global (synthetic),synthetic
+SK020,Node.js,2025-01,3358,124497,0.026973,Global (synthetic),synthetic
+SK020,Node.js,2025-02,3248,123208,0.026362,Global (synthetic),synthetic
+SK020,Node.js,2025-03,3183,120564,0.026401,Global (synthetic),synthetic
+SK020,Node.js,2025-04,3065,117154,0.026162,Global (synthetic),synthetic
+SK020,Node.js,2025-05,3024,113769,0.02658,Global (synthetic),synthetic
+SK020,Node.js,2025-06,2980,111188,0.026801,Global (synthetic),synthetic
+SK020,Node.js,2025-07,3157,109968,0.028708,Global (synthetic),synthetic
+SK020,Node.js,2025-08,3113,110302,0.028222,Global (synthetic),synthetic
+SK020,Node.js,2025-09,3078,111963,0.027491,Global (synthetic),synthetic
+SK020,Node.js,2025-10,3092,114376,0.027034,Global (synthetic),synthetic
+SK020,Node.js,2025-11,3366,116767,0.028827,Global (synthetic),synthetic
+SK020,Node.js,2025-12,3547,118377,0.029963,Global (synthetic),synthetic
+SK020,Node.js,2026-01,3299,118662,0.027802,Global (synthetic),synthetic
+SK020,Node.js,2026-02,3444,117434,0.029327,Global (synthetic),synthetic
+SK020,Node.js,2026-03,3430,114914,0.029848,Global (synthetic),synthetic
+SK020,Node.js,2026-04,3408,111663,0.03052,Global (synthetic),synthetic
+SK020,Node.js,2026-05,3359,108437,0.030976,Global (synthetic),synthetic
+SK020,Node.js,2026-06,2965,105977,0.027978,Global (synthetic),synthetic
+SK020,Node.js,2026-07,3021,104815,0.028822,Global (synthetic),synthetic
+SK020,Node.js,2026-08,3107,105132,0.029553,Global (synthetic),synthetic
+SK020,Node.js,2026-09,2992,106716,0.028037,Global (synthetic),synthetic
+SK021,REST API Design,2024-10,4890,120000,0.04075,Global (synthetic),synthetic
+SK021,REST API Design,2024-11,4870,122508,0.039752,Global (synthetic),synthetic
+SK021,REST API Design,2024-12,4302,124198,0.034638,Global (synthetic),synthetic
+SK021,REST API Design,2025-01,4708,124497,0.037816,Global (synthetic),synthetic
+SK021,REST API Design,2025-02,5158,123208,0.041864,Global (synthetic),synthetic
+SK021,REST API Design,2025-03,4526,120564,0.03754,Global (synthetic),synthetic
+SK021,REST API Design,2025-04,4406,117154,0.037609,Global (synthetic),synthetic
+SK021,REST API Design,2025-05,4826,113769,0.042419,Global (synthetic),synthetic
+SK021,REST API Design,2025-06,4463,111188,0.040139,Global (synthetic),synthetic
+SK021,REST API Design,2025-07,4655,109968,0.04233,Global (synthetic),synthetic
+SK021,REST API Design,2025-08,4501,110302,0.040806,Global (synthetic),synthetic
+SK021,REST API Design,2025-09,4609,111963,0.041165,Global (synthetic),synthetic
+SK021,REST API Design,2025-10,4685,114376,0.040961,Global (synthetic),synthetic
+SK021,REST API Design,2025-11,4977,116767,0.042623,Global (synthetic),synthetic
+SK021,REST API Design,2025-12,5421,118377,0.045794,Global (synthetic),synthetic
+SK021,REST API Design,2026-01,5086,118662,0.042861,Global (synthetic),synthetic
+SK021,REST API Design,2026-02,4495,117434,0.038277,Global (synthetic),synthetic
+SK021,REST API Design,2026-03,4981,114914,0.043345,Global (synthetic),synthetic
+SK021,REST API Design,2026-04,4877,111663,0.043676,Global (synthetic),synthetic
+SK021,REST API Design,2026-05,4851,108437,0.044735,Global (synthetic),synthetic
+SK021,REST API Design,2026-06,4515,105977,0.042603,Global (synthetic),synthetic
+SK021,REST API Design,2026-07,4818,104815,0.045967,Global (synthetic),synthetic
+SK021,REST API Design,2026-08,4658,105132,0.044306,Global (synthetic),synthetic
+SK021,REST API Design,2026-09,5090,106716,0.047697,Global (synthetic),synthetic
+SK022,Spring Boot,2024-10,10812,120000,0.0901,Global (synthetic),synthetic
+SK022,Spring Boot,2024-11,9950,122508,0.081219,Global (synthetic),synthetic
+SK022,Spring Boot,2024-12,10328,124198,0.083157,Global (synthetic),synthetic
+SK022,Spring Boot,2025-01,10646,124497,0.085512,Global (synthetic),synthetic
+SK022,Spring Boot,2025-02,11559,123208,0.093816,Global (synthetic),synthetic
+SK022,Spring Boot,2025-03,10633,120564,0.088194,Global (synthetic),synthetic
+SK022,Spring Boot,2025-04,10458,117154,0.089267,Global (synthetic),synthetic
+SK022,Spring Boot,2025-05,9604,113769,0.084416,Global (synthetic),synthetic
+SK022,Spring Boot,2025-06,9216,111188,0.082886,Global (synthetic),synthetic
+SK022,Spring Boot,2025-07,9759,109968,0.088743,Global (synthetic),synthetic
+SK022,Spring Boot,2025-08,9090,110302,0.08241,Global (synthetic),synthetic
+SK022,Spring Boot,2025-09,9473,111963,0.084608,Global (synthetic),synthetic
+SK022,Spring Boot,2025-10,9943,114376,0.086933,Global (synthetic),synthetic
+SK022,Spring Boot,2025-11,10581,116767,0.090616,Global (synthetic),synthetic
+SK022,Spring Boot,2025-12,10013,118377,0.084585,Global (synthetic),synthetic
+SK022,Spring Boot,2026-01,9436,118662,0.07952,Global (synthetic),synthetic
+SK022,Spring Boot,2026-02,10438,117434,0.088884,Global (synthetic),synthetic
+SK022,Spring Boot,2026-03,9713,114914,0.084524,Global (synthetic),synthetic
+SK022,Spring Boot,2026-04,9823,111663,0.087969,Global (synthetic),synthetic
+SK022,Spring Boot,2026-05,9408,108437,0.08676,Global (synthetic),synthetic
+SK022,Spring Boot,2026-06,9064,105977,0.085528,Global (synthetic),synthetic
+SK022,Spring Boot,2026-07,9458,104815,0.090235,Global (synthetic),synthetic
+SK022,Spring Boot,2026-08,8696,105132,0.082714,Global (synthetic),synthetic
+SK022,Spring Boot,2026-09,9069,106716,0.084982,Global (synthetic),synthetic
+SK023,.NET,2024-10,8913,120000,0.074275,Global (synthetic),synthetic
+SK023,.NET,2024-11,8859,122508,0.072313,Global (synthetic),synthetic
+SK023,.NET,2024-12,8986,124198,0.072352,Global (synthetic),synthetic
+SK023,.NET,2025-01,8823,124497,0.070869,Global (synthetic),synthetic
+SK023,.NET,2025-02,9189,123208,0.074581,Global (synthetic),synthetic
+SK023,.NET,2025-03,9367,120564,0.077693,Global (synthetic),synthetic
+SK023,.NET,2025-04,8728,117154,0.0745,Global (synthetic),synthetic
+SK023,.NET,2025-05,8411,113769,0.07393,Global (synthetic),synthetic
+SK023,.NET,2025-06,8645,111188,0.077751,Global (synthetic),synthetic
+SK023,.NET,2025-07,7948,109968,0.072275,Global (synthetic),synthetic
+SK023,.NET,2025-08,8547,110302,0.077487,Global (synthetic),synthetic
+SK023,.NET,2025-09,8697,111963,0.077677,Global (synthetic),synthetic
+SK023,.NET,2025-10,9491,114376,0.082981,Global (synthetic),synthetic
+SK023,.NET,2025-11,8643,116767,0.074019,Global (synthetic),synthetic
+SK023,.NET,2025-12,8723,118377,0.073688,Global (synthetic),synthetic
+SK023,.NET,2026-01,9138,118662,0.077008,Global (synthetic),synthetic
+SK023,.NET,2026-02,9109,117434,0.077567,Global (synthetic),synthetic
+SK023,.NET,2026-03,8385,114914,0.072968,Global (synthetic),synthetic
+SK023,.NET,2026-04,8240,111663,0.073793,Global (synthetic),synthetic
+SK023,.NET,2026-05,8374,108437,0.077224,Global (synthetic),synthetic
+SK023,.NET,2026-06,7956,105977,0.075073,Global (synthetic),synthetic
+SK023,.NET,2026-07,7858,104815,0.07497,Global (synthetic),synthetic
+SK023,.NET,2026-08,7934,105132,0.075466,Global (synthetic),synthetic
+SK023,.NET,2026-09,8474,106716,0.079407,Global (synthetic),synthetic
+SK024,Django,2024-10,6089,120000,0.050742,Global (synthetic),synthetic
+SK024,Django,2024-11,5900,122508,0.04816,Global (synthetic),synthetic
+SK024,Django,2024-12,5837,124198,0.046997,Global (synthetic),synthetic
+SK024,Django,2025-01,6343,124497,0.050949,Global (synthetic),synthetic
+SK024,Django,2025-02,6023,123208,0.048884,Global (synthetic),synthetic
+SK024,Django,2025-03,6050,120564,0.050181,Global (synthetic),synthetic
+SK024,Django,2025-04,5505,117154,0.046989,Global (synthetic),synthetic
+SK024,Django,2025-05,5443,113769,0.047842,Global (synthetic),synthetic
+SK024,Django,2025-06,5466,111188,0.04916,Global (synthetic),synthetic
+SK024,Django,2025-07,5797,109968,0.052715,Global (synthetic),synthetic
+SK024,Django,2025-08,5515,110302,0.049999,Global (synthetic),synthetic
+SK024,Django,2025-09,5070,111963,0.045283,Global (synthetic),synthetic
+SK024,Django,2025-10,5486,114376,0.047965,Global (synthetic),synthetic
+SK024,Django,2025-11,6234,116767,0.053388,Global (synthetic),synthetic
+SK024,Django,2025-12,5779,118377,0.048818,Global (synthetic),synthetic
+SK024,Django,2026-01,5440,118662,0.045844,Global (synthetic),synthetic
+SK024,Django,2026-02,6183,117434,0.052651,Global (synthetic),synthetic
+SK024,Django,2026-03,5688,114914,0.049498,Global (synthetic),synthetic
+SK024,Django,2026-04,5595,111663,0.050106,Global (synthetic),synthetic
+SK024,Django,2026-05,5277,108437,0.048664,Global (synthetic),synthetic
+SK024,Django,2026-06,5460,105977,0.05152,Global (synthetic),synthetic
+SK024,Django,2026-07,5147,104815,0.049105,Global (synthetic),synthetic
+SK024,Django,2026-08,5497,105132,0.052286,Global (synthetic),synthetic
+SK024,Django,2026-09,5419,106716,0.050779,Global (synthetic),synthetic
+SK025,Web Accessibility,2024-10,3490,120000,0.029083,Global (synthetic),synthetic
+SK025,Web Accessibility,2024-11,3780,122508,0.030855,Global (synthetic),synthetic
+SK025,Web Accessibility,2024-12,3697,124198,0.029767,Global (synthetic),synthetic
+SK025,Web Accessibility,2025-01,3784,124497,0.030394,Global (synthetic),synthetic
+SK025,Web Accessibility,2025-02,3619,123208,0.029373,Global (synthetic),synthetic
+SK025,Web Accessibility,2025-03,3923,120564,0.032539,Global (synthetic),synthetic
+SK025,Web Accessibility,2025-04,3686,117154,0.031463,Global (synthetic),synthetic
+SK025,Web Accessibility,2025-05,3583,113769,0.031494,Global (synthetic),synthetic
+SK025,Web Accessibility,2025-06,3242,111188,0.029158,Global (synthetic),synthetic
+SK025,Web Accessibility,2025-07,3319,109968,0.030181,Global (synthetic),synthetic
+SK025,Web Accessibility,2025-08,3610,110302,0.032728,Global (synthetic),synthetic
+SK025,Web Accessibility,2025-09,3531,111963,0.031537,Global (synthetic),synthetic
+SK025,Web Accessibility,2025-10,3281,114376,0.028686,Global (synthetic),synthetic
+SK025,Web Accessibility,2025-11,3951,116767,0.033836,Global (synthetic),synthetic
+SK025,Web Accessibility,2025-12,3714,118377,0.031374,Global (synthetic),synthetic
+SK025,Web Accessibility,2026-01,4112,118662,0.034653,Global (synthetic),synthetic
+SK025,Web Accessibility,2026-02,3794,117434,0.032307,Global (synthetic),synthetic
+SK025,Web Accessibility,2026-03,3737,114914,0.03252,Global (synthetic),synthetic
+SK025,Web Accessibility,2026-04,3880,111663,0.034747,Global (synthetic),synthetic
+SK025,Web Accessibility,2026-05,3424,108437,0.031576,Global (synthetic),synthetic
+SK025,Web Accessibility,2026-06,3329,105977,0.031412,Global (synthetic),synthetic
+SK025,Web Accessibility,2026-07,3447,104815,0.032886,Global (synthetic),synthetic
+SK025,Web Accessibility,2026-08,3690,105132,0.035098,Global (synthetic),synthetic
+SK025,Web Accessibility,2026-09,3508,106716,0.032872,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2024-10,4649,120000,0.038742,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2024-11,4488,122508,0.036634,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2024-12,4875,124198,0.039252,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2025-01,5011,124497,0.04025,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2025-02,4853,123208,0.039388,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2025-03,4721,120564,0.039157,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2025-04,4629,117154,0.039512,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2025-05,4254,113769,0.037391,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2025-06,4369,111188,0.039294,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2025-07,4566,109968,0.041521,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2025-08,4181,110302,0.037905,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2025-09,4580,111963,0.040906,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2025-10,4503,114376,0.03937,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2025-11,4685,116767,0.040122,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2025-12,4900,118377,0.041393,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2026-01,4663,118662,0.039296,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2026-02,4324,117434,0.03682,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2026-03,4538,114914,0.03949,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2026-04,4646,111663,0.041607,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2026-05,4349,108437,0.040106,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2026-06,4406,105977,0.041575,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2026-07,4080,104815,0.038926,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2026-08,3915,105132,0.037239,Global (synthetic),synthetic
+SK026,Networking Fundamentals,2026-09,4251,106716,0.039835,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2024-10,11389,120000,0.094908,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2024-11,10838,122508,0.088467,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2024-12,11567,124198,0.093133,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2025-01,11105,124497,0.089199,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2025-02,10744,123208,0.087201,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2025-03,11850,120564,0.098288,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2025-04,11598,117154,0.098998,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2025-05,11447,113769,0.100616,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2025-06,10518,111188,0.094596,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2025-07,10549,109968,0.095927,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2025-08,11087,110302,0.100515,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2025-09,11369,111963,0.101542,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2025-10,11233,114376,0.098211,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2025-11,11160,116767,0.095575,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2025-12,12171,118377,0.102815,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2026-01,12825,118662,0.10808,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2026-02,11589,117434,0.098685,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2026-03,12284,114914,0.106897,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2026-04,11928,111663,0.106821,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2026-05,11884,108437,0.109593,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2026-06,12007,105977,0.113298,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2026-07,11102,104815,0.10592,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2026-08,10651,105132,0.10131,Global (synthetic),synthetic
+SK027,Cloud Computing Fundamentals,2026-09,11472,106716,0.1075,Global (synthetic),synthetic
+SK028,AWS,2024-10,5975,120000,0.049792,Global (synthetic),synthetic
+SK028,AWS,2024-11,6016,122508,0.049107,Global (synthetic),synthetic
+SK028,AWS,2024-12,5836,124198,0.046989,Global (synthetic),synthetic
+SK028,AWS,2025-01,6612,124497,0.05311,Global (synthetic),synthetic
+SK028,AWS,2025-02,6474,123208,0.052545,Global (synthetic),synthetic
+SK028,AWS,2025-03,6618,120564,0.054892,Global (synthetic),synthetic
+SK028,AWS,2025-04,5863,117154,0.050045,Global (synthetic),synthetic
+SK028,AWS,2025-05,6175,113769,0.054276,Global (synthetic),synthetic
+SK028,AWS,2025-06,6194,111188,0.055707,Global (synthetic),synthetic
+SK028,AWS,2025-07,5811,109968,0.052842,Global (synthetic),synthetic
+SK028,AWS,2025-08,6025,110302,0.054623,Global (synthetic),synthetic
+SK028,AWS,2025-09,6334,111963,0.056572,Global (synthetic),synthetic
+SK028,AWS,2025-10,6948,114376,0.060747,Global (synthetic),synthetic
+SK028,AWS,2025-11,7061,116767,0.060471,Global (synthetic),synthetic
+SK028,AWS,2025-12,6326,118377,0.053439,Global (synthetic),synthetic
+SK028,AWS,2026-01,7559,118662,0.063702,Global (synthetic),synthetic
+SK028,AWS,2026-02,6663,117434,0.056738,Global (synthetic),synthetic
+SK028,AWS,2026-03,7244,114914,0.063038,Global (synthetic),synthetic
+SK028,AWS,2026-04,7076,111663,0.063369,Global (synthetic),synthetic
+SK028,AWS,2026-05,6488,108437,0.059832,Global (synthetic),synthetic
+SK028,AWS,2026-06,6628,105977,0.062542,Global (synthetic),synthetic
+SK028,AWS,2026-07,6641,104815,0.063359,Global (synthetic),synthetic
+SK028,AWS,2026-08,7035,105132,0.066915,Global (synthetic),synthetic
+SK028,AWS,2026-09,6888,106716,0.064545,Global (synthetic),synthetic
+SK029,Microsoft Azure,2024-10,6355,120000,0.052958,Global (synthetic),synthetic
+SK029,Microsoft Azure,2024-11,6102,122508,0.049809,Global (synthetic),synthetic
+SK029,Microsoft Azure,2024-12,6110,124198,0.049195,Global (synthetic),synthetic
+SK029,Microsoft Azure,2025-01,6852,124497,0.055037,Global (synthetic),synthetic
+SK029,Microsoft Azure,2025-02,6500,123208,0.052756,Global (synthetic),synthetic
+SK029,Microsoft Azure,2025-03,6322,120564,0.052437,Global (synthetic),synthetic
+SK029,Microsoft Azure,2025-04,6259,117154,0.053425,Global (synthetic),synthetic
+SK029,Microsoft Azure,2025-05,6587,113769,0.057898,Global (synthetic),synthetic
+SK029,Microsoft Azure,2025-06,6073,111188,0.054619,Global (synthetic),synthetic
+SK029,Microsoft Azure,2025-07,5872,109968,0.053397,Global (synthetic),synthetic
+SK029,Microsoft Azure,2025-08,6508,110302,0.059001,Global (synthetic),synthetic
+SK029,Microsoft Azure,2025-09,6299,111963,0.056259,Global (synthetic),synthetic
+SK029,Microsoft Azure,2025-10,7410,114376,0.064786,Global (synthetic),synthetic
+SK029,Microsoft Azure,2025-11,6876,116767,0.058886,Global (synthetic),synthetic
+SK029,Microsoft Azure,2025-12,6467,118377,0.05463,Global (synthetic),synthetic
+SK029,Microsoft Azure,2026-01,7299,118662,0.061511,Global (synthetic),synthetic
+SK029,Microsoft Azure,2026-02,7748,117434,0.065977,Global (synthetic),synthetic
+SK029,Microsoft Azure,2026-03,7547,114914,0.065675,Global (synthetic),synthetic
+SK029,Microsoft Azure,2026-04,7585,111663,0.067927,Global (synthetic),synthetic
+SK029,Microsoft Azure,2026-05,6703,108437,0.061814,Global (synthetic),synthetic
+SK029,Microsoft Azure,2026-06,7020,105977,0.066241,Global (synthetic),synthetic
+SK029,Microsoft Azure,2026-07,6669,104815,0.063626,Global (synthetic),synthetic
+SK029,Microsoft Azure,2026-08,6917,105132,0.065793,Global (synthetic),synthetic
+SK029,Microsoft Azure,2026-09,6747,106716,0.063224,Global (synthetic),synthetic
+SK030,Docker,2024-10,8573,120000,0.071442,Global (synthetic),synthetic
+SK030,Docker,2024-11,8484,122508,0.069252,Global (synthetic),synthetic
+SK030,Docker,2024-12,8751,124198,0.07046,Global (synthetic),synthetic
+SK030,Docker,2025-01,8763,124497,0.070387,Global (synthetic),synthetic
+SK030,Docker,2025-02,9723,123208,0.078915,Global (synthetic),synthetic
+SK030,Docker,2025-03,8854,120564,0.073438,Global (synthetic),synthetic
+SK030,Docker,2025-04,9309,117154,0.079459,Global (synthetic),synthetic
+SK030,Docker,2025-05,8361,113769,0.073491,Global (synthetic),synthetic
+SK030,Docker,2025-06,8503,111188,0.076474,Global (synthetic),synthetic
+SK030,Docker,2025-07,8081,109968,0.073484,Global (synthetic),synthetic
+SK030,Docker,2025-08,8345,110302,0.075656,Global (synthetic),synthetic
+SK030,Docker,2025-09,8636,111963,0.077132,Global (synthetic),synthetic
+SK030,Docker,2025-10,9514,114376,0.083182,Global (synthetic),synthetic
+SK030,Docker,2025-11,9588,116767,0.082112,Global (synthetic),synthetic
+SK030,Docker,2025-12,10081,118377,0.08516,Global (synthetic),synthetic
+SK030,Docker,2026-01,9819,118662,0.082747,Global (synthetic),synthetic
+SK030,Docker,2026-02,10202,117434,0.086874,Global (synthetic),synthetic
+SK030,Docker,2026-03,9541,114914,0.083027,Global (synthetic),synthetic
+SK030,Docker,2026-04,10249,111663,0.091785,Global (synthetic),synthetic
+SK030,Docker,2026-05,8865,108437,0.081752,Global (synthetic),synthetic
+SK030,Docker,2026-06,8693,105977,0.082027,Global (synthetic),synthetic
+SK030,Docker,2026-07,8491,104815,0.081009,Global (synthetic),synthetic
+SK030,Docker,2026-08,9983,105132,0.094956,Global (synthetic),synthetic
+SK030,Docker,2026-09,9585,106716,0.089818,Global (synthetic),synthetic
+SK031,Kubernetes,2024-10,6074,120000,0.050617,Global (synthetic),synthetic
+SK031,Kubernetes,2024-11,6068,122508,0.049531,Global (synthetic),synthetic
+SK031,Kubernetes,2024-12,6135,124198,0.049397,Global (synthetic),synthetic
+SK031,Kubernetes,2025-01,6679,124497,0.053648,Global (synthetic),synthetic
+SK031,Kubernetes,2025-02,6520,123208,0.052918,Global (synthetic),synthetic
+SK031,Kubernetes,2025-03,6413,120564,0.053191,Global (synthetic),synthetic
+SK031,Kubernetes,2025-04,6286,117154,0.053656,Global (synthetic),synthetic
+SK031,Kubernetes,2025-05,6679,113769,0.058706,Global (synthetic),synthetic
+SK031,Kubernetes,2025-06,6382,111188,0.057398,Global (synthetic),synthetic
+SK031,Kubernetes,2025-07,6933,109968,0.063045,Global (synthetic),synthetic
+SK031,Kubernetes,2025-08,6464,110302,0.058603,Global (synthetic),synthetic
+SK031,Kubernetes,2025-09,6472,111963,0.057804,Global (synthetic),synthetic
+SK031,Kubernetes,2025-10,6758,114376,0.059086,Global (synthetic),synthetic
+SK031,Kubernetes,2025-11,7014,116767,0.060068,Global (synthetic),synthetic
+SK031,Kubernetes,2025-12,7522,118377,0.063542,Global (synthetic),synthetic
+SK031,Kubernetes,2026-01,7991,118662,0.067342,Global (synthetic),synthetic
+SK031,Kubernetes,2026-02,7235,117434,0.061609,Global (synthetic),synthetic
+SK031,Kubernetes,2026-03,7605,114914,0.06618,Global (synthetic),synthetic
+SK031,Kubernetes,2026-04,7194,111663,0.064426,Global (synthetic),synthetic
+SK031,Kubernetes,2026-05,6876,108437,0.06341,Global (synthetic),synthetic
+SK031,Kubernetes,2026-06,7466,105977,0.070449,Global (synthetic),synthetic
+SK031,Kubernetes,2026-07,7522,104815,0.071764,Global (synthetic),synthetic
+SK031,Kubernetes,2026-08,6973,105132,0.066326,Global (synthetic),synthetic
+SK031,Kubernetes,2026-09,7276,106716,0.068181,Global (synthetic),synthetic
+SK032,CI/CD,2024-10,1515,120000,0.012625,Global (synthetic),synthetic
+SK032,CI/CD,2024-11,1556,122508,0.012701,Global (synthetic),synthetic
+SK032,CI/CD,2024-12,1590,124198,0.012802,Global (synthetic),synthetic
+SK032,CI/CD,2025-01,1674,124497,0.013446,Global (synthetic),synthetic
+SK032,CI/CD,2025-02,1565,123208,0.012702,Global (synthetic),synthetic
+SK032,CI/CD,2025-03,1795,120564,0.014888,Global (synthetic),synthetic
+SK032,CI/CD,2025-04,1510,117154,0.012889,Global (synthetic),synthetic
+SK032,CI/CD,2025-05,1520,113769,0.01336,Global (synthetic),synthetic
+SK032,CI/CD,2025-06,1457,111188,0.013104,Global (synthetic),synthetic
+SK032,CI/CD,2025-07,1541,109968,0.014013,Global (synthetic),synthetic
+SK032,CI/CD,2025-08,1531,110302,0.01388,Global (synthetic),synthetic
+SK032,CI/CD,2025-09,1437,111963,0.012835,Global (synthetic),synthetic
+SK032,CI/CD,2025-10,1734,114376,0.015161,Global (synthetic),synthetic
+SK032,CI/CD,2025-11,1657,116767,0.014191,Global (synthetic),synthetic
+SK032,CI/CD,2025-12,1668,118377,0.01409,Global (synthetic),synthetic
+SK032,CI/CD,2026-01,1657,118662,0.013964,Global (synthetic),synthetic
+SK032,CI/CD,2026-02,1763,117434,0.015013,Global (synthetic),synthetic
+SK032,CI/CD,2026-03,1724,114914,0.015003,Global (synthetic),synthetic
+SK032,CI/CD,2026-04,1624,111663,0.014544,Global (synthetic),synthetic
+SK032,CI/CD,2026-05,1522,108437,0.014036,Global (synthetic),synthetic
+SK032,CI/CD,2026-06,1670,105977,0.015758,Global (synthetic),synthetic
+SK032,CI/CD,2026-07,1531,104815,0.014607,Global (synthetic),synthetic
+SK032,CI/CD,2026-08,1557,105132,0.01481,Global (synthetic),synthetic
+SK032,CI/CD,2026-09,1621,106716,0.01519,Global (synthetic),synthetic
+SK033,Terraform,2024-10,5096,120000,0.042467,Global (synthetic),synthetic
+SK033,Terraform,2024-11,4744,122508,0.038724,Global (synthetic),synthetic
+SK033,Terraform,2024-12,5567,124198,0.044823,Global (synthetic),synthetic
+SK033,Terraform,2025-01,5864,124497,0.047102,Global (synthetic),synthetic
+SK033,Terraform,2025-02,5555,123208,0.045086,Global (synthetic),synthetic
+SK033,Terraform,2025-03,5623,120564,0.046639,Global (synthetic),synthetic
+SK033,Terraform,2025-04,5399,117154,0.046085,Global (synthetic),synthetic
+SK033,Terraform,2025-05,4785,113769,0.042059,Global (synthetic),synthetic
+SK033,Terraform,2025-06,4734,111188,0.042576,Global (synthetic),synthetic
+SK033,Terraform,2025-07,5110,109968,0.046468,Global (synthetic),synthetic
+SK033,Terraform,2025-08,5030,110302,0.045602,Global (synthetic),synthetic
+SK033,Terraform,2025-09,5058,111963,0.045175,Global (synthetic),synthetic
+SK033,Terraform,2025-10,5504,114376,0.048122,Global (synthetic),synthetic
+SK033,Terraform,2025-11,5920,116767,0.050699,Global (synthetic),synthetic
+SK033,Terraform,2025-12,5593,118377,0.047247,Global (synthetic),synthetic
+SK033,Terraform,2026-01,5619,118662,0.047353,Global (synthetic),synthetic
+SK033,Terraform,2026-02,6127,117434,0.052174,Global (synthetic),synthetic
+SK033,Terraform,2026-03,5665,114914,0.049298,Global (synthetic),synthetic
+SK033,Terraform,2026-04,6043,111663,0.054118,Global (synthetic),synthetic
+SK033,Terraform,2026-05,5658,108437,0.052178,Global (synthetic),synthetic
+SK033,Terraform,2026-06,5757,105977,0.054323,Global (synthetic),synthetic
+SK033,Terraform,2026-07,5957,104815,0.056833,Global (synthetic),synthetic
+SK033,Terraform,2026-08,5907,105132,0.056186,Global (synthetic),synthetic
+SK033,Terraform,2026-09,6204,106716,0.058135,Global (synthetic),synthetic
+SK034,Statistics,2024-10,1915,120000,0.015958,Global (synthetic),synthetic
+SK034,Statistics,2024-11,1900,122508,0.015509,Global (synthetic),synthetic
+SK034,Statistics,2024-12,1929,124198,0.015532,Global (synthetic),synthetic
+SK034,Statistics,2025-01,2066,124497,0.016595,Global (synthetic),synthetic
+SK034,Statistics,2025-02,2060,123208,0.01672,Global (synthetic),synthetic
+SK034,Statistics,2025-03,1960,120564,0.016257,Global (synthetic),synthetic
+SK034,Statistics,2025-04,1808,117154,0.015433,Global (synthetic),synthetic
+SK034,Statistics,2025-05,1773,113769,0.015584,Global (synthetic),synthetic
+SK034,Statistics,2025-06,1778,111188,0.015991,Global (synthetic),synthetic
+SK034,Statistics,2025-07,1838,109968,0.016714,Global (synthetic),synthetic
+SK034,Statistics,2025-08,1825,110302,0.016545,Global (synthetic),synthetic
+SK034,Statistics,2025-09,1939,111963,0.017318,Global (synthetic),synthetic
+SK034,Statistics,2025-10,2175,114376,0.019016,Global (synthetic),synthetic
+SK034,Statistics,2025-11,1940,116767,0.016614,Global (synthetic),synthetic
+SK034,Statistics,2025-12,1981,118377,0.016735,Global (synthetic),synthetic
+SK034,Statistics,2026-01,2027,118662,0.017082,Global (synthetic),synthetic
+SK034,Statistics,2026-02,1936,117434,0.016486,Global (synthetic),synthetic
+SK034,Statistics,2026-03,1932,114914,0.016813,Global (synthetic),synthetic
+SK034,Statistics,2026-04,1843,111663,0.016505,Global (synthetic),synthetic
+SK034,Statistics,2026-05,1841,108437,0.016978,Global (synthetic),synthetic
+SK034,Statistics,2026-06,1787,105977,0.016862,Global (synthetic),synthetic
+SK034,Statistics,2026-07,1768,104815,0.016868,Global (synthetic),synthetic
+SK034,Statistics,2026-08,1884,105132,0.01792,Global (synthetic),synthetic
+SK034,Statistics,2026-09,1847,106716,0.017308,Global (synthetic),synthetic
+SK035,Linear Algebra,2024-10,4209,120000,0.035075,Global (synthetic),synthetic
+SK035,Linear Algebra,2024-11,4282,122508,0.034953,Global (synthetic),synthetic
+SK035,Linear Algebra,2024-12,4479,124198,0.036063,Global (synthetic),synthetic
+SK035,Linear Algebra,2025-01,4471,124497,0.035913,Global (synthetic),synthetic
+SK035,Linear Algebra,2025-02,4432,123208,0.035971,Global (synthetic),synthetic
+SK035,Linear Algebra,2025-03,4187,120564,0.034728,Global (synthetic),synthetic
+SK035,Linear Algebra,2025-04,3963,117154,0.033827,Global (synthetic),synthetic
+SK035,Linear Algebra,2025-05,4082,113769,0.03588,Global (synthetic),synthetic
+SK035,Linear Algebra,2025-06,4060,111188,0.036515,Global (synthetic),synthetic
+SK035,Linear Algebra,2025-07,3928,109968,0.035719,Global (synthetic),synthetic
+SK035,Linear Algebra,2025-08,4059,110302,0.036799,Global (synthetic),synthetic
+SK035,Linear Algebra,2025-09,4059,111963,0.036253,Global (synthetic),synthetic
+SK035,Linear Algebra,2025-10,4108,114376,0.035917,Global (synthetic),synthetic
+SK035,Linear Algebra,2025-11,4158,116767,0.035609,Global (synthetic),synthetic
+SK035,Linear Algebra,2025-12,4445,118377,0.037549,Global (synthetic),synthetic
+SK035,Linear Algebra,2026-01,4423,118662,0.037274,Global (synthetic),synthetic
+SK035,Linear Algebra,2026-02,4676,117434,0.039818,Global (synthetic),synthetic
+SK035,Linear Algebra,2026-03,4202,114914,0.036566,Global (synthetic),synthetic
+SK035,Linear Algebra,2026-04,4152,111663,0.037183,Global (synthetic),synthetic
+SK035,Linear Algebra,2026-05,4160,108437,0.038363,Global (synthetic),synthetic
+SK035,Linear Algebra,2026-06,4080,105977,0.038499,Global (synthetic),synthetic
+SK035,Linear Algebra,2026-07,3886,104815,0.037075,Global (synthetic),synthetic
+SK035,Linear Algebra,2026-08,3737,105132,0.035545,Global (synthetic),synthetic
+SK035,Linear Algebra,2026-09,3962,106716,0.037126,Global (synthetic),synthetic
+SK036,Pandas,2024-10,1663,120000,0.013858,Global (synthetic),synthetic
+SK036,Pandas,2024-11,1669,122508,0.013623,Global (synthetic),synthetic
+SK036,Pandas,2024-12,1672,124198,0.013462,Global (synthetic),synthetic
+SK036,Pandas,2025-01,1830,124497,0.014699,Global (synthetic),synthetic
+SK036,Pandas,2025-02,1760,123208,0.014285,Global (synthetic),synthetic
+SK036,Pandas,2025-03,1659,120564,0.01376,Global (synthetic),synthetic
+SK036,Pandas,2025-04,1717,117154,0.014656,Global (synthetic),synthetic
+SK036,Pandas,2025-05,1621,113769,0.014248,Global (synthetic),synthetic
+SK036,Pandas,2025-06,1588,111188,0.014282,Global (synthetic),synthetic
+SK036,Pandas,2025-07,1468,109968,0.013349,Global (synthetic),synthetic
+SK036,Pandas,2025-08,1600,110302,0.014506,Global (synthetic),synthetic
+SK036,Pandas,2025-09,1768,111963,0.015791,Global (synthetic),synthetic
+SK036,Pandas,2025-10,1727,114376,0.015099,Global (synthetic),synthetic
+SK036,Pandas,2025-11,1813,116767,0.015527,Global (synthetic),synthetic
+SK036,Pandas,2025-12,1644,118377,0.013888,Global (synthetic),synthetic
+SK036,Pandas,2026-01,1853,118662,0.015616,Global (synthetic),synthetic
+SK036,Pandas,2026-02,1754,117434,0.014936,Global (synthetic),synthetic
+SK036,Pandas,2026-03,1792,114914,0.015594,Global (synthetic),synthetic
+SK036,Pandas,2026-04,1784,111663,0.015977,Global (synthetic),synthetic
+SK036,Pandas,2026-05,1677,108437,0.015465,Global (synthetic),synthetic
+SK036,Pandas,2026-06,1558,105977,0.014701,Global (synthetic),synthetic
+SK036,Pandas,2026-07,1514,104815,0.014444,Global (synthetic),synthetic
+SK036,Pandas,2026-08,1648,105132,0.015675,Global (synthetic),synthetic
+SK036,Pandas,2026-09,1750,106716,0.016399,Global (synthetic),synthetic
+SK037,NumPy,2024-10,1882,120000,0.015683,Global (synthetic),synthetic
+SK037,NumPy,2024-11,1939,122508,0.015827,Global (synthetic),synthetic
+SK037,NumPy,2024-12,1791,124198,0.01442,Global (synthetic),synthetic
+SK037,NumPy,2025-01,1940,124497,0.015583,Global (synthetic),synthetic
+SK037,NumPy,2025-02,1903,123208,0.015445,Global (synthetic),synthetic
+SK037,NumPy,2025-03,1814,120564,0.015046,Global (synthetic),synthetic
+SK037,NumPy,2025-04,1818,117154,0.015518,Global (synthetic),synthetic
+SK037,NumPy,2025-05,1889,113769,0.016604,Global (synthetic),synthetic
+SK037,NumPy,2025-06,1842,111188,0.016566,Global (synthetic),synthetic
+SK037,NumPy,2025-07,1581,109968,0.014377,Global (synthetic),synthetic
+SK037,NumPy,2025-08,1654,110302,0.014995,Global (synthetic),synthetic
+SK037,NumPy,2025-09,1775,111963,0.015853,Global (synthetic),synthetic
+SK037,NumPy,2025-10,1959,114376,0.017128,Global (synthetic),synthetic
+SK037,NumPy,2025-11,1878,116767,0.016083,Global (synthetic),synthetic
+SK037,NumPy,2025-12,2035,118377,0.017191,Global (synthetic),synthetic
+SK037,NumPy,2026-01,1948,118662,0.016416,Global (synthetic),synthetic
+SK037,NumPy,2026-02,2061,117434,0.01755,Global (synthetic),synthetic
+SK037,NumPy,2026-03,1793,114914,0.015603,Global (synthetic),synthetic
+SK037,NumPy,2026-04,2024,111663,0.018126,Global (synthetic),synthetic
+SK037,NumPy,2026-05,1787,108437,0.01648,Global (synthetic),synthetic
+SK037,NumPy,2026-06,1838,105977,0.017343,Global (synthetic),synthetic
+SK037,NumPy,2026-07,1733,104815,0.016534,Global (synthetic),synthetic
+SK037,NumPy,2026-08,1817,105132,0.017283,Global (synthetic),synthetic
+SK037,NumPy,2026-09,1860,106716,0.017429,Global (synthetic),synthetic
+SK038,Data Visualization,2024-10,8604,120000,0.0717,Global (synthetic),synthetic
+SK038,Data Visualization,2024-11,9271,122508,0.075676,Global (synthetic),synthetic
+SK038,Data Visualization,2024-12,9740,124198,0.078423,Global (synthetic),synthetic
+SK038,Data Visualization,2025-01,9124,124497,0.073287,Global (synthetic),synthetic
+SK038,Data Visualization,2025-02,8926,123208,0.072446,Global (synthetic),synthetic
+SK038,Data Visualization,2025-03,9854,120564,0.081732,Global (synthetic),synthetic
+SK038,Data Visualization,2025-04,8565,117154,0.073109,Global (synthetic),synthetic
+SK038,Data Visualization,2025-05,8332,113769,0.073236,Global (synthetic),synthetic
+SK038,Data Visualization,2025-06,7693,111188,0.069189,Global (synthetic),synthetic
+SK038,Data Visualization,2025-07,8683,109968,0.078959,Global (synthetic),synthetic
+SK038,Data Visualization,2025-08,8574,110302,0.077732,Global (synthetic),synthetic
+SK038,Data Visualization,2025-09,9206,111963,0.082223,Global (synthetic),synthetic
+SK038,Data Visualization,2025-10,8315,114376,0.072699,Global (synthetic),synthetic
+SK038,Data Visualization,2025-11,9409,116767,0.080579,Global (synthetic),synthetic
+SK038,Data Visualization,2025-12,9103,118377,0.076898,Global (synthetic),synthetic
+SK038,Data Visualization,2026-01,9353,118662,0.07882,Global (synthetic),synthetic
+SK038,Data Visualization,2026-02,8347,117434,0.071078,Global (synthetic),synthetic
+SK038,Data Visualization,2026-03,9394,114914,0.081748,Global (synthetic),synthetic
+SK038,Data Visualization,2026-04,8977,111663,0.080393,Global (synthetic),synthetic
+SK038,Data Visualization,2026-05,8533,108437,0.07869,Global (synthetic),synthetic
+SK038,Data Visualization,2026-06,8394,105977,0.079206,Global (synthetic),synthetic
+SK038,Data Visualization,2026-07,7963,104815,0.075972,Global (synthetic),synthetic
+SK038,Data Visualization,2026-08,8145,105132,0.077473,Global (synthetic),synthetic
+SK038,Data Visualization,2026-09,8228,106716,0.077102,Global (synthetic),synthetic
+SK039,Power BI,2024-10,3533,120000,0.029442,Global (synthetic),synthetic
+SK039,Power BI,2024-11,3545,122508,0.028937,Global (synthetic),synthetic
+SK039,Power BI,2024-12,3437,124198,0.027673,Global (synthetic),synthetic
+SK039,Power BI,2025-01,3387,124497,0.027205,Global (synthetic),synthetic
+SK039,Power BI,2025-02,3852,123208,0.031264,Global (synthetic),synthetic
+SK039,Power BI,2025-03,3438,120564,0.028516,Global (synthetic),synthetic
+SK039,Power BI,2025-04,3628,117154,0.030968,Global (synthetic),synthetic
+SK039,Power BI,2025-05,3347,113769,0.029419,Global (synthetic),synthetic
+SK039,Power BI,2025-06,3396,111188,0.030543,Global (synthetic),synthetic
+SK039,Power BI,2025-07,3363,109968,0.030581,Global (synthetic),synthetic
+SK039,Power BI,2025-08,3667,110302,0.033245,Global (synthetic),synthetic
+SK039,Power BI,2025-09,3598,111963,0.032135,Global (synthetic),synthetic
+SK039,Power BI,2025-10,3633,114376,0.031764,Global (synthetic),synthetic
+SK039,Power BI,2025-11,3642,116767,0.03119,Global (synthetic),synthetic
+SK039,Power BI,2025-12,3939,118377,0.033275,Global (synthetic),synthetic
+SK039,Power BI,2026-01,3812,118662,0.032125,Global (synthetic),synthetic
+SK039,Power BI,2026-02,4094,117434,0.034862,Global (synthetic),synthetic
+SK039,Power BI,2026-03,4377,114914,0.038089,Global (synthetic),synthetic
+SK039,Power BI,2026-04,4127,111663,0.036959,Global (synthetic),synthetic
+SK039,Power BI,2026-05,3871,108437,0.035698,Global (synthetic),synthetic
+SK039,Power BI,2026-06,3868,105977,0.036498,Global (synthetic),synthetic
+SK039,Power BI,2026-07,3480,104815,0.033201,Global (synthetic),synthetic
+SK039,Power BI,2026-08,3610,105132,0.034338,Global (synthetic),synthetic
+SK039,Power BI,2026-09,4093,106716,0.038354,Global (synthetic),synthetic
+SK040,Tableau,2024-10,7431,120000,0.061925,Global (synthetic),synthetic
+SK040,Tableau,2024-11,7461,122508,0.060902,Global (synthetic),synthetic
+SK040,Tableau,2024-12,7669,124198,0.061748,Global (synthetic),synthetic
+SK040,Tableau,2025-01,8023,124497,0.064443,Global (synthetic),synthetic
+SK040,Tableau,2025-02,7544,123208,0.061229,Global (synthetic),synthetic
+SK040,Tableau,2025-03,7346,120564,0.06093,Global (synthetic),synthetic
+SK040,Tableau,2025-04,7430,117154,0.063421,Global (synthetic),synthetic
+SK040,Tableau,2025-05,6694,113769,0.058838,Global (synthetic),synthetic
+SK040,Tableau,2025-06,7138,111188,0.064197,Global (synthetic),synthetic
+SK040,Tableau,2025-07,6323,109968,0.057498,Global (synthetic),synthetic
+SK040,Tableau,2025-08,6627,110302,0.06008,Global (synthetic),synthetic
+SK040,Tableau,2025-09,7149,111963,0.063851,Global (synthetic),synthetic
+SK040,Tableau,2025-10,7122,114376,0.062268,Global (synthetic),synthetic
+SK040,Tableau,2025-11,7364,116767,0.063066,Global (synthetic),synthetic
+SK040,Tableau,2025-12,7204,118377,0.060856,Global (synthetic),synthetic
+SK040,Tableau,2026-01,7512,118662,0.063306,Global (synthetic),synthetic
+SK040,Tableau,2026-02,7516,117434,0.064002,Global (synthetic),synthetic
+SK040,Tableau,2026-03,7126,114914,0.062012,Global (synthetic),synthetic
+SK040,Tableau,2026-04,7079,111663,0.063396,Global (synthetic),synthetic
+SK040,Tableau,2026-05,6886,108437,0.063502,Global (synthetic),synthetic
+SK040,Tableau,2026-06,6381,105977,0.060211,Global (synthetic),synthetic
+SK040,Tableau,2026-07,5991,104815,0.057158,Global (synthetic),synthetic
+SK040,Tableau,2026-08,6416,105132,0.061028,Global (synthetic),synthetic
+SK040,Tableau,2026-09,6512,106716,0.061022,Global (synthetic),synthetic
+SK041,Microsoft Excel,2024-10,6082,120000,0.050683,Global (synthetic),synthetic
+SK041,Microsoft Excel,2024-11,6181,122508,0.050453,Global (synthetic),synthetic
+SK041,Microsoft Excel,2024-12,5920,124198,0.047666,Global (synthetic),synthetic
+SK041,Microsoft Excel,2025-01,6122,124497,0.049174,Global (synthetic),synthetic
+SK041,Microsoft Excel,2025-02,6701,123208,0.054387,Global (synthetic),synthetic
+SK041,Microsoft Excel,2025-03,6132,120564,0.050861,Global (synthetic),synthetic
+SK041,Microsoft Excel,2025-04,5498,117154,0.04693,Global (synthetic),synthetic
+SK041,Microsoft Excel,2025-05,5845,113769,0.051376,Global (synthetic),synthetic
+SK041,Microsoft Excel,2025-06,5498,111188,0.049448,Global (synthetic),synthetic
+SK041,Microsoft Excel,2025-07,5564,109968,0.050596,Global (synthetic),synthetic
+SK041,Microsoft Excel,2025-08,5327,110302,0.048295,Global (synthetic),synthetic
+SK041,Microsoft Excel,2025-09,5380,111963,0.048051,Global (synthetic),synthetic
+SK041,Microsoft Excel,2025-10,5492,114376,0.048017,Global (synthetic),synthetic
+SK041,Microsoft Excel,2025-11,5508,116767,0.047171,Global (synthetic),synthetic
+SK041,Microsoft Excel,2025-12,5677,118377,0.047957,Global (synthetic),synthetic
+SK041,Microsoft Excel,2026-01,5617,118662,0.047336,Global (synthetic),synthetic
+SK041,Microsoft Excel,2026-02,5866,117434,0.049951,Global (synthetic),synthetic
+SK041,Microsoft Excel,2026-03,5477,114914,0.047662,Global (synthetic),synthetic
+SK041,Microsoft Excel,2026-04,4700,111663,0.042091,Global (synthetic),synthetic
+SK041,Microsoft Excel,2026-05,5108,108437,0.047105,Global (synthetic),synthetic
+SK041,Microsoft Excel,2026-06,5524,105977,0.052124,Global (synthetic),synthetic
+SK041,Microsoft Excel,2026-07,5012,104815,0.047818,Global (synthetic),synthetic
+SK041,Microsoft Excel,2026-08,4622,105132,0.043963,Global (synthetic),synthetic
+SK041,Microsoft Excel,2026-09,5011,106716,0.046956,Global (synthetic),synthetic
+SK042,Machine Learning,2024-10,1574,120000,0.013117,Global (synthetic),synthetic
+SK042,Machine Learning,2024-11,1479,122508,0.012073,Global (synthetic),synthetic
+SK042,Machine Learning,2024-12,1577,124198,0.012697,Global (synthetic),synthetic
+SK042,Machine Learning,2025-01,1537,124497,0.012346,Global (synthetic),synthetic
+SK042,Machine Learning,2025-02,1557,123208,0.012637,Global (synthetic),synthetic
+SK042,Machine Learning,2025-03,1647,120564,0.013661,Global (synthetic),synthetic
+SK042,Machine Learning,2025-04,1717,117154,0.014656,Global (synthetic),synthetic
+SK042,Machine Learning,2025-05,1489,113769,0.013088,Global (synthetic),synthetic
+SK042,Machine Learning,2025-06,1482,111188,0.013329,Global (synthetic),synthetic
+SK042,Machine Learning,2025-07,1429,109968,0.012995,Global (synthetic),synthetic
+SK042,Machine Learning,2025-08,1562,110302,0.014161,Global (synthetic),synthetic
+SK042,Machine Learning,2025-09,1643,111963,0.014674,Global (synthetic),synthetic
+SK042,Machine Learning,2025-10,1578,114376,0.013797,Global (synthetic),synthetic
+SK042,Machine Learning,2025-11,1693,116767,0.014499,Global (synthetic),synthetic
+SK042,Machine Learning,2025-12,1804,118377,0.015239,Global (synthetic),synthetic
+SK042,Machine Learning,2026-01,1801,118662,0.015178,Global (synthetic),synthetic
+SK042,Machine Learning,2026-02,1818,117434,0.015481,Global (synthetic),synthetic
+SK042,Machine Learning,2026-03,1798,114914,0.015646,Global (synthetic),synthetic
+SK042,Machine Learning,2026-04,1824,111663,0.016335,Global (synthetic),synthetic
+SK042,Machine Learning,2026-05,1736,108437,0.016009,Global (synthetic),synthetic
+SK042,Machine Learning,2026-06,1809,105977,0.01707,Global (synthetic),synthetic
+SK042,Machine Learning,2026-07,1794,104815,0.017116,Global (synthetic),synthetic
+SK042,Machine Learning,2026-08,1605,105132,0.015266,Global (synthetic),synthetic
+SK042,Machine Learning,2026-09,1713,106716,0.016052,Global (synthetic),synthetic
+SK043,Deep Learning,2024-10,2341,120000,0.019508,Global (synthetic),synthetic
+SK043,Deep Learning,2024-11,2316,122508,0.018905,Global (synthetic),synthetic
+SK043,Deep Learning,2024-12,2414,124198,0.019437,Global (synthetic),synthetic
+SK043,Deep Learning,2025-01,2431,124497,0.019527,Global (synthetic),synthetic
+SK043,Deep Learning,2025-02,2452,123208,0.019901,Global (synthetic),synthetic
+SK043,Deep Learning,2025-03,2507,120564,0.020794,Global (synthetic),synthetic
+SK043,Deep Learning,2025-04,2321,117154,0.019811,Global (synthetic),synthetic
+SK043,Deep Learning,2025-05,2507,113769,0.022036,Global (synthetic),synthetic
+SK043,Deep Learning,2025-06,2565,111188,0.023069,Global (synthetic),synthetic
+SK043,Deep Learning,2025-07,2343,109968,0.021306,Global (synthetic),synthetic
+SK043,Deep Learning,2025-08,2465,110302,0.022348,Global (synthetic),synthetic
+SK043,Deep Learning,2025-09,2508,111963,0.0224,Global (synthetic),synthetic
+SK043,Deep Learning,2025-10,2609,114376,0.022811,Global (synthetic),synthetic
+SK043,Deep Learning,2025-11,2698,116767,0.023106,Global (synthetic),synthetic
+SK043,Deep Learning,2025-12,2877,118377,0.024304,Global (synthetic),synthetic
+SK043,Deep Learning,2026-01,2796,118662,0.023563,Global (synthetic),synthetic
+SK043,Deep Learning,2026-02,3007,117434,0.025606,Global (synthetic),synthetic
+SK043,Deep Learning,2026-03,2876,114914,0.025027,Global (synthetic),synthetic
+SK043,Deep Learning,2026-04,2746,111663,0.024592,Global (synthetic),synthetic
+SK043,Deep Learning,2026-05,2657,108437,0.024503,Global (synthetic),synthetic
+SK043,Deep Learning,2026-06,2796,105977,0.026383,Global (synthetic),synthetic
+SK043,Deep Learning,2026-07,2853,104815,0.027219,Global (synthetic),synthetic
+SK043,Deep Learning,2026-08,2867,105132,0.02727,Global (synthetic),synthetic
+SK043,Deep Learning,2026-09,3223,106716,0.030202,Global (synthetic),synthetic
+SK044,Natural Language Processing,2024-10,10142,120000,0.084517,Global (synthetic),synthetic
+SK044,Natural Language Processing,2024-11,9968,122508,0.081365,Global (synthetic),synthetic
+SK044,Natural Language Processing,2024-12,10402,124198,0.083753,Global (synthetic),synthetic
+SK044,Natural Language Processing,2025-01,10729,124497,0.086179,Global (synthetic),synthetic
+SK044,Natural Language Processing,2025-02,11046,123208,0.089653,Global (synthetic),synthetic
+SK044,Natural Language Processing,2025-03,10543,120564,0.087447,Global (synthetic),synthetic
+SK044,Natural Language Processing,2025-04,10793,117154,0.092126,Global (synthetic),synthetic
+SK044,Natural Language Processing,2025-05,10555,113769,0.092775,Global (synthetic),synthetic
+SK044,Natural Language Processing,2025-06,9781,111188,0.087968,Global (synthetic),synthetic
+SK044,Natural Language Processing,2025-07,10365,109968,0.094254,Global (synthetic),synthetic
+SK044,Natural Language Processing,2025-08,10870,110302,0.098547,Global (synthetic),synthetic
+SK044,Natural Language Processing,2025-09,11163,111963,0.099702,Global (synthetic),synthetic
+SK044,Natural Language Processing,2025-10,12412,114376,0.108519,Global (synthetic),synthetic
+SK044,Natural Language Processing,2025-11,11319,116767,0.096936,Global (synthetic),synthetic
+SK044,Natural Language Processing,2025-12,11990,118377,0.101286,Global (synthetic),synthetic
+SK044,Natural Language Processing,2026-01,11446,118662,0.096459,Global (synthetic),synthetic
+SK044,Natural Language Processing,2026-02,12450,117434,0.106016,Global (synthetic),synthetic
+SK044,Natural Language Processing,2026-03,12491,114914,0.108699,Global (synthetic),synthetic
+SK044,Natural Language Processing,2026-04,12474,111663,0.11171,Global (synthetic),synthetic
+SK044,Natural Language Processing,2026-05,12961,108437,0.119525,Global (synthetic),synthetic
+SK044,Natural Language Processing,2026-06,13051,105977,0.123149,Global (synthetic),synthetic
+SK044,Natural Language Processing,2026-07,12474,104815,0.119009,Global (synthetic),synthetic
+SK044,Natural Language Processing,2026-08,12725,105132,0.121037,Global (synthetic),synthetic
+SK044,Natural Language Processing,2026-09,13678,106716,0.128172,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2024-10,9297,120000,0.077475,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2024-11,10149,122508,0.082843,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2024-12,10297,124198,0.082908,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2025-01,11612,124497,0.093271,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2025-02,10456,123208,0.084864,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2025-03,11244,120564,0.093261,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2025-04,12283,117154,0.104845,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2025-05,11314,113769,0.099447,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2025-06,10832,111188,0.09742,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2025-07,11827,109968,0.107548,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2025-08,13234,110302,0.119979,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2025-09,12948,111963,0.115645,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2025-10,13035,114376,0.113966,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2025-11,14203,116767,0.121635,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2025-12,14844,118377,0.125395,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2026-01,16020,118662,0.135005,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2026-02,17051,117434,0.145196,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2026-03,17113,114914,0.14892,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2026-04,17059,111663,0.152771,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2026-05,15733,108437,0.145088,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2026-06,15827,105977,0.149343,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2026-07,17822,104815,0.170033,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2026-08,17081,105132,0.162471,Global (synthetic),synthetic
+SK045,Generative AI and LLMs,2026-09,18751,106716,0.175709,Global (synthetic),synthetic
+SK046,MLOps,2024-10,6632,120000,0.055267,Global (synthetic),synthetic
+SK046,MLOps,2024-11,6797,122508,0.055482,Global (synthetic),synthetic
+SK046,MLOps,2024-12,7567,124198,0.060927,Global (synthetic),synthetic
+SK046,MLOps,2025-01,7634,124497,0.061319,Global (synthetic),synthetic
+SK046,MLOps,2025-02,8319,123208,0.067519,Global (synthetic),synthetic
+SK046,MLOps,2025-03,7430,120564,0.061627,Global (synthetic),synthetic
+SK046,MLOps,2025-04,7712,117154,0.065828,Global (synthetic),synthetic
+SK046,MLOps,2025-05,7863,113769,0.069113,Global (synthetic),synthetic
+SK046,MLOps,2025-06,7659,111188,0.068883,Global (synthetic),synthetic
+SK046,MLOps,2025-07,7129,109968,0.064827,Global (synthetic),synthetic
+SK046,MLOps,2025-08,8052,110302,0.072999,Global (synthetic),synthetic
+SK046,MLOps,2025-09,8283,111963,0.073979,Global (synthetic),synthetic
+SK046,MLOps,2025-10,8428,114376,0.073687,Global (synthetic),synthetic
+SK046,MLOps,2025-11,8683,116767,0.074361,Global (synthetic),synthetic
+SK046,MLOps,2025-12,9032,118377,0.076298,Global (synthetic),synthetic
+SK046,MLOps,2026-01,9292,118662,0.078306,Global (synthetic),synthetic
+SK046,MLOps,2026-02,9377,117434,0.079849,Global (synthetic),synthetic
+SK046,MLOps,2026-03,9268,114914,0.080652,Global (synthetic),synthetic
+SK046,MLOps,2026-04,8923,111663,0.07991,Global (synthetic),synthetic
+SK046,MLOps,2026-05,8738,108437,0.080581,Global (synthetic),synthetic
+SK046,MLOps,2026-06,8758,105977,0.08264,Global (synthetic),synthetic
+SK046,MLOps,2026-07,9280,104815,0.088537,Global (synthetic),synthetic
+SK046,MLOps,2026-08,9410,105132,0.089506,Global (synthetic),synthetic
+SK046,MLOps,2026-09,9826,106716,0.092076,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2024-10,3537,120000,0.029475,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2024-11,3280,122508,0.026774,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2024-12,3405,124198,0.027416,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2025-01,3469,124497,0.027864,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2025-02,3476,123208,0.028212,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2025-03,3471,120564,0.02879,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2025-04,3795,117154,0.032393,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2025-05,3369,113769,0.029613,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2025-06,2985,111188,0.026846,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2025-07,3348,109968,0.030445,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2025-08,3295,110302,0.029872,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2025-09,3418,111963,0.030528,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2025-10,3600,114376,0.031475,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2025-11,3590,116767,0.030745,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2025-12,3871,118377,0.0327,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2026-01,3753,118662,0.031628,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2026-02,3599,117434,0.030647,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2026-03,3505,114914,0.030501,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2026-04,3909,111663,0.035007,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2026-05,3463,108437,0.031935,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2026-06,3454,105977,0.032592,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2026-07,3301,104815,0.031494,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2026-08,3492,105132,0.033215,Global (synthetic),synthetic
+SK047,ETL and Data Pipelines,2026-09,3437,106716,0.032207,Global (synthetic),synthetic
+SK048,Apache Spark,2024-10,1740,120000,0.0145,Global (synthetic),synthetic
+SK048,Apache Spark,2024-11,1599,122508,0.013052,Global (synthetic),synthetic
+SK048,Apache Spark,2024-12,1687,124198,0.013583,Global (synthetic),synthetic
+SK048,Apache Spark,2025-01,1806,124497,0.014506,Global (synthetic),synthetic
+SK048,Apache Spark,2025-02,1546,123208,0.012548,Global (synthetic),synthetic
+SK048,Apache Spark,2025-03,1842,120564,0.015278,Global (synthetic),synthetic
+SK048,Apache Spark,2025-04,1697,117154,0.014485,Global (synthetic),synthetic
+SK048,Apache Spark,2025-05,1731,113769,0.015215,Global (synthetic),synthetic
+SK048,Apache Spark,2025-06,1492,111188,0.013419,Global (synthetic),synthetic
+SK048,Apache Spark,2025-07,1558,109968,0.014168,Global (synthetic),synthetic
+SK048,Apache Spark,2025-08,1543,110302,0.013989,Global (synthetic),synthetic
+SK048,Apache Spark,2025-09,1648,111963,0.014719,Global (synthetic),synthetic
+SK048,Apache Spark,2025-10,1701,114376,0.014872,Global (synthetic),synthetic
+SK048,Apache Spark,2025-11,1640,116767,0.014045,Global (synthetic),synthetic
+SK048,Apache Spark,2025-12,1592,118377,0.013448,Global (synthetic),synthetic
+SK048,Apache Spark,2026-01,1666,118662,0.01404,Global (synthetic),synthetic
+SK048,Apache Spark,2026-02,1788,117434,0.015225,Global (synthetic),synthetic
+SK048,Apache Spark,2026-03,1627,114914,0.014158,Global (synthetic),synthetic
+SK048,Apache Spark,2026-04,1620,111663,0.014508,Global (synthetic),synthetic
+SK048,Apache Spark,2026-05,1799,108437,0.01659,Global (synthetic),synthetic
+SK048,Apache Spark,2026-06,1597,105977,0.015069,Global (synthetic),synthetic
+SK048,Apache Spark,2026-07,1660,104815,0.015837,Global (synthetic),synthetic
+SK048,Apache Spark,2026-08,1633,105132,0.015533,Global (synthetic),synthetic
+SK048,Apache Spark,2026-09,1694,106716,0.015874,Global (synthetic),synthetic
+SK049,Data Warehousing,2024-10,3548,120000,0.029567,Global (synthetic),synthetic
+SK049,Data Warehousing,2024-11,3641,122508,0.02972,Global (synthetic),synthetic
+SK049,Data Warehousing,2024-12,4189,124198,0.033728,Global (synthetic),synthetic
+SK049,Data Warehousing,2025-01,3649,124497,0.02931,Global (synthetic),synthetic
+SK049,Data Warehousing,2025-02,3774,123208,0.030631,Global (synthetic),synthetic
+SK049,Data Warehousing,2025-03,3575,120564,0.029652,Global (synthetic),synthetic
+SK049,Data Warehousing,2025-04,3896,117154,0.033255,Global (synthetic),synthetic
+SK049,Data Warehousing,2025-05,3635,113769,0.031951,Global (synthetic),synthetic
+SK049,Data Warehousing,2025-06,3398,111188,0.030561,Global (synthetic),synthetic
+SK049,Data Warehousing,2025-07,3536,109968,0.032155,Global (synthetic),synthetic
+SK049,Data Warehousing,2025-08,3645,110302,0.033046,Global (synthetic),synthetic
+SK049,Data Warehousing,2025-09,3577,111963,0.031948,Global (synthetic),synthetic
+SK049,Data Warehousing,2025-10,3789,114376,0.033128,Global (synthetic),synthetic
+SK049,Data Warehousing,2025-11,3779,116767,0.032363,Global (synthetic),synthetic
+SK049,Data Warehousing,2025-12,3810,118377,0.032185,Global (synthetic),synthetic
+SK049,Data Warehousing,2026-01,3834,118662,0.03231,Global (synthetic),synthetic
+SK049,Data Warehousing,2026-02,3852,117434,0.032801,Global (synthetic),synthetic
+SK049,Data Warehousing,2026-03,3665,114914,0.031893,Global (synthetic),synthetic
+SK049,Data Warehousing,2026-04,3720,111663,0.033314,Global (synthetic),synthetic
+SK049,Data Warehousing,2026-05,3447,108437,0.031788,Global (synthetic),synthetic
+SK049,Data Warehousing,2026-06,3609,105977,0.034054,Global (synthetic),synthetic
+SK049,Data Warehousing,2026-07,3308,104815,0.03156,Global (synthetic),synthetic
+SK049,Data Warehousing,2026-08,3587,105132,0.034119,Global (synthetic),synthetic
+SK049,Data Warehousing,2026-09,3615,106716,0.033875,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2024-10,1776,120000,0.0148,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2024-11,1867,122508,0.01524,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2024-12,1892,124198,0.015234,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2025-01,1773,124497,0.014241,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2025-02,1922,123208,0.0156,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2025-03,1722,120564,0.014283,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2025-04,1674,117154,0.014289,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2025-05,1712,113769,0.015048,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2025-06,1750,111188,0.015739,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2025-07,1688,109968,0.01535,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2025-08,1595,110302,0.01446,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2025-09,1650,111963,0.014737,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2025-10,1795,114376,0.015694,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2025-11,1667,116767,0.014276,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2025-12,1819,118377,0.015366,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2026-01,1701,118662,0.014335,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2026-02,1778,117434,0.01514,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2026-03,1697,114914,0.014768,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2026-04,1676,111663,0.015009,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2026-05,1558,108437,0.014368,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2026-06,1442,105977,0.013607,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2026-07,1597,104815,0.015236,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2026-08,1599,105132,0.015209,Global (synthetic),synthetic
+SK050,Software Testing Fundamentals,2026-09,1616,106716,0.015143,Global (synthetic),synthetic
+SK051,Test Automation,2024-10,11201,120000,0.093342,Global (synthetic),synthetic
+SK051,Test Automation,2024-11,10395,122508,0.084851,Global (synthetic),synthetic
+SK051,Test Automation,2024-12,9927,124198,0.079928,Global (synthetic),synthetic
+SK051,Test Automation,2025-01,10395,124497,0.083496,Global (synthetic),synthetic
+SK051,Test Automation,2025-02,10505,123208,0.085262,Global (synthetic),synthetic
+SK051,Test Automation,2025-03,10734,120564,0.089031,Global (synthetic),synthetic
+SK051,Test Automation,2025-04,10844,117154,0.092562,Global (synthetic),synthetic
+SK051,Test Automation,2025-05,10030,113769,0.088161,Global (synthetic),synthetic
+SK051,Test Automation,2025-06,9361,111188,0.084191,Global (synthetic),synthetic
+SK051,Test Automation,2025-07,9855,109968,0.089616,Global (synthetic),synthetic
+SK051,Test Automation,2025-08,9595,110302,0.086988,Global (synthetic),synthetic
+SK051,Test Automation,2025-09,9667,111963,0.086341,Global (synthetic),synthetic
+SK051,Test Automation,2025-10,9771,114376,0.085429,Global (synthetic),synthetic
+SK051,Test Automation,2025-11,10080,116767,0.086325,Global (synthetic),synthetic
+SK051,Test Automation,2025-12,10556,118377,0.089172,Global (synthetic),synthetic
+SK051,Test Automation,2026-01,10741,118662,0.090517,Global (synthetic),synthetic
+SK051,Test Automation,2026-02,11001,117434,0.093678,Global (synthetic),synthetic
+SK051,Test Automation,2026-03,10309,114914,0.089711,Global (synthetic),synthetic
+SK051,Test Automation,2026-04,9424,111663,0.084396,Global (synthetic),synthetic
+SK051,Test Automation,2026-05,9861,108437,0.090937,Global (synthetic),synthetic
+SK051,Test Automation,2026-06,10021,105977,0.094558,Global (synthetic),synthetic
+SK051,Test Automation,2026-07,10017,104815,0.095568,Global (synthetic),synthetic
+SK051,Test Automation,2026-08,10979,105132,0.10443,Global (synthetic),synthetic
+SK051,Test Automation,2026-09,10311,106716,0.096621,Global (synthetic),synthetic
+SK052,Selenium,2024-10,7315,120000,0.060958,Global (synthetic),synthetic
+SK052,Selenium,2024-11,7635,122508,0.062322,Global (synthetic),synthetic
+SK052,Selenium,2024-12,8069,124198,0.064969,Global (synthetic),synthetic
+SK052,Selenium,2025-01,7631,124497,0.061295,Global (synthetic),synthetic
+SK052,Selenium,2025-02,7925,123208,0.064322,Global (synthetic),synthetic
+SK052,Selenium,2025-03,7325,120564,0.060756,Global (synthetic),synthetic
+SK052,Selenium,2025-04,7322,117154,0.062499,Global (synthetic),synthetic
+SK052,Selenium,2025-05,6757,113769,0.059392,Global (synthetic),synthetic
+SK052,Selenium,2025-06,6394,111188,0.057506,Global (synthetic),synthetic
+SK052,Selenium,2025-07,6634,109968,0.060326,Global (synthetic),synthetic
+SK052,Selenium,2025-08,6885,110302,0.062419,Global (synthetic),synthetic
+SK052,Selenium,2025-09,6936,111963,0.061949,Global (synthetic),synthetic
+SK052,Selenium,2025-10,6963,114376,0.060878,Global (synthetic),synthetic
+SK052,Selenium,2025-11,6968,116767,0.059674,Global (synthetic),synthetic
+SK052,Selenium,2025-12,6825,118377,0.057654,Global (synthetic),synthetic
+SK052,Selenium,2026-01,7242,118662,0.06103,Global (synthetic),synthetic
+SK052,Selenium,2026-02,7107,117434,0.060519,Global (synthetic),synthetic
+SK052,Selenium,2026-03,6728,114914,0.058548,Global (synthetic),synthetic
+SK052,Selenium,2026-04,6924,111663,0.062008,Global (synthetic),synthetic
+SK052,Selenium,2026-05,6118,108437,0.05642,Global (synthetic),synthetic
+SK052,Selenium,2026-06,6075,105977,0.057324,Global (synthetic),synthetic
+SK052,Selenium,2026-07,6478,104815,0.061804,Global (synthetic),synthetic
+SK052,Selenium,2026-08,6398,105132,0.060856,Global (synthetic),synthetic
+SK052,Selenium,2026-09,6239,106716,0.058463,Global (synthetic),synthetic
+SK053,Agile and Scrum,2024-10,1698,120000,0.01415,Global (synthetic),synthetic
+SK053,Agile and Scrum,2024-11,1634,122508,0.013338,Global (synthetic),synthetic
+SK053,Agile and Scrum,2024-12,1530,124198,0.012319,Global (synthetic),synthetic
+SK053,Agile and Scrum,2025-01,1723,124497,0.01384,Global (synthetic),synthetic
+SK053,Agile and Scrum,2025-02,1693,123208,0.013741,Global (synthetic),synthetic
+SK053,Agile and Scrum,2025-03,1587,120564,0.013163,Global (synthetic),synthetic
+SK053,Agile and Scrum,2025-04,1629,117154,0.013905,Global (synthetic),synthetic
+SK053,Agile and Scrum,2025-05,1458,113769,0.012815,Global (synthetic),synthetic
+SK053,Agile and Scrum,2025-06,1459,111188,0.013122,Global (synthetic),synthetic
+SK053,Agile and Scrum,2025-07,1524,109968,0.013858,Global (synthetic),synthetic
+SK053,Agile and Scrum,2025-08,1542,110302,0.01398,Global (synthetic),synthetic
+SK053,Agile and Scrum,2025-09,1525,111963,0.01362,Global (synthetic),synthetic
+SK053,Agile and Scrum,2025-10,1630,114376,0.014251,Global (synthetic),synthetic
+SK053,Agile and Scrum,2025-11,1565,116767,0.013403,Global (synthetic),synthetic
+SK053,Agile and Scrum,2025-12,1699,118377,0.014352,Global (synthetic),synthetic
+SK053,Agile and Scrum,2026-01,1651,118662,0.013913,Global (synthetic),synthetic
+SK053,Agile and Scrum,2026-02,1528,117434,0.013011,Global (synthetic),synthetic
+SK053,Agile and Scrum,2026-03,1519,114914,0.013219,Global (synthetic),synthetic
+SK053,Agile and Scrum,2026-04,1567,111663,0.014033,Global (synthetic),synthetic
+SK053,Agile and Scrum,2026-05,1597,108437,0.014727,Global (synthetic),synthetic
+SK053,Agile and Scrum,2026-06,1477,105977,0.013937,Global (synthetic),synthetic
+SK053,Agile and Scrum,2026-07,1410,104815,0.013452,Global (synthetic),synthetic
+SK053,Agile and Scrum,2026-08,1283,105132,0.012204,Global (synthetic),synthetic
+SK053,Agile and Scrum,2026-09,1495,106716,0.014009,Global (synthetic),synthetic
+SK054,Jira,2024-10,5100,120000,0.0425,Global (synthetic),synthetic
+SK054,Jira,2024-11,5260,122508,0.042936,Global (synthetic),synthetic
+SK054,Jira,2024-12,5784,124198,0.046571,Global (synthetic),synthetic
+SK054,Jira,2025-01,5892,124497,0.047326,Global (synthetic),synthetic
+SK054,Jira,2025-02,5811,123208,0.047164,Global (synthetic),synthetic
+SK054,Jira,2025-03,5688,120564,0.047178,Global (synthetic),synthetic
+SK054,Jira,2025-04,5268,117154,0.044966,Global (synthetic),synthetic
+SK054,Jira,2025-05,5290,113769,0.046498,Global (synthetic),synthetic
+SK054,Jira,2025-06,4993,111188,0.044906,Global (synthetic),synthetic
+SK054,Jira,2025-07,5032,109968,0.045758,Global (synthetic),synthetic
+SK054,Jira,2025-08,5572,110302,0.050516,Global (synthetic),synthetic
+SK054,Jira,2025-09,4815,111963,0.043005,Global (synthetic),synthetic
+SK054,Jira,2025-10,5262,114376,0.046006,Global (synthetic),synthetic
+SK054,Jira,2025-11,5741,116767,0.049166,Global (synthetic),synthetic
+SK054,Jira,2025-12,5143,118377,0.043446,Global (synthetic),synthetic
+SK054,Jira,2026-01,5377,118662,0.045313,Global (synthetic),synthetic
+SK054,Jira,2026-02,5341,117434,0.045481,Global (synthetic),synthetic
+SK054,Jira,2026-03,5391,114914,0.046913,Global (synthetic),synthetic
+SK054,Jira,2026-04,4914,111663,0.044007,Global (synthetic),synthetic
+SK054,Jira,2026-05,5209,108437,0.048037,Global (synthetic),synthetic
+SK054,Jira,2026-06,5051,105977,0.047661,Global (synthetic),synthetic
+SK054,Jira,2026-07,4757,104815,0.045385,Global (synthetic),synthetic
+SK054,Jira,2026-08,4839,105132,0.046027,Global (synthetic),synthetic
+SK054,Jira,2026-09,5026,106716,0.047097,Global (synthetic),synthetic
+SK055,Project Management,2024-10,2481,120000,0.020675,Global (synthetic),synthetic
+SK055,Project Management,2024-11,2382,122508,0.019443,Global (synthetic),synthetic
+SK055,Project Management,2024-12,2708,124198,0.021804,Global (synthetic),synthetic
+SK055,Project Management,2025-01,2684,124497,0.021559,Global (synthetic),synthetic
+SK055,Project Management,2025-02,2682,123208,0.021768,Global (synthetic),synthetic
+SK055,Project Management,2025-03,2497,120564,0.020711,Global (synthetic),synthetic
+SK055,Project Management,2025-04,2572,117154,0.021954,Global (synthetic),synthetic
+SK055,Project Management,2025-05,2444,113769,0.021482,Global (synthetic),synthetic
+SK055,Project Management,2025-06,2235,111188,0.020101,Global (synthetic),synthetic
+SK055,Project Management,2025-07,2176,109968,0.019787,Global (synthetic),synthetic
+SK055,Project Management,2025-08,2465,110302,0.022348,Global (synthetic),synthetic
+SK055,Project Management,2025-09,2622,111963,0.023418,Global (synthetic),synthetic
+SK055,Project Management,2025-10,2542,114376,0.022225,Global (synthetic),synthetic
+SK055,Project Management,2025-11,2780,116767,0.023808,Global (synthetic),synthetic
+SK055,Project Management,2025-12,2659,118377,0.022462,Global (synthetic),synthetic
+SK055,Project Management,2026-01,2621,118662,0.022088,Global (synthetic),synthetic
+SK055,Project Management,2026-02,2488,117434,0.021186,Global (synthetic),synthetic
+SK055,Project Management,2026-03,2737,114914,0.023818,Global (synthetic),synthetic
+SK055,Project Management,2026-04,2498,111663,0.022371,Global (synthetic),synthetic
+SK055,Project Management,2026-05,2385,108437,0.021994,Global (synthetic),synthetic
+SK055,Project Management,2026-06,2207,105977,0.020825,Global (synthetic),synthetic
+SK055,Project Management,2026-07,2325,104815,0.022182,Global (synthetic),synthetic
+SK055,Project Management,2026-08,2112,105132,0.020089,Global (synthetic),synthetic
+SK055,Project Management,2026-09,2350,106716,0.022021,Global (synthetic),synthetic
+SK056,System Design,2024-10,6553,120000,0.054608,Global (synthetic),synthetic
+SK056,System Design,2024-11,7066,122508,0.057677,Global (synthetic),synthetic
+SK056,System Design,2024-12,7185,124198,0.057851,Global (synthetic),synthetic
+SK056,System Design,2025-01,6999,124497,0.056218,Global (synthetic),synthetic
+SK056,System Design,2025-02,7083,123208,0.057488,Global (synthetic),synthetic
+SK056,System Design,2025-03,6938,120564,0.057546,Global (synthetic),synthetic
+SK056,System Design,2025-04,6539,117154,0.055815,Global (synthetic),synthetic
+SK056,System Design,2025-05,6826,113769,0.059999,Global (synthetic),synthetic
+SK056,System Design,2025-06,6711,111188,0.060357,Global (synthetic),synthetic
+SK056,System Design,2025-07,6131,109968,0.055752,Global (synthetic),synthetic
+SK056,System Design,2025-08,6330,110302,0.057388,Global (synthetic),synthetic
+SK056,System Design,2025-09,6974,111963,0.062288,Global (synthetic),synthetic
+SK056,System Design,2025-10,6762,114376,0.059121,Global (synthetic),synthetic
+SK056,System Design,2025-11,7459,116767,0.063879,Global (synthetic),synthetic
+SK056,System Design,2025-12,7818,118377,0.066043,Global (synthetic),synthetic
+SK056,System Design,2026-01,7103,118662,0.059859,Global (synthetic),synthetic
+SK056,System Design,2026-02,7060,117434,0.060119,Global (synthetic),synthetic
+SK056,System Design,2026-03,7980,114914,0.069443,Global (synthetic),synthetic
+SK056,System Design,2026-04,7460,111663,0.066808,Global (synthetic),synthetic
+SK056,System Design,2026-05,7174,108437,0.066158,Global (synthetic),synthetic
+SK056,System Design,2026-06,6837,105977,0.064514,Global (synthetic),synthetic
+SK056,System Design,2026-07,6802,104815,0.064895,Global (synthetic),synthetic
+SK056,System Design,2026-08,6796,105132,0.064642,Global (synthetic),synthetic
+SK056,System Design,2026-09,7645,106716,0.071639,Global (synthetic),synthetic
+SK057,Security Fundamentals,2024-10,3234,120000,0.02695,Global (synthetic),synthetic
+SK057,Security Fundamentals,2024-11,3094,122508,0.025255,Global (synthetic),synthetic
+SK057,Security Fundamentals,2024-12,3264,124198,0.02628,Global (synthetic),synthetic
+SK057,Security Fundamentals,2025-01,3232,124497,0.02596,Global (synthetic),synthetic
+SK057,Security Fundamentals,2025-02,3358,123208,0.027255,Global (synthetic),synthetic
+SK057,Security Fundamentals,2025-03,3167,120564,0.026268,Global (synthetic),synthetic
+SK057,Security Fundamentals,2025-04,3315,117154,0.028296,Global (synthetic),synthetic
+SK057,Security Fundamentals,2025-05,3277,113769,0.028804,Global (synthetic),synthetic
+SK057,Security Fundamentals,2025-06,2939,111188,0.026433,Global (synthetic),synthetic
+SK057,Security Fundamentals,2025-07,3023,109968,0.02749,Global (synthetic),synthetic
+SK057,Security Fundamentals,2025-08,2896,110302,0.026255,Global (synthetic),synthetic
+SK057,Security Fundamentals,2025-09,3526,111963,0.031492,Global (synthetic),synthetic
+SK057,Security Fundamentals,2025-10,3215,114376,0.028109,Global (synthetic),synthetic
+SK057,Security Fundamentals,2025-11,3508,116767,0.030043,Global (synthetic),synthetic
+SK057,Security Fundamentals,2025-12,3355,118377,0.028341,Global (synthetic),synthetic
+SK057,Security Fundamentals,2026-01,3483,118662,0.029352,Global (synthetic),synthetic
+SK057,Security Fundamentals,2026-02,3501,117434,0.029812,Global (synthetic),synthetic
+SK057,Security Fundamentals,2026-03,3419,114914,0.029753,Global (synthetic),synthetic
+SK057,Security Fundamentals,2026-04,3601,111663,0.032249,Global (synthetic),synthetic
+SK057,Security Fundamentals,2026-05,3481,108437,0.032101,Global (synthetic),synthetic
+SK057,Security Fundamentals,2026-06,3201,105977,0.030205,Global (synthetic),synthetic
+SK057,Security Fundamentals,2026-07,3108,104815,0.029652,Global (synthetic),synthetic
+SK057,Security Fundamentals,2026-08,3237,105132,0.03079,Global (synthetic),synthetic
+SK057,Security Fundamentals,2026-09,3648,106716,0.034184,Global (synthetic),synthetic
+SK058,Network Security,2024-10,8762,120000,0.073017,Global (synthetic),synthetic
+SK058,Network Security,2024-11,8829,122508,0.072068,Global (synthetic),synthetic
+SK058,Network Security,2024-12,8338,124198,0.067134,Global (synthetic),synthetic
+SK058,Network Security,2025-01,8587,124497,0.068974,Global (synthetic),synthetic
+SK058,Network Security,2025-02,8954,123208,0.072673,Global (synthetic),synthetic
+SK058,Network Security,2025-03,8453,120564,0.070112,Global (synthetic),synthetic
+SK058,Network Security,2025-04,7822,117154,0.066767,Global (synthetic),synthetic
+SK058,Network Security,2025-05,8199,113769,0.072067,Global (synthetic),synthetic
+SK058,Network Security,2025-06,7888,111188,0.070943,Global (synthetic),synthetic
+SK058,Network Security,2025-07,8672,109968,0.078859,Global (synthetic),synthetic
+SK058,Network Security,2025-08,8420,110302,0.076336,Global (synthetic),synthetic
+SK058,Network Security,2025-09,8217,111963,0.07339,Global (synthetic),synthetic
+SK058,Network Security,2025-10,8632,114376,0.07547,Global (synthetic),synthetic
+SK058,Network Security,2025-11,8334,116767,0.071373,Global (synthetic),synthetic
+SK058,Network Security,2025-12,8835,118377,0.074634,Global (synthetic),synthetic
+SK058,Network Security,2026-01,9825,118662,0.082798,Global (synthetic),synthetic
+SK058,Network Security,2026-02,10349,117434,0.088126,Global (synthetic),synthetic
+SK058,Network Security,2026-03,9475,114914,0.082453,Global (synthetic),synthetic
+SK058,Network Security,2026-04,9156,111663,0.081996,Global (synthetic),synthetic
+SK058,Network Security,2026-05,8677,108437,0.080018,Global (synthetic),synthetic
+SK058,Network Security,2026-06,8494,105977,0.080149,Global (synthetic),synthetic
+SK058,Network Security,2026-07,9542,104815,0.091036,Global (synthetic),synthetic
+SK058,Network Security,2026-08,8937,105132,0.085007,Global (synthetic),synthetic
+SK058,Network Security,2026-09,9910,106716,0.092863,Global (synthetic),synthetic
+SK059,Cryptography,2024-10,10072,120000,0.083933,Global (synthetic),synthetic
+SK059,Cryptography,2024-11,9526,122508,0.077758,Global (synthetic),synthetic
+SK059,Cryptography,2024-12,9938,124198,0.080017,Global (synthetic),synthetic
+SK059,Cryptography,2025-01,11007,124497,0.088412,Global (synthetic),synthetic
+SK059,Cryptography,2025-02,9972,123208,0.080936,Global (synthetic),synthetic
+SK059,Cryptography,2025-03,9980,120564,0.082777,Global (synthetic),synthetic
+SK059,Cryptography,2025-04,9454,117154,0.080697,Global (synthetic),synthetic
+SK059,Cryptography,2025-05,9643,113769,0.084759,Global (synthetic),synthetic
+SK059,Cryptography,2025-06,9168,111188,0.082455,Global (synthetic),synthetic
+SK059,Cryptography,2025-07,9305,109968,0.084615,Global (synthetic),synthetic
+SK059,Cryptography,2025-08,9680,110302,0.087759,Global (synthetic),synthetic
+SK059,Cryptography,2025-09,9318,111963,0.083223,Global (synthetic),synthetic
+SK059,Cryptography,2025-10,10085,114376,0.088174,Global (synthetic),synthetic
+SK059,Cryptography,2025-11,10308,116767,0.088278,Global (synthetic),synthetic
+SK059,Cryptography,2025-12,10607,118377,0.089603,Global (synthetic),synthetic
+SK059,Cryptography,2026-01,10312,118662,0.086902,Global (synthetic),synthetic
+SK059,Cryptography,2026-02,11729,117434,0.099877,Global (synthetic),synthetic
+SK059,Cryptography,2026-03,10369,114914,0.090233,Global (synthetic),synthetic
+SK059,Cryptography,2026-04,9908,111663,0.088731,Global (synthetic),synthetic
+SK059,Cryptography,2026-05,9324,108437,0.085985,Global (synthetic),synthetic
+SK059,Cryptography,2026-06,9535,105977,0.089972,Global (synthetic),synthetic
+SK059,Cryptography,2026-07,10051,104815,0.095893,Global (synthetic),synthetic
+SK059,Cryptography,2026-08,10011,105132,0.095222,Global (synthetic),synthetic
+SK059,Cryptography,2026-09,10197,106716,0.095552,Global (synthetic),synthetic
+SK060,Penetration Testing,2024-10,8084,120000,0.067367,Global (synthetic),synthetic
+SK060,Penetration Testing,2024-11,7835,122508,0.063954,Global (synthetic),synthetic
+SK060,Penetration Testing,2024-12,8202,124198,0.066039,Global (synthetic),synthetic
+SK060,Penetration Testing,2025-01,8849,124497,0.071078,Global (synthetic),synthetic
+SK060,Penetration Testing,2025-02,8408,123208,0.068242,Global (synthetic),synthetic
+SK060,Penetration Testing,2025-03,8331,120564,0.0691,Global (synthetic),synthetic
+SK060,Penetration Testing,2025-04,8605,117154,0.07345,Global (synthetic),synthetic
+SK060,Penetration Testing,2025-05,8298,113769,0.072937,Global (synthetic),synthetic
+SK060,Penetration Testing,2025-06,8488,111188,0.076339,Global (synthetic),synthetic
+SK060,Penetration Testing,2025-07,7421,109968,0.067483,Global (synthetic),synthetic
+SK060,Penetration Testing,2025-08,8390,110302,0.076064,Global (synthetic),synthetic
+SK060,Penetration Testing,2025-09,8487,111963,0.075801,Global (synthetic),synthetic
+SK060,Penetration Testing,2025-10,8186,114376,0.071571,Global (synthetic),synthetic
+SK060,Penetration Testing,2025-11,8713,116767,0.074618,Global (synthetic),synthetic
+SK060,Penetration Testing,2025-12,8763,118377,0.074026,Global (synthetic),synthetic
+SK060,Penetration Testing,2026-01,9180,118662,0.077362,Global (synthetic),synthetic
+SK060,Penetration Testing,2026-02,9770,117434,0.083195,Global (synthetic),synthetic
+SK060,Penetration Testing,2026-03,9886,114914,0.08603,Global (synthetic),synthetic
+SK060,Penetration Testing,2026-04,8694,111663,0.077859,Global (synthetic),synthetic
+SK060,Penetration Testing,2026-05,8925,108437,0.082305,Global (synthetic),synthetic
+SK060,Penetration Testing,2026-06,8832,105977,0.083339,Global (synthetic),synthetic
+SK060,Penetration Testing,2026-07,8813,104815,0.084081,Global (synthetic),synthetic
+SK060,Penetration Testing,2026-08,8918,105132,0.084826,Global (synthetic),synthetic
+SK060,Penetration Testing,2026-09,9050,106716,0.084804,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2024-10,10523,120000,0.087692,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2024-11,10593,122508,0.086467,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2024-12,11110,124198,0.089454,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2025-01,11946,124497,0.095954,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2025-02,10683,123208,0.086706,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2025-03,10744,120564,0.089114,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2025-04,10713,117154,0.091444,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2025-05,10937,113769,0.096133,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2025-06,11047,111188,0.099354,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2025-07,10937,109968,0.099455,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2025-08,11397,110302,0.103325,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2025-09,10661,111963,0.095218,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2025-10,12380,114376,0.108239,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2025-11,11968,116767,0.102494,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2025-12,12830,118377,0.108382,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2026-01,11872,118662,0.100049,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2026-02,12650,117434,0.10772,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2026-03,12828,114914,0.111631,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2026-04,12758,111663,0.114254,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2026-05,11332,108437,0.104503,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2026-06,12021,105977,0.11343,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2026-07,11453,104815,0.109269,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2026-08,12318,105132,0.117166,Global (synthetic),synthetic
+SK061,SIEM and Security Monitoring,2026-09,12813,106716,0.120066,Global (synthetic),synthetic
+SK062,Digital Forensics,2024-10,1185,120000,0.009875,Global (synthetic),synthetic
+SK062,Digital Forensics,2024-11,1113,122508,0.009085,Global (synthetic),synthetic
+SK062,Digital Forensics,2024-12,1246,124198,0.010032,Global (synthetic),synthetic
+SK062,Digital Forensics,2025-01,1214,124497,0.009751,Global (synthetic),synthetic
+SK062,Digital Forensics,2025-02,1199,123208,0.009731,Global (synthetic),synthetic
+SK062,Digital Forensics,2025-03,1141,120564,0.009464,Global (synthetic),synthetic
+SK062,Digital Forensics,2025-04,1069,117154,0.009125,Global (synthetic),synthetic
+SK062,Digital Forensics,2025-05,1180,113769,0.010372,Global (synthetic),synthetic
+SK062,Digital Forensics,2025-06,1214,111188,0.010918,Global (synthetic),synthetic
+SK062,Digital Forensics,2025-07,1104,109968,0.010039,Global (synthetic),synthetic
+SK062,Digital Forensics,2025-08,1185,110302,0.010743,Global (synthetic),synthetic
+SK062,Digital Forensics,2025-09,1140,111963,0.010182,Global (synthetic),synthetic
+SK062,Digital Forensics,2025-10,1252,114376,0.010946,Global (synthetic),synthetic
+SK062,Digital Forensics,2025-11,1317,116767,0.011279,Global (synthetic),synthetic
+SK062,Digital Forensics,2025-12,1279,118377,0.010804,Global (synthetic),synthetic
+SK062,Digital Forensics,2026-01,1371,118662,0.011554,Global (synthetic),synthetic
+SK062,Digital Forensics,2026-02,1318,117434,0.011223,Global (synthetic),synthetic
+SK062,Digital Forensics,2026-03,1203,114914,0.010469,Global (synthetic),synthetic
+SK062,Digital Forensics,2026-04,1173,111663,0.010505,Global (synthetic),synthetic
+SK062,Digital Forensics,2026-05,1125,108437,0.010375,Global (synthetic),synthetic
+SK062,Digital Forensics,2026-06,1133,105977,0.010691,Global (synthetic),synthetic
+SK062,Digital Forensics,2026-07,1074,104815,0.010247,Global (synthetic),synthetic
+SK062,Digital Forensics,2026-08,1176,105132,0.011186,Global (synthetic),synthetic
+SK062,Digital Forensics,2026-09,1159,106716,0.010861,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2024-10,5971,120000,0.049758,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2024-11,5857,122508,0.047809,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2024-12,5619,124198,0.045242,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2025-01,5947,124497,0.047768,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2025-02,5958,123208,0.048357,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2025-03,6005,120564,0.049807,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2025-04,5441,117154,0.046443,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2025-05,5090,113769,0.04474,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2025-06,4824,111188,0.043386,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2025-07,4870,109968,0.044285,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2025-08,4863,110302,0.044088,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2025-09,4992,111963,0.044586,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2025-10,4893,114376,0.04278,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2025-11,4878,116767,0.041775,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2025-12,5048,118377,0.042643,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2026-01,5012,118662,0.042237,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2026-02,5053,117434,0.043028,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2026-03,4626,114914,0.040256,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2026-04,4334,111663,0.038813,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2026-05,4664,108437,0.043011,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2026-06,4690,105977,0.044255,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2026-07,4076,104815,0.038888,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2026-08,3794,105132,0.036088,Global (synthetic),synthetic
+SK063,Blockchain Fundamentals,2026-09,3926,106716,0.036789,Global (synthetic),synthetic
+SK064,Solidity,2024-10,1364,120000,0.011367,Global (synthetic),synthetic
+SK064,Solidity,2024-11,1102,122508,0.008995,Global (synthetic),synthetic
+SK064,Solidity,2024-12,1376,124198,0.011079,Global (synthetic),synthetic
+SK064,Solidity,2025-01,1358,124497,0.010908,Global (synthetic),synthetic
+SK064,Solidity,2025-02,1192,123208,0.009675,Global (synthetic),synthetic
+SK064,Solidity,2025-03,1370,120564,0.011363,Global (synthetic),synthetic
+SK064,Solidity,2025-04,1052,117154,0.00898,Global (synthetic),synthetic
+SK064,Solidity,2025-05,1192,113769,0.010477,Global (synthetic),synthetic
+SK064,Solidity,2025-06,1105,111188,0.009938,Global (synthetic),synthetic
+SK064,Solidity,2025-07,999,109968,0.009084,Global (synthetic),synthetic
+SK064,Solidity,2025-08,1119,110302,0.010145,Global (synthetic),synthetic
+SK064,Solidity,2025-09,1144,111963,0.010218,Global (synthetic),synthetic
+SK064,Solidity,2025-10,1034,114376,0.00904,Global (synthetic),synthetic
+SK064,Solidity,2025-11,1134,116767,0.009712,Global (synthetic),synthetic
+SK064,Solidity,2025-12,1101,118377,0.009301,Global (synthetic),synthetic
+SK064,Solidity,2026-01,971,118662,0.008183,Global (synthetic),synthetic
+SK064,Solidity,2026-02,1076,117434,0.009163,Global (synthetic),synthetic
+SK064,Solidity,2026-03,1132,114914,0.009851,Global (synthetic),synthetic
+SK064,Solidity,2026-04,990,111663,0.008866,Global (synthetic),synthetic
+SK064,Solidity,2026-05,834,108437,0.007691,Global (synthetic),synthetic
+SK064,Solidity,2026-06,831,105977,0.007841,Global (synthetic),synthetic
+SK064,Solidity,2026-07,884,104815,0.008434,Global (synthetic),synthetic
+SK064,Solidity,2026-08,807,105132,0.007676,Global (synthetic),synthetic
+SK064,Solidity,2026-09,896,106716,0.008396,Global (synthetic),synthetic
+SK065,UI/UX Design,2024-10,1380,120000,0.0115,Global (synthetic),synthetic
+SK065,UI/UX Design,2024-11,1511,122508,0.012334,Global (synthetic),synthetic
+SK065,UI/UX Design,2024-12,1631,124198,0.013132,Global (synthetic),synthetic
+SK065,UI/UX Design,2025-01,1628,124497,0.013077,Global (synthetic),synthetic
+SK065,UI/UX Design,2025-02,1488,123208,0.012077,Global (synthetic),synthetic
+SK065,UI/UX Design,2025-03,1468,120564,0.012176,Global (synthetic),synthetic
+SK065,UI/UX Design,2025-04,1435,117154,0.012249,Global (synthetic),synthetic
+SK065,UI/UX Design,2025-05,1455,113769,0.012789,Global (synthetic),synthetic
+SK065,UI/UX Design,2025-06,1447,111188,0.013014,Global (synthetic),synthetic
+SK065,UI/UX Design,2025-07,1434,109968,0.01304,Global (synthetic),synthetic
+SK065,UI/UX Design,2025-08,1346,110302,0.012203,Global (synthetic),synthetic
+SK065,UI/UX Design,2025-09,1488,111963,0.01329,Global (synthetic),synthetic
+SK065,UI/UX Design,2025-10,1275,114376,0.011147,Global (synthetic),synthetic
+SK065,UI/UX Design,2025-11,1580,116767,0.013531,Global (synthetic),synthetic
+SK065,UI/UX Design,2025-12,1707,118377,0.01442,Global (synthetic),synthetic
+SK065,UI/UX Design,2026-01,1405,118662,0.01184,Global (synthetic),synthetic
+SK065,UI/UX Design,2026-02,1527,117434,0.013003,Global (synthetic),synthetic
+SK065,UI/UX Design,2026-03,1554,114914,0.013523,Global (synthetic),synthetic
+SK065,UI/UX Design,2026-04,1400,111663,0.012538,Global (synthetic),synthetic
+SK065,UI/UX Design,2026-05,1495,108437,0.013787,Global (synthetic),synthetic
+SK065,UI/UX Design,2026-06,1453,105977,0.01371,Global (synthetic),synthetic
+SK065,UI/UX Design,2026-07,1386,104815,0.013223,Global (synthetic),synthetic
+SK065,UI/UX Design,2026-08,1558,105132,0.014819,Global (synthetic),synthetic
+SK065,UI/UX Design,2026-09,1442,106716,0.013512,Global (synthetic),synthetic
+SK066,Figma,2024-10,3411,120000,0.028425,Global (synthetic),synthetic
+SK066,Figma,2024-11,3160,122508,0.025794,Global (synthetic),synthetic
+SK066,Figma,2024-12,3190,124198,0.025685,Global (synthetic),synthetic
+SK066,Figma,2025-01,3104,124497,0.024932,Global (synthetic),synthetic
+SK066,Figma,2025-02,3246,123208,0.026345,Global (synthetic),synthetic
+SK066,Figma,2025-03,3291,120564,0.027297,Global (synthetic),synthetic
+SK066,Figma,2025-04,3309,117154,0.028245,Global (synthetic),synthetic
+SK066,Figma,2025-05,3487,113769,0.03065,Global (synthetic),synthetic
+SK066,Figma,2025-06,3295,111188,0.029634,Global (synthetic),synthetic
+SK066,Figma,2025-07,3127,109968,0.028435,Global (synthetic),synthetic
+SK066,Figma,2025-08,3163,110302,0.028676,Global (synthetic),synthetic
+SK066,Figma,2025-09,3562,111963,0.031814,Global (synthetic),synthetic
+SK066,Figma,2025-10,3655,114376,0.031956,Global (synthetic),synthetic
+SK066,Figma,2025-11,3577,116767,0.030634,Global (synthetic),synthetic
+SK066,Figma,2025-12,3554,118377,0.030023,Global (synthetic),synthetic
+SK066,Figma,2026-01,3901,118662,0.032875,Global (synthetic),synthetic
+SK066,Figma,2026-02,3471,117434,0.029557,Global (synthetic),synthetic
+SK066,Figma,2026-03,3697,114914,0.032172,Global (synthetic),synthetic
+SK066,Figma,2026-04,3978,111663,0.035625,Global (synthetic),synthetic
+SK066,Figma,2026-05,3561,108437,0.032839,Global (synthetic),synthetic
+SK066,Figma,2026-06,3208,105977,0.030271,Global (synthetic),synthetic
+SK066,Figma,2026-07,3646,104815,0.034785,Global (synthetic),synthetic
+SK066,Figma,2026-08,3350,105132,0.031864,Global (synthetic),synthetic
+SK066,Figma,2026-09,3406,106716,0.031916,Global (synthetic),synthetic
+SK067,Game Design,2024-10,6934,120000,0.057783,Global (synthetic),synthetic
+SK067,Game Design,2024-11,7041,122508,0.057473,Global (synthetic),synthetic
+SK067,Game Design,2024-12,6914,124198,0.055669,Global (synthetic),synthetic
+SK067,Game Design,2025-01,6357,124497,0.051061,Global (synthetic),synthetic
+SK067,Game Design,2025-02,6765,123208,0.054907,Global (synthetic),synthetic
+SK067,Game Design,2025-03,6453,120564,0.053523,Global (synthetic),synthetic
+SK067,Game Design,2025-04,5866,117154,0.050071,Global (synthetic),synthetic
+SK067,Game Design,2025-05,6050,113769,0.053178,Global (synthetic),synthetic
+SK067,Game Design,2025-06,6298,111188,0.056643,Global (synthetic),synthetic
+SK067,Game Design,2025-07,5921,109968,0.053842,Global (synthetic),synthetic
+SK067,Game Design,2025-08,6450,110302,0.058476,Global (synthetic),synthetic
+SK067,Game Design,2025-09,6092,111963,0.054411,Global (synthetic),synthetic
+SK067,Game Design,2025-10,6734,114376,0.058876,Global (synthetic),synthetic
+SK067,Game Design,2025-11,6130,116767,0.052498,Global (synthetic),synthetic
+SK067,Game Design,2025-12,6407,118377,0.054123,Global (synthetic),synthetic
+SK067,Game Design,2026-01,6191,118662,0.052173,Global (synthetic),synthetic
+SK067,Game Design,2026-02,6599,117434,0.056193,Global (synthetic),synthetic
+SK067,Game Design,2026-03,6053,114914,0.052674,Global (synthetic),synthetic
+SK067,Game Design,2026-04,5968,111663,0.053446,Global (synthetic),synthetic
+SK067,Game Design,2026-05,6090,108437,0.056161,Global (synthetic),synthetic
+SK067,Game Design,2026-06,5890,105977,0.055578,Global (synthetic),synthetic
+SK067,Game Design,2026-07,5742,104815,0.054782,Global (synthetic),synthetic
+SK067,Game Design,2026-08,5513,105132,0.052438,Global (synthetic),synthetic
+SK067,Game Design,2026-09,5749,106716,0.053872,Global (synthetic),synthetic
+SK068,Unity,2024-10,4052,120000,0.033767,Global (synthetic),synthetic
+SK068,Unity,2024-11,3997,122508,0.032626,Global (synthetic),synthetic
+SK068,Unity,2024-12,4489,124198,0.036144,Global (synthetic),synthetic
+SK068,Unity,2025-01,4375,124497,0.035141,Global (synthetic),synthetic
+SK068,Unity,2025-02,4579,123208,0.037165,Global (synthetic),synthetic
+SK068,Unity,2025-03,3984,120564,0.033045,Global (synthetic),synthetic
+SK068,Unity,2025-04,3804,117154,0.03247,Global (synthetic),synthetic
+SK068,Unity,2025-05,4094,113769,0.035985,Global (synthetic),synthetic
+SK068,Unity,2025-06,3487,111188,0.031361,Global (synthetic),synthetic
+SK068,Unity,2025-07,4054,109968,0.036865,Global (synthetic),synthetic
+SK068,Unity,2025-08,3553,110302,0.032211,Global (synthetic),synthetic
+SK068,Unity,2025-09,4142,111963,0.036994,Global (synthetic),synthetic
+SK068,Unity,2025-10,3886,114376,0.033976,Global (synthetic),synthetic
+SK068,Unity,2025-11,4280,116767,0.036654,Global (synthetic),synthetic
+SK068,Unity,2025-12,4801,118377,0.040557,Global (synthetic),synthetic
+SK068,Unity,2026-01,3810,118662,0.032108,Global (synthetic),synthetic
+SK068,Unity,2026-02,4361,117434,0.037136,Global (synthetic),synthetic
+SK068,Unity,2026-03,3872,114914,0.033695,Global (synthetic),synthetic
+SK068,Unity,2026-04,4061,111663,0.036368,Global (synthetic),synthetic
+SK068,Unity,2026-05,3927,108437,0.036214,Global (synthetic),synthetic
+SK068,Unity,2026-06,3896,105977,0.036763,Global (synthetic),synthetic
+SK068,Unity,2026-07,3625,104815,0.034585,Global (synthetic),synthetic
+SK068,Unity,2026-08,3844,105132,0.036563,Global (synthetic),synthetic
+SK068,Unity,2026-09,3516,106716,0.032947,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2024-10,9773,120000,0.081442,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2024-11,10672,122508,0.087112,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2024-12,9885,124198,0.07959,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2025-01,10828,124497,0.086974,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2025-02,10332,123208,0.083858,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2025-03,10128,120564,0.084005,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2025-04,9144,117154,0.078051,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2025-05,9579,113769,0.084197,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2025-06,9562,111188,0.085998,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2025-07,8896,109968,0.080896,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2025-08,9498,110302,0.086109,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2025-09,9669,111963,0.086358,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2025-10,9563,114376,0.08361,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2025-11,10324,116767,0.088415,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2025-12,9135,118377,0.077168,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2026-01,10331,118662,0.087062,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2026-02,10690,117434,0.091029,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2026-03,10323,114914,0.089832,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2026-04,9594,111663,0.085919,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2026-05,9049,108437,0.083449,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2026-06,8813,105977,0.083159,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2026-07,8877,104815,0.084692,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2026-08,9235,105132,0.087841,Global (synthetic),synthetic
+SK069,GIS Fundamentals,2026-09,8813,106716,0.082583,Global (synthetic),synthetic
+SK070,ArcGIS,2024-10,1345,120000,0.011208,Global (synthetic),synthetic
+SK070,ArcGIS,2024-11,1240,122508,0.010122,Global (synthetic),synthetic
+SK070,ArcGIS,2024-12,1391,124198,0.0112,Global (synthetic),synthetic
+SK070,ArcGIS,2025-01,1203,124497,0.009663,Global (synthetic),synthetic
+SK070,ArcGIS,2025-02,1202,123208,0.009756,Global (synthetic),synthetic
+SK070,ArcGIS,2025-03,1194,120564,0.009903,Global (synthetic),synthetic
+SK070,ArcGIS,2025-04,1218,117154,0.010397,Global (synthetic),synthetic
+SK070,ArcGIS,2025-05,1134,113769,0.009968,Global (synthetic),synthetic
+SK070,ArcGIS,2025-06,1211,111188,0.010891,Global (synthetic),synthetic
+SK070,ArcGIS,2025-07,1227,109968,0.011158,Global (synthetic),synthetic
+SK070,ArcGIS,2025-08,1189,110302,0.010779,Global (synthetic),synthetic
+SK070,ArcGIS,2025-09,1170,111963,0.01045,Global (synthetic),synthetic
+SK070,ArcGIS,2025-10,1245,114376,0.010885,Global (synthetic),synthetic
+SK070,ArcGIS,2025-11,1202,116767,0.010294,Global (synthetic),synthetic
+SK070,ArcGIS,2025-12,1245,118377,0.010517,Global (synthetic),synthetic
+SK070,ArcGIS,2026-01,1261,118662,0.010627,Global (synthetic),synthetic
+SK070,ArcGIS,2026-02,1156,117434,0.009844,Global (synthetic),synthetic
+SK070,ArcGIS,2026-03,1323,114914,0.011513,Global (synthetic),synthetic
+SK070,ArcGIS,2026-04,1150,111663,0.010299,Global (synthetic),synthetic
+SK070,ArcGIS,2026-05,1144,108437,0.01055,Global (synthetic),synthetic
+SK070,ArcGIS,2026-06,1119,105977,0.010559,Global (synthetic),synthetic
+SK070,ArcGIS,2026-07,1229,104815,0.011725,Global (synthetic),synthetic
+SK070,ArcGIS,2026-08,1143,105132,0.010872,Global (synthetic),synthetic
+SK070,ArcGIS,2026-09,1046,106716,0.009802,Global (synthetic),synthetic
+SK071,Windows Server,2024-10,10489,120000,0.087408,Global (synthetic),synthetic
+SK071,Windows Server,2024-11,10363,122508,0.08459,Global (synthetic),synthetic
+SK071,Windows Server,2024-12,10576,124198,0.085154,Global (synthetic),synthetic
+SK071,Windows Server,2025-01,10373,124497,0.083319,Global (synthetic),synthetic
+SK071,Windows Server,2025-02,11134,123208,0.090367,Global (synthetic),synthetic
+SK071,Windows Server,2025-03,10378,120564,0.086078,Global (synthetic),synthetic
+SK071,Windows Server,2025-04,10200,117154,0.087065,Global (synthetic),synthetic
+SK071,Windows Server,2025-05,8462,113769,0.074378,Global (synthetic),synthetic
+SK071,Windows Server,2025-06,9149,111188,0.082284,Global (synthetic),synthetic
+SK071,Windows Server,2025-07,10020,109968,0.091117,Global (synthetic),synthetic
+SK071,Windows Server,2025-08,9493,110302,0.086063,Global (synthetic),synthetic
+SK071,Windows Server,2025-09,8489,111963,0.075819,Global (synthetic),synthetic
+SK071,Windows Server,2025-10,9010,114376,0.078775,Global (synthetic),synthetic
+SK071,Windows Server,2025-11,8917,116767,0.076365,Global (synthetic),synthetic
+SK071,Windows Server,2025-12,10056,118377,0.084948,Global (synthetic),synthetic
+SK071,Windows Server,2026-01,9605,118662,0.080944,Global (synthetic),synthetic
+SK071,Windows Server,2026-02,9085,117434,0.077362,Global (synthetic),synthetic
+SK071,Windows Server,2026-03,8988,114914,0.078215,Global (synthetic),synthetic
+SK071,Windows Server,2026-04,8014,111663,0.071769,Global (synthetic),synthetic
+SK071,Windows Server,2026-05,8099,108437,0.074688,Global (synthetic),synthetic
+SK071,Windows Server,2026-06,8365,105977,0.078932,Global (synthetic),synthetic
+SK071,Windows Server,2026-07,8453,104815,0.080647,Global (synthetic),synthetic
+SK071,Windows Server,2026-08,7600,105132,0.072289,Global (synthetic),synthetic
+SK071,Windows Server,2026-09,7960,106716,0.07459,Global (synthetic),synthetic
+SK072,Active Directory,2024-10,7173,120000,0.059775,Global (synthetic),synthetic
+SK072,Active Directory,2024-11,7142,122508,0.058298,Global (synthetic),synthetic
+SK072,Active Directory,2024-12,7620,124198,0.061353,Global (synthetic),synthetic
+SK072,Active Directory,2025-01,7112,124497,0.057126,Global (synthetic),synthetic
+SK072,Active Directory,2025-02,6803,123208,0.055215,Global (synthetic),synthetic
+SK072,Active Directory,2025-03,6673,120564,0.055348,Global (synthetic),synthetic
+SK072,Active Directory,2025-04,6268,117154,0.053502,Global (synthetic),synthetic
+SK072,Active Directory,2025-05,6119,113769,0.053784,Global (synthetic),synthetic
+SK072,Active Directory,2025-06,5985,111188,0.053828,Global (synthetic),synthetic
+SK072,Active Directory,2025-07,6443,109968,0.058589,Global (synthetic),synthetic
+SK072,Active Directory,2025-08,6123,110302,0.055511,Global (synthetic),synthetic
+SK072,Active Directory,2025-09,6172,111963,0.055125,Global (synthetic),synthetic
+SK072,Active Directory,2025-10,6621,114376,0.057888,Global (synthetic),synthetic
+SK072,Active Directory,2025-11,6914,116767,0.059212,Global (synthetic),synthetic
+SK072,Active Directory,2025-12,6737,118377,0.056911,Global (synthetic),synthetic
+SK072,Active Directory,2026-01,6291,118662,0.053016,Global (synthetic),synthetic
+SK072,Active Directory,2026-02,6289,117434,0.053553,Global (synthetic),synthetic
+SK072,Active Directory,2026-03,6627,114914,0.057669,Global (synthetic),synthetic
+SK072,Active Directory,2026-04,6066,111663,0.054324,Global (synthetic),synthetic
+SK072,Active Directory,2026-05,5788,108437,0.053376,Global (synthetic),synthetic
+SK072,Active Directory,2026-06,5817,105977,0.054889,Global (synthetic),synthetic
+SK072,Active Directory,2026-07,5805,104815,0.055383,Global (synthetic),synthetic
+SK072,Active Directory,2026-08,5380,105132,0.051173,Global (synthetic),synthetic
+SK072,Active Directory,2026-09,5728,106716,0.053675,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2024-10,6564,120000,0.0547,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2024-11,7000,122508,0.057139,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2024-12,5985,124198,0.048189,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2025-01,6333,124497,0.050869,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2025-02,6851,123208,0.055605,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2025-03,5913,120564,0.049044,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2025-04,6276,117154,0.05357,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2025-05,6354,113769,0.05585,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2025-06,5798,111188,0.052146,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2025-07,5893,109968,0.053588,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2025-08,6051,110302,0.054858,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2025-09,6178,111963,0.055179,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2025-10,5965,114376,0.052153,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2025-11,5853,116767,0.050125,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2025-12,5725,118377,0.048362,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2026-01,6347,118662,0.053488,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2026-02,5762,117434,0.049066,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2026-03,5941,114914,0.0517,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2026-04,5798,111663,0.051924,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2026-05,5407,108437,0.049863,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2026-06,5554,105977,0.052407,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2026-07,6130,104815,0.058484,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2026-08,5550,105132,0.05279,Global (synthetic),synthetic
+SK073,Technical Troubleshooting,2026-09,5380,106716,0.050414,Global (synthetic),synthetic
+SK074,ITIL Service Management,2024-10,874,120000,0.007283,Global (synthetic),synthetic
+SK074,ITIL Service Management,2024-11,833,122508,0.0068,Global (synthetic),synthetic
+SK074,ITIL Service Management,2024-12,903,124198,0.007271,Global (synthetic),synthetic
+SK074,ITIL Service Management,2025-01,960,124497,0.007711,Global (synthetic),synthetic
+SK074,ITIL Service Management,2025-02,887,123208,0.007199,Global (synthetic),synthetic
+SK074,ITIL Service Management,2025-03,776,120564,0.006436,Global (synthetic),synthetic
+SK074,ITIL Service Management,2025-04,805,117154,0.006871,Global (synthetic),synthetic
+SK074,ITIL Service Management,2025-05,827,113769,0.007269,Global (synthetic),synthetic
+SK074,ITIL Service Management,2025-06,764,111188,0.006871,Global (synthetic),synthetic
+SK074,ITIL Service Management,2025-07,708,109968,0.006438,Global (synthetic),synthetic
+SK074,ITIL Service Management,2025-08,774,110302,0.007017,Global (synthetic),synthetic
+SK074,ITIL Service Management,2025-09,742,111963,0.006627,Global (synthetic),synthetic
+SK074,ITIL Service Management,2025-10,827,114376,0.007231,Global (synthetic),synthetic
+SK074,ITIL Service Management,2025-11,763,116767,0.006534,Global (synthetic),synthetic
+SK074,ITIL Service Management,2025-12,837,118377,0.007071,Global (synthetic),synthetic
+SK074,ITIL Service Management,2026-01,763,118662,0.00643,Global (synthetic),synthetic
+SK074,ITIL Service Management,2026-02,745,117434,0.006344,Global (synthetic),synthetic
+SK074,ITIL Service Management,2026-03,855,114914,0.00744,Global (synthetic),synthetic
+SK074,ITIL Service Management,2026-04,788,111663,0.007057,Global (synthetic),synthetic
+SK074,ITIL Service Management,2026-05,704,108437,0.006492,Global (synthetic),synthetic
+SK074,ITIL Service Management,2026-06,728,105977,0.006869,Global (synthetic),synthetic
+SK074,ITIL Service Management,2026-07,727,104815,0.006936,Global (synthetic),synthetic
+SK074,ITIL Service Management,2026-08,727,105132,0.006915,Global (synthetic),synthetic
+SK074,ITIL Service Management,2026-09,777,106716,0.007281,Global (synthetic),synthetic
+SK075,Computer Architecture,2024-10,1117,120000,0.009308,Global (synthetic),synthetic
+SK075,Computer Architecture,2024-11,1103,122508,0.009003,Global (synthetic),synthetic
+SK075,Computer Architecture,2024-12,1159,124198,0.009332,Global (synthetic),synthetic
+SK075,Computer Architecture,2025-01,1113,124497,0.00894,Global (synthetic),synthetic
+SK075,Computer Architecture,2025-02,1236,123208,0.010032,Global (synthetic),synthetic
+SK075,Computer Architecture,2025-03,1215,120564,0.010078,Global (synthetic),synthetic
+SK075,Computer Architecture,2025-04,1083,117154,0.009244,Global (synthetic),synthetic
+SK075,Computer Architecture,2025-05,1052,113769,0.009247,Global (synthetic),synthetic
+SK075,Computer Architecture,2025-06,1039,111188,0.009345,Global (synthetic),synthetic
+SK075,Computer Architecture,2025-07,998,109968,0.009075,Global (synthetic),synthetic
+SK075,Computer Architecture,2025-08,950,110302,0.008613,Global (synthetic),synthetic
+SK075,Computer Architecture,2025-09,1021,111963,0.009119,Global (synthetic),synthetic
+SK075,Computer Architecture,2025-10,1072,114376,0.009373,Global (synthetic),synthetic
+SK075,Computer Architecture,2025-11,973,116767,0.008333,Global (synthetic),synthetic
+SK075,Computer Architecture,2025-12,1086,118377,0.009174,Global (synthetic),synthetic
+SK075,Computer Architecture,2026-01,1093,118662,0.009211,Global (synthetic),synthetic
+SK075,Computer Architecture,2026-02,1136,117434,0.009673,Global (synthetic),synthetic
+SK075,Computer Architecture,2026-03,1043,114914,0.009076,Global (synthetic),synthetic
+SK075,Computer Architecture,2026-04,1017,111663,0.009108,Global (synthetic),synthetic
+SK075,Computer Architecture,2026-05,1111,108437,0.010246,Global (synthetic),synthetic
+SK075,Computer Architecture,2026-06,995,105977,0.009389,Global (synthetic),synthetic
+SK075,Computer Architecture,2026-07,959,104815,0.009149,Global (synthetic),synthetic
+SK075,Computer Architecture,2026-08,951,105132,0.009046,Global (synthetic),synthetic
+SK075,Computer Architecture,2026-09,1013,106716,0.009492,Global (synthetic),synthetic
+SK076,Embedded C,2024-10,2343,120000,0.019525,Global (synthetic),synthetic
+SK076,Embedded C,2024-11,2103,122508,0.017166,Global (synthetic),synthetic
+SK076,Embedded C,2024-12,2136,124198,0.017198,Global (synthetic),synthetic
+SK076,Embedded C,2025-01,2153,124497,0.017294,Global (synthetic),synthetic
+SK076,Embedded C,2025-02,2235,123208,0.01814,Global (synthetic),synthetic
+SK076,Embedded C,2025-03,1894,120564,0.015709,Global (synthetic),synthetic
+SK076,Embedded C,2025-04,2012,117154,0.017174,Global (synthetic),synthetic
+SK076,Embedded C,2025-05,1980,113769,0.017404,Global (synthetic),synthetic
+SK076,Embedded C,2025-06,1957,111188,0.017601,Global (synthetic),synthetic
+SK076,Embedded C,2025-07,1860,109968,0.016914,Global (synthetic),synthetic
+SK076,Embedded C,2025-08,2019,110302,0.018304,Global (synthetic),synthetic
+SK076,Embedded C,2025-09,1916,111963,0.017113,Global (synthetic),synthetic
+SK076,Embedded C,2025-10,2069,114376,0.018089,Global (synthetic),synthetic
+SK076,Embedded C,2025-11,2179,116767,0.018661,Global (synthetic),synthetic
+SK076,Embedded C,2025-12,2135,118377,0.018035,Global (synthetic),synthetic
+SK076,Embedded C,2026-01,2106,118662,0.017748,Global (synthetic),synthetic
+SK076,Embedded C,2026-02,2104,117434,0.017916,Global (synthetic),synthetic
+SK076,Embedded C,2026-03,2103,114914,0.018301,Global (synthetic),synthetic
+SK076,Embedded C,2026-04,1888,111663,0.016908,Global (synthetic),synthetic
+SK076,Embedded C,2026-05,2030,108437,0.01872,Global (synthetic),synthetic
+SK076,Embedded C,2026-06,1942,105977,0.018325,Global (synthetic),synthetic
+SK076,Embedded C,2026-07,2017,104815,0.019243,Global (synthetic),synthetic
+SK076,Embedded C,2026-08,1900,105132,0.018072,Global (synthetic),synthetic
+SK076,Embedded C,2026-09,2074,106716,0.019435,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2024-10,7728,120000,0.0644,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2024-11,7668,122508,0.062591,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2024-12,8634,124198,0.069518,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2025-01,8610,124497,0.069158,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2025-02,8029,123208,0.065166,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2025-03,8175,120564,0.067806,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2025-04,8132,117154,0.069413,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2025-05,7658,113769,0.067312,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2025-06,7304,111188,0.06569,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2025-07,7347,109968,0.06681,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2025-08,7793,110302,0.070651,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2025-09,7555,111963,0.067477,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2025-10,7608,114376,0.066517,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2025-11,7658,116767,0.065583,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2025-12,8237,118377,0.069582,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2026-01,8214,118662,0.069222,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2026-02,8097,117434,0.068949,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2026-03,8119,114914,0.070653,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2026-04,8015,111663,0.071778,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2026-05,8064,108437,0.074365,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2026-06,7684,105977,0.072506,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2026-07,7399,104815,0.070591,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2026-08,7406,105132,0.070444,Global (synthetic),synthetic
+SK077,Verilog and FPGA,2026-09,7406,106716,0.069399,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2024-10,3949,120000,0.032908,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2024-11,4182,122508,0.034136,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2024-12,4250,124198,0.034219,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2025-01,4274,124497,0.03433,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2025-02,4513,123208,0.036629,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2025-03,4573,120564,0.03793,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2025-04,4403,117154,0.037583,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2025-05,4058,113769,0.035669,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2025-06,4013,111188,0.036092,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2025-07,3831,109968,0.034837,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2025-08,3926,110302,0.035593,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2025-09,3926,111963,0.035065,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2025-10,4139,114376,0.036188,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2025-11,4358,116767,0.037322,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2025-12,4075,118377,0.034424,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2026-01,4502,118662,0.03794,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2026-02,4789,117434,0.04078,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2026-03,4724,114914,0.041109,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2026-04,4098,111663,0.036699,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2026-05,4035,108437,0.03721,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2026-06,4244,105977,0.040046,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2026-07,3754,104815,0.035815,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2026-08,4418,105132,0.042023,Global (synthetic),synthetic
+SK078,HL7 and FHIR,2026-09,4282,106716,0.040125,Global (synthetic),synthetic
+SK079,Document Management Systems,2024-10,7137,120000,0.059475,Global (synthetic),synthetic
+SK079,Document Management Systems,2024-11,7137,122508,0.058257,Global (synthetic),synthetic
+SK079,Document Management Systems,2024-12,6751,124198,0.054356,Global (synthetic),synthetic
+SK079,Document Management Systems,2025-01,6460,124497,0.051889,Global (synthetic),synthetic
+SK079,Document Management Systems,2025-02,7170,123208,0.058194,Global (synthetic),synthetic
+SK079,Document Management Systems,2025-03,6356,120564,0.052719,Global (synthetic),synthetic
+SK079,Document Management Systems,2025-04,6200,117154,0.052922,Global (synthetic),synthetic
+SK079,Document Management Systems,2025-05,5802,113769,0.050998,Global (synthetic),synthetic
+SK079,Document Management Systems,2025-06,5894,111188,0.053009,Global (synthetic),synthetic
+SK079,Document Management Systems,2025-07,5669,109968,0.051551,Global (synthetic),synthetic
+SK079,Document Management Systems,2025-08,5820,110302,0.052764,Global (synthetic),synthetic
+SK079,Document Management Systems,2025-09,6183,111963,0.055223,Global (synthetic),synthetic
+SK079,Document Management Systems,2025-10,6111,114376,0.053429,Global (synthetic),synthetic
+SK079,Document Management Systems,2025-11,6367,116767,0.054527,Global (synthetic),synthetic
+SK079,Document Management Systems,2025-12,6061,118377,0.0512,Global (synthetic),synthetic
+SK079,Document Management Systems,2026-01,6241,118662,0.052595,Global (synthetic),synthetic
+SK079,Document Management Systems,2026-02,6549,117434,0.055767,Global (synthetic),synthetic
+SK079,Document Management Systems,2026-03,5967,114914,0.051926,Global (synthetic),synthetic
+SK079,Document Management Systems,2026-04,5955,111663,0.05333,Global (synthetic),synthetic
+SK079,Document Management Systems,2026-05,5245,108437,0.048369,Global (synthetic),synthetic
+SK079,Document Management Systems,2026-06,5771,105977,0.054455,Global (synthetic),synthetic
+SK079,Document Management Systems,2026-07,5221,104815,0.049811,Global (synthetic),synthetic
+SK079,Document Management Systems,2026-08,5772,105132,0.054902,Global (synthetic),synthetic
+SK079,Document Management Systems,2026-09,5506,106716,0.051595,Global (synthetic),synthetic
+SK080,Research Methods,2024-10,1478,120000,0.012317,Global (synthetic),synthetic
+SK080,Research Methods,2024-11,1336,122508,0.010905,Global (synthetic),synthetic
+SK080,Research Methods,2024-12,1442,124198,0.01161,Global (synthetic),synthetic
+SK080,Research Methods,2025-01,1417,124497,0.011382,Global (synthetic),synthetic
+SK080,Research Methods,2025-02,1470,123208,0.011931,Global (synthetic),synthetic
+SK080,Research Methods,2025-03,1411,120564,0.011703,Global (synthetic),synthetic
+SK080,Research Methods,2025-04,1303,117154,0.011122,Global (synthetic),synthetic
+SK080,Research Methods,2025-05,1274,113769,0.011198,Global (synthetic),synthetic
+SK080,Research Methods,2025-06,1295,111188,0.011647,Global (synthetic),synthetic
+SK080,Research Methods,2025-07,1208,109968,0.010985,Global (synthetic),synthetic
+SK080,Research Methods,2025-08,1258,110302,0.011405,Global (synthetic),synthetic
+SK080,Research Methods,2025-09,1327,111963,0.011852,Global (synthetic),synthetic
+SK080,Research Methods,2025-10,1308,114376,0.011436,Global (synthetic),synthetic
+SK080,Research Methods,2025-11,1252,116767,0.010722,Global (synthetic),synthetic
+SK080,Research Methods,2025-12,1340,118377,0.01132,Global (synthetic),synthetic
+SK080,Research Methods,2026-01,1356,118662,0.011427,Global (synthetic),synthetic
+SK080,Research Methods,2026-02,1361,117434,0.011589,Global (synthetic),synthetic
+SK080,Research Methods,2026-03,1344,114914,0.011696,Global (synthetic),synthetic
+SK080,Research Methods,2026-04,1324,111663,0.011857,Global (synthetic),synthetic
+SK080,Research Methods,2026-05,1323,108437,0.012201,Global (synthetic),synthetic
+SK080,Research Methods,2026-06,1219,105977,0.011502,Global (synthetic),synthetic
+SK080,Research Methods,2026-07,1253,104815,0.011954,Global (synthetic),synthetic
+SK080,Research Methods,2026-08,1342,105132,0.012765,Global (synthetic),synthetic
+SK080,Research Methods,2026-09,1210,106716,0.011338,Global (synthetic),synthetic
+SK081,Technical Communication,2024-10,3787,120000,0.031558,Global (synthetic),synthetic
+SK081,Technical Communication,2024-11,3617,122508,0.029524,Global (synthetic),synthetic
+SK081,Technical Communication,2024-12,3774,124198,0.030387,Global (synthetic),synthetic
+SK081,Technical Communication,2025-01,3743,124497,0.030065,Global (synthetic),synthetic
+SK081,Technical Communication,2025-02,3961,123208,0.032149,Global (synthetic),synthetic
+SK081,Technical Communication,2025-03,3611,120564,0.029951,Global (synthetic),synthetic
+SK081,Technical Communication,2025-04,3559,117154,0.030379,Global (synthetic),synthetic
+SK081,Technical Communication,2025-05,3171,113769,0.027872,Global (synthetic),synthetic
+SK081,Technical Communication,2025-06,3698,111188,0.033259,Global (synthetic),synthetic
+SK081,Technical Communication,2025-07,3327,109968,0.030254,Global (synthetic),synthetic
+SK081,Technical Communication,2025-08,3563,110302,0.032302,Global (synthetic),synthetic
+SK081,Technical Communication,2025-09,3619,111963,0.032323,Global (synthetic),synthetic
+SK081,Technical Communication,2025-10,3614,114376,0.031598,Global (synthetic),synthetic
+SK081,Technical Communication,2025-11,3716,116767,0.031824,Global (synthetic),synthetic
+SK081,Technical Communication,2025-12,3455,118377,0.029186,Global (synthetic),synthetic
+SK081,Technical Communication,2026-01,3993,118662,0.03365,Global (synthetic),synthetic
+SK081,Technical Communication,2026-02,3829,117434,0.032605,Global (synthetic),synthetic
+SK081,Technical Communication,2026-03,3629,114914,0.03158,Global (synthetic),synthetic
+SK081,Technical Communication,2026-04,3622,111663,0.032437,Global (synthetic),synthetic
+SK081,Technical Communication,2026-05,3280,108437,0.030248,Global (synthetic),synthetic
+SK081,Technical Communication,2026-06,3272,105977,0.030875,Global (synthetic),synthetic
+SK081,Technical Communication,2026-07,3515,104815,0.033535,Global (synthetic),synthetic
+SK081,Technical Communication,2026-08,3085,105132,0.029344,Global (synthetic),synthetic
+SK081,Technical Communication,2026-09,3388,106716,0.031748,Global (synthetic),synthetic
+SK082,C,2024-10,4897,120000,0.040808,Global (synthetic),synthetic
+SK082,C,2024-11,4933,122508,0.040267,Global (synthetic),synthetic
+SK082,C,2024-12,5106,124198,0.041112,Global (synthetic),synthetic
+SK082,C,2025-01,5180,124497,0.041607,Global (synthetic),synthetic
+SK082,C,2025-02,5147,123208,0.041775,Global (synthetic),synthetic
+SK082,C,2025-03,4459,120564,0.036985,Global (synthetic),synthetic
+SK082,C,2025-04,4534,117154,0.038701,Global (synthetic),synthetic
+SK082,C,2025-05,5088,113769,0.044722,Global (synthetic),synthetic
+SK082,C,2025-06,4070,111188,0.036605,Global (synthetic),synthetic
+SK082,C,2025-07,3984,109968,0.036229,Global (synthetic),synthetic
+SK082,C,2025-08,4311,110302,0.039084,Global (synthetic),synthetic
+SK082,C,2025-09,4437,111963,0.039629,Global (synthetic),synthetic
+SK082,C,2025-10,4485,114376,0.039213,Global (synthetic),synthetic
+SK082,C,2025-11,4214,116767,0.036089,Global (synthetic),synthetic
+SK082,C,2025-12,4497,118377,0.037989,Global (synthetic),synthetic
+SK082,C,2026-01,4757,118662,0.040089,Global (synthetic),synthetic
+SK082,C,2026-02,4075,117434,0.0347,Global (synthetic),synthetic
+SK082,C,2026-03,4767,114914,0.041483,Global (synthetic),synthetic
+SK082,C,2026-04,3989,111663,0.035724,Global (synthetic),synthetic
+SK082,C,2026-05,4023,108437,0.0371,Global (synthetic),synthetic
+SK082,C,2026-06,3621,105977,0.034168,Global (synthetic),synthetic
+SK082,C,2026-07,3876,104815,0.036979,Global (synthetic),synthetic
+SK082,C,2026-08,3651,105132,0.034728,Global (synthetic),synthetic
+SK082,C,2026-09,3725,106716,0.034906,Global (synthetic),synthetic
+SK083,PHP,2024-10,4286,120000,0.035717,Global (synthetic),synthetic
+SK083,PHP,2024-11,3983,122508,0.032512,Global (synthetic),synthetic
+SK083,PHP,2024-12,3546,124198,0.028551,Global (synthetic),synthetic
+SK083,PHP,2025-01,4308,124497,0.034603,Global (synthetic),synthetic
+SK083,PHP,2025-02,4090,123208,0.033196,Global (synthetic),synthetic
+SK083,PHP,2025-03,3940,120564,0.03268,Global (synthetic),synthetic
+SK083,PHP,2025-04,3608,117154,0.030797,Global (synthetic),synthetic
+SK083,PHP,2025-05,3694,113769,0.032469,Global (synthetic),synthetic
+SK083,PHP,2025-06,3343,111188,0.030066,Global (synthetic),synthetic
+SK083,PHP,2025-07,3486,109968,0.0317,Global (synthetic),synthetic
+SK083,PHP,2025-08,3767,110302,0.034152,Global (synthetic),synthetic
+SK083,PHP,2025-09,3747,111963,0.033466,Global (synthetic),synthetic
+SK083,PHP,2025-10,3791,114376,0.033145,Global (synthetic),synthetic
+SK083,PHP,2025-11,4103,116767,0.035138,Global (synthetic),synthetic
+SK083,PHP,2025-12,3846,118377,0.032489,Global (synthetic),synthetic
+SK083,PHP,2026-01,4106,118662,0.034602,Global (synthetic),synthetic
+SK083,PHP,2026-02,4154,117434,0.035373,Global (synthetic),synthetic
+SK083,PHP,2026-03,3765,114914,0.032764,Global (synthetic),synthetic
+SK083,PHP,2026-04,3436,111663,0.030771,Global (synthetic),synthetic
+SK083,PHP,2026-05,3988,108437,0.036777,Global (synthetic),synthetic
+SK083,PHP,2026-06,3861,105977,0.036432,Global (synthetic),synthetic
+SK083,PHP,2026-07,3263,104815,0.031131,Global (synthetic),synthetic
+SK083,PHP,2026-08,3852,105132,0.03664,Global (synthetic),synthetic
+SK083,PHP,2026-09,3802,106716,0.035627,Global (synthetic),synthetic
+SK084,Kotlin,2024-10,2793,120000,0.023275,Global (synthetic),synthetic
+SK084,Kotlin,2024-11,3269,122508,0.026684,Global (synthetic),synthetic
+SK084,Kotlin,2024-12,3287,124198,0.026466,Global (synthetic),synthetic
+SK084,Kotlin,2025-01,2699,124497,0.021679,Global (synthetic),synthetic
+SK084,Kotlin,2025-02,2812,123208,0.022823,Global (synthetic),synthetic
+SK084,Kotlin,2025-03,2881,120564,0.023896,Global (synthetic),synthetic
+SK084,Kotlin,2025-04,2784,117154,0.023764,Global (synthetic),synthetic
+SK084,Kotlin,2025-05,2913,113769,0.025605,Global (synthetic),synthetic
+SK084,Kotlin,2025-06,2619,111188,0.023555,Global (synthetic),synthetic
+SK084,Kotlin,2025-07,2425,109968,0.022052,Global (synthetic),synthetic
+SK084,Kotlin,2025-08,2600,110302,0.023572,Global (synthetic),synthetic
+SK084,Kotlin,2025-09,2441,111963,0.021802,Global (synthetic),synthetic
+SK084,Kotlin,2025-10,2590,114376,0.022645,Global (synthetic),synthetic
+SK084,Kotlin,2025-11,2601,116767,0.022275,Global (synthetic),synthetic
+SK084,Kotlin,2025-12,2720,118377,0.022977,Global (synthetic),synthetic
+SK084,Kotlin,2026-01,2513,118662,0.021178,Global (synthetic),synthetic
+SK084,Kotlin,2026-02,2630,117434,0.022396,Global (synthetic),synthetic
+SK084,Kotlin,2026-03,2577,114914,0.022425,Global (synthetic),synthetic
+SK084,Kotlin,2026-04,2574,111663,0.023052,Global (synthetic),synthetic
+SK084,Kotlin,2026-05,2640,108437,0.024346,Global (synthetic),synthetic
+SK084,Kotlin,2026-06,2130,105977,0.020099,Global (synthetic),synthetic
+SK084,Kotlin,2026-07,2295,104815,0.021896,Global (synthetic),synthetic
+SK084,Kotlin,2026-08,2490,105132,0.023685,Global (synthetic),synthetic
+SK084,Kotlin,2026-09,2080,106716,0.019491,Global (synthetic),synthetic
+SK085,R,2024-10,1832,120000,0.015267,Global (synthetic),synthetic
+SK085,R,2024-11,1957,122508,0.015974,Global (synthetic),synthetic
+SK085,R,2024-12,2231,124198,0.017963,Global (synthetic),synthetic
+SK085,R,2025-01,2123,124497,0.017053,Global (synthetic),synthetic
+SK085,R,2025-02,1989,123208,0.016143,Global (synthetic),synthetic
+SK085,R,2025-03,1816,120564,0.015063,Global (synthetic),synthetic
+SK085,R,2025-04,1918,117154,0.016372,Global (synthetic),synthetic
+SK085,R,2025-05,2102,113769,0.018476,Global (synthetic),synthetic
+SK085,R,2025-06,1833,111188,0.016486,Global (synthetic),synthetic
+SK085,R,2025-07,1833,109968,0.016668,Global (synthetic),synthetic
+SK085,R,2025-08,1973,110302,0.017887,Global (synthetic),synthetic
+SK085,R,2025-09,1973,111963,0.017622,Global (synthetic),synthetic
+SK085,R,2025-10,1951,114376,0.017058,Global (synthetic),synthetic
+SK085,R,2025-11,2016,116767,0.017265,Global (synthetic),synthetic
+SK085,R,2025-12,2104,118377,0.017774,Global (synthetic),synthetic
+SK085,R,2026-01,2160,118662,0.018203,Global (synthetic),synthetic
+SK085,R,2026-02,2339,117434,0.019918,Global (synthetic),synthetic
+SK085,R,2026-03,2173,114914,0.01891,Global (synthetic),synthetic
+SK085,R,2026-04,2085,111663,0.018672,Global (synthetic),synthetic
+SK085,R,2026-05,2282,108437,0.021044,Global (synthetic),synthetic
+SK085,R,2026-06,1955,105977,0.018447,Global (synthetic),synthetic
+SK085,R,2026-07,1961,104815,0.018709,Global (synthetic),synthetic
+SK085,R,2026-08,1966,105132,0.0187,Global (synthetic),synthetic
+SK085,R,2026-09,2225,106716,0.02085,Global (synthetic),synthetic

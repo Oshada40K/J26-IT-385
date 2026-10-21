@@ -53,6 +53,16 @@
 .auth-legal { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 10px; font-weight: 500; color: #98a1b1; }.auth-legal > span { font-size: 9px; font-weight: 400; }
 .auth-error,.auth-success { padding: 12px 14px; border-radius: 10px; margin-bottom: 20px; font-size: 12px; overflow-wrap: anywhere; }.auth-error { background: #fff1f2; color: #b4233b; border: 1px solid #ffe0e5; }.auth-success { display: flex; align-items: flex-start; gap: 8px; background: #ecfdf5; color: #047857; }.auth-success svg { flex-shrink: 0; }
 .auth-status { min-height: 100svh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 24px; color: var(--color-text-secondary); }
+.auth-google { width: 100%; background: white; color: #293449; border: 1px solid #e2e5ee; border-radius: 10px; min-height: 49px; font-size: 12px; gap: 12px; }
+.auth-google:hover:not(:disabled) { background: #f6f4ff; border-color: #b9adff; }
+.auth-divider { display: flex; align-items: center; gap: 14px; margin: 21px 0; font-size: 10px; color: #8c96a9; }
+.auth-divider::before,.auth-divider::after { content: ''; flex: 1; height: 1px; background: #e9edf4; }
+.auth-callback-card { background: white; border: 1px solid var(--color-border); border-radius: 18px; padding: 36px; width: 100%; max-width: 480px; }
+.auth-account-profile { display: grid; line-height: 1.5; max-width: 180px; }
+.auth-account-profile strong { font-size: 11px; }.auth-account-profile small { font-size: 10px; color: var(--color-text-secondary); }
+.auth-account-profile > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.auth-account-actions .avatar { overflow: hidden; flex-shrink: 0; }.auth-account-actions .avatar img { width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 680px) { .auth-account-profile { max-width: 115px; }.auth-account-profile small { font-size: 9px; } }
 .auth-spinner { width: 16px; height: 16px; border: 2px solid #ffffff55; border-top-color: white; border-radius: 50%; animation: auth-spin .7s linear infinite; }
 .auth-account-actions { display: flex; gap: 10px; align-items: center; }.auth-account-actions button { min-height: 34px; padding: 6px 10px; font-size: 11px; }.auth-logout-error { color: var(--color-danger-text); font-size: 11px; max-width: 220px; }
 @keyframes auth-float { 50% { transform: translateY(-8px); } } @keyframes auth-spin { to { transform: rotate(360deg); } }

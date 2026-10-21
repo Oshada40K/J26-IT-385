@@ -1,0 +1,86 @@
+skill_id,skill_name,category,skill_level,is_hot_technology,esco_uri,onet_element_or_example
+SK001,Programming Fundamentals,Programming,Beginner,1,,Python; Oracle Java; Perl; C; C++
+SK002,Python,Programming,Beginner,1,,Python; PySpark; ESRI ArcGIS ArcPy
+SK003,Java,Programming,Beginner,1,,Oracle Java; Enterprise JavaBeans; Oracle JavaServer Pages JSP; Oracle JDBC; Oracle Java 2 Platform Enterprise Edition J2EE
+SK004,JavaScript,Programming,Beginner,1,,JavaScript; AJAX; jQuery; Ext JS; Backbone.js
+SK005,TypeScript,Programming,Intermediate,1,,TypeScript
+SK006,C#,Programming,Beginner,1,,C#; Microsoft Visual C# .NET
+SK007,C++,Programming,Intermediate,1,,C++
+SK008,Object-Oriented Programming,Programming,Beginner,1,,Oracle Java; Perl; Python; C++; C#
+SK009,Data Structures and Algorithms,Programming,Intermediate,1,,Oracle Java; Python; Perl; C++; C
+SK010,SQL,Data,Beginner,1,,Structured query language SQL; Microsoft SQL Server; MySQL; Oracle PL/SQL; Transact-SQL
+SK011,Database Design,Data,Intermediate,1,,Relational database management software; Quest Erwin Data Modeler; Data definition language DDL; Relational database management system software; MySQL
+SK012,PostgreSQL,Data,Intermediate,1,,PostgreSQL
+SK013,MongoDB,Data,Intermediate,1,,MongoDB; NoSQL
+SK014,Git,Tools,Beginner,1,,Git; GitHub; Apache Subversion SVN; Version control software; GitLab
+SK015,Linux,Infrastructure,Beginner,1,,Linux; UNIX; Red Hat Enterprise Linux; Ubuntu; Kali Linux
+SK016,Bash Scripting,Infrastructure,Intermediate,1,,Shell script; Bash; KornShell; Microsoft PowerShell; UNIX Shell
+SK017,HTML and CSS,Web,Beginner,1,,Hypertext markup language HTML; Extensible hypertext markup language XHTML; Cascading style sheets CSS; Bootstrap
+SK018,React,Web,Intermediate,1,,React; React Redux; React Native
+SK019,Angular,Web,Intermediate,1,,Google Angular
+SK020,Node.js,Web,Intermediate,1,,Node.js
+SK021,REST API Design,Web,Intermediate,1,,JavaScript Object Notation JSON; RESTful API; Microservices Architecture; GraphQL; Postman
+SK022,Spring Boot,Web,Advanced,1,,Spring Framework; Spring Boot
+SK023,.NET,Web,Advanced,1,,Microsoft .NET Framework; Microsoft ASP.NET; Microsoft ASP.NET Core MVC; Microsoft Visual C# .NET; Microsoft Visual Basic.NET
+SK024,Django,Web,Intermediate,1,,Django
+SK025,Web Accessibility,Web,Intermediate,1,,Adobe Dreamweaver; Google Sites; Facebook; Social media sites; Microsoft FrontPage
+SK026,Networking Fundamentals,Infrastructure,Beginner,1,,Wireshark; Nagios; Border Gateway Protocol BGP; Cisco IOS; SolarWinds
+SK027,Cloud Computing Fundamentals,Cloud,Beginner,1,,Citrix cloud computing software; Amazon Web Services AWS CloudFormation; Splunk Enterprise; IBM WebSphere; Google Cloud software
+SK028,AWS,Cloud,Intermediate,1,,Amazon Web Services AWS software; Amazon Redshift; Amazon Elastic Compute Cloud EC2; Amazon DynamoDB; Amazon Simple Storage Service S3
+SK029,Microsoft Azure,Cloud,Intermediate,1,,Microsoft Azure software; Microsoft Azure DevOps Services; Microsoft Azure Data Factory; Microsoft Azure Sentinel
+SK030,Docker,DevOps,Intermediate,1,,Docker
+SK031,Kubernetes,DevOps,Advanced,1,,Red Hat OpenShift; Kubernetes
+SK032,CI/CD,DevOps,Intermediate,1,,Atlassian Bamboo; Jenkins CI; Deployment software; Microsoft Team Foundation Server; GitLab
+SK033,Terraform,DevOps,Advanced,1,,Ansible software; Puppet; Chef; Amazon Web Services AWS CloudFormation; IBM Terraform
+SK034,Statistics,Data Science,Beginner,1,,SAS; R; IBM SPSS Statistics; StataCorp Stata; Minitab
+SK035,Linear Algebra,Data Science,Beginner,1,,The MathWorks MATLAB; NumPy
+SK036,Pandas,Data Science,Beginner,0,,pandas
+SK037,NumPy,Data Science,Beginner,0,,NumPy
+SK038,Data Visualization,Data Science,Beginner,1,,Tableau; Qlik Tech QlikView; IBM Cognos Impromptu; MicroStrategy; SAP Business Objects
+SK039,Power BI,Data Science,Intermediate,1,,Microsoft Power BI
+SK040,Tableau,Data Science,Intermediate,1,,Tableau
+SK041,Microsoft Excel,Data Science,Beginner,1,,Microsoft Excel
+SK042,Machine Learning,AI,Intermediate,1,,PyTorch; TensorFlow; Scikit-learn; Keras
+SK043,Deep Learning,AI,Advanced,1,,PyTorch; TensorFlow; Keras
+SK044,Natural Language Processing,AI,Advanced,0,,Hugging Face
+SK045,Generative AI and LLMs,AI,Advanced,0,,OpenAI ChatGPT; Hugging Face
+SK046,MLOps,AI,Advanced,0,,Kubeflow; Mlflow
+SK047,ETL and Data Pipelines,Data Engineering,Intermediate,1,,Apache Kafka; IBM InfoSphere DataStage; Microsoft SQL Server Integration Services SSIS; Apache Airflow; Apache Flume
+SK048,Apache Spark,Data Engineering,Advanced,1,,Apache Hadoop; Apache Spark; PySpark
+SK049,Data Warehousing,Data Engineering,Advanced,1,,Teradata Database; Amazon Redshift; Apache Hive; Snowflake; SAP NetWeaver BW
+SK050,Software Testing Fundamentals,Quality,Beginner,1,,System testing software; Hewlett Packard LoadRunner; JUnit; Selenium; Load testing software
+SK051,Test Automation,Quality,Intermediate,1,,Hewlett Packard LoadRunner; JUnit; Selenium; Regression testing software; Unit testing software
+SK052,Selenium,Quality,Intermediate,1,,Selenium
+SK053,Agile and Scrum,Management,Beginner,1,,Atlassian JIRA; Atlassian Confluence
+SK054,Jira,Management,Beginner,1,,Atlassian JIRA
+SK055,Project Management,Management,Intermediate,1,,Microsoft Project; Oracle Primavera Enterprise Project Portfolio Management; Atlassian Confluence; Oracle Primavera Systems; Microsoft Teams
+SK056,System Design,Architecture,Advanced,0,,Unified modeling language UML; IBM Rational Rose XDE; Microservices Architecture; IBM Rational Requirements Composer; Requirements analysis software
+SK057,Security Fundamentals,Security,Beginner,0,,NortonLifeLock cybersecurity software; McAfee; Firewall software; Encryption software; Access management software
+SK058,Network Security,Security,Intermediate,0,,Virtual private networking VPN software; Firewall software; Snort; Network intrusion prevention systems NIPS; Intrusion detection system IDS
+SK059,Cryptography,Security,Intermediate,0,,Encryption software
+SK060,Penetration Testing,Security,Advanced,0,,Network and system vulnerability assessment software; Tenable Nessus; Kali Linux; Metasploit; Portswigger BurP Suite
+SK061,SIEM and Security Monitoring,Security,Advanced,1,,Splunk Enterprise; IBM QRadar SIEM; Security incident management software
+SK062,Digital Forensics,Security,Advanced,0,,Computer forensic software; Guidance Software EnCase Forensic; Guidance Software EnCase Enterprise
+SK063,Blockchain Fundamentals,Blockchain,Intermediate,0,,Solidity
+SK064,Solidity,Blockchain,Advanced,0,,Solidity
+SK065,UI/UX Design,Design,Beginner,1,,Salesforce Visualforce; Graphical user interface GUI design software; Usability testing software; Grafana Labs Grafana Cloud; Figma
+SK066,Figma,Design,Beginner,1,,Figma
+SK067,Game Design,Design,Beginner,0,,Unity Technologies Unity; Unreal Technology Unreal Engine
+SK068,Unity,Design,Intermediate,0,,Unity Technologies Unity
+SK069,GIS Fundamentals,GIS,Beginner,1,,ESRI ArcGIS software; Geographic information system GIS software; Geographic information system GIS systems; ArcGIS Web AppBuilder; ESRI ArcGIS ArcPy
+SK070,ArcGIS,GIS,Intermediate,1,,ESRI ArcGIS software; ArcGIS Web AppBuilder; ESRI ArcGIS ArcPy; ESRI ArcGIS Geostatistical Analyst; ESRI ArcGIS Spatial Analyst
+SK071,Windows Server,Infrastructure,Intermediate,1,,Microsoft Windows Server
+SK072,Active Directory,Infrastructure,Intermediate,1,,Microsoft Active Directory; Active directory software
+SK073,Technical Troubleshooting,Support,Beginner,0,,Help desk software; LogMeIn GoToMeeting; LogMeIn GoToWebinar; Remote control software; Symantec pcAnywhere
+SK074,ITIL Service Management,Support,Intermediate,1,,ServiceNow; Help desk software
+SK075,Computer Architecture,Hardware,Beginner,0,,National Instruments LabVIEW; Verilog; Simulation program with integrated circuit emphasis SPICE; Embedded systems development software; Hierarchical simulation program with integrated circuit emphasis HSPICE
+SK076,Embedded C,Hardware,Advanced,0,,Embedded systems development software; The Mathworks Embedded Coder
+SK077,Verilog and FPGA,Hardware,Advanced,0,,Verilog; SystemVerilog
+SK078,HL7 and FHIR,Health IT,Intermediate,1,,Epic Systems; MEDITECH software; Healthcare common procedure coding system HCPCS; Bizmatics PrognoCIS EMR; ChartWare EMR
+SK079,Document Management Systems,Information Management,Beginner,1,,Microsoft SharePoint; Adobe Acrobat; Document management system software; Microsoft SharePoint Server; IBM Content Manager
+SK080,Research Methods,Research,Intermediate,0,,
+SK081,Technical Communication,Professional,Beginner,0,,
+SK082,C,Programming,Beginner,1,,C
+SK083,PHP,Web,Beginner,1,,PHP
+SK084,Kotlin,Programming,Intermediate,0,,Kotlin
+SK085,R,Data Science,Beginner,1,,R

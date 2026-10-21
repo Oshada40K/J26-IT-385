@@ -11,8 +11,10 @@ import LearningRoadmap from './pages/component04/LearningRoadmap.jsx'
 import ApiTest from './pages/ApiTest.jsx'
 import { AuthProvider, RequireAuth } from './auth/AuthContext.jsx'
 import AuthPage from './pages/auth/AuthPage.jsx'
+import AuthCallback from './pages/auth/AuthCallback.jsx'
 export default function App() {
   return <AuthProvider><Routes>
+    <Route path="/auth/callback" element={<AuthCallback />} />
     <Route path="/login" element={<AuthPage key="login" mode="login" />} />
     <Route path="/register" element={<AuthPage key="register" mode="register" />} />
     <Route path="/forgot-password" element={<AuthPage key="forgot" mode="forgot" />} />

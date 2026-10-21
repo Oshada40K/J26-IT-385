@@ -1,0 +1,96 @@
+skill_id,skill_name,prerequisite_skill_id,prerequisite_skill_name,relation_type,strength
+SK002,Python,SK001,Programming Fundamentals,requires,0.91
+SK003,Java,SK001,Programming Fundamentals,requires,0.78
+SK004,JavaScript,SK001,Programming Fundamentals,requires,0.94
+SK005,TypeScript,SK004,JavaScript,requires,0.88
+SK006,C#,SK001,Programming Fundamentals,requires,0.64
+SK007,C++,SK001,Programming Fundamentals,requires,0.99
+SK008,Object-Oriented Programming,SK001,Programming Fundamentals,requires,0.9
+SK009,Data Structures and Algorithms,SK001,Programming Fundamentals,requires,0.91
+SK011,Database Design,SK010,SQL,requires,0.65
+SK012,PostgreSQL,SK010,SQL,requires,0.78
+SK013,MongoDB,SK011,Database Design,requires,0.75
+SK016,Bash Scripting,SK015,Linux,requires,0.97
+SK018,React,SK004,JavaScript,requires,0.86
+SK018,React,SK017,HTML and CSS,requires,0.93
+SK019,Angular,SK005,TypeScript,requires,0.78
+SK019,Angular,SK017,HTML and CSS,requires,0.69
+SK020,Node.js,SK004,JavaScript,requires,0.82
+SK021,REST API Design,SK001,Programming Fundamentals,requires,0.63
+SK022,Spring Boot,SK003,Java,requires,0.93
+SK022,Spring Boot,SK008,Object-Oriented Programming,requires,0.85
+SK022,Spring Boot,SK021,REST API Design,requires,0.9
+SK023,.NET,SK006,C#,requires,0.74
+SK023,.NET,SK008,Object-Oriented Programming,requires,0.99
+SK024,Django,SK002,Python,requires,0.96
+SK024,Django,SK021,REST API Design,requires,0.91
+SK025,Web Accessibility,SK017,HTML and CSS,requires,0.68
+SK027,Cloud Computing Fundamentals,SK026,Networking Fundamentals,requires,0.79
+SK028,AWS,SK027,Cloud Computing Fundamentals,requires,0.62
+SK028,AWS,SK015,Linux,requires,0.66
+SK029,Microsoft Azure,SK027,Cloud Computing Fundamentals,requires,0.87
+SK030,Docker,SK015,Linux,requires,0.9
+SK031,Kubernetes,SK030,Docker,requires,0.99
+SK032,CI/CD,SK014,Git,requires,0.73
+SK032,CI/CD,SK030,Docker,requires,0.75
+SK033,Terraform,SK028,AWS,requires,0.79
+SK036,Pandas,SK002,Python,requires,0.68
+SK037,NumPy,SK002,Python,requires,0.65
+SK038,Data Visualization,SK034,Statistics,requires,0.79
+SK039,Power BI,SK038,Data Visualization,requires,0.69
+SK039,Power BI,SK010,SQL,requires,0.87
+SK040,Tableau,SK038,Data Visualization,requires,0.77
+SK042,Machine Learning,SK034,Statistics,requires,0.93
+SK042,Machine Learning,SK036,Pandas,requires,0.88
+SK042,Machine Learning,SK035,Linear Algebra,requires,0.72
+SK043,Deep Learning,SK042,Machine Learning,requires,0.93
+SK043,Deep Learning,SK037,NumPy,requires,0.92
+SK044,Natural Language Processing,SK043,Deep Learning,requires,0.75
+SK045,Generative AI and LLMs,SK044,Natural Language Processing,requires,0.72
+SK045,Generative AI and LLMs,SK002,Python,requires,0.87
+SK046,MLOps,SK042,Machine Learning,requires,0.66
+SK046,MLOps,SK030,Docker,requires,0.68
+SK047,ETL and Data Pipelines,SK010,SQL,requires,0.6
+SK047,ETL and Data Pipelines,SK002,Python,requires,0.91
+SK048,Apache Spark,SK047,ETL and Data Pipelines,requires,0.87
+SK049,Data Warehousing,SK011,Database Design,requires,0.88
+SK049,Data Warehousing,SK047,ETL and Data Pipelines,requires,0.91
+SK050,Software Testing Fundamentals,SK001,Programming Fundamentals,requires,0.78
+SK051,Test Automation,SK050,Software Testing Fundamentals,requires,0.83
+SK051,Test Automation,SK002,Python,requires,0.66
+SK052,Selenium,SK051,Test Automation,requires,0.65
+SK054,Jira,SK053,Agile and Scrum,requires,0.87
+SK055,Project Management,SK053,Agile and Scrum,requires,0.79
+SK056,System Design,SK009,Data Structures and Algorithms,requires,0.83
+SK056,System Design,SK011,Database Design,requires,0.91
+SK056,System Design,SK021,REST API Design,requires,0.85
+SK057,Security Fundamentals,SK026,Networking Fundamentals,requires,0.82
+SK058,Network Security,SK057,Security Fundamentals,requires,0.82
+SK059,Cryptography,SK057,Security Fundamentals,requires,0.72
+SK060,Penetration Testing,SK058,Network Security,requires,0.61
+SK060,Penetration Testing,SK015,Linux,requires,0.77
+SK061,SIEM and Security Monitoring,SK058,Network Security,requires,0.69
+SK062,Digital Forensics,SK057,Security Fundamentals,requires,0.76
+SK062,Digital Forensics,SK015,Linux,requires,0.94
+SK063,Blockchain Fundamentals,SK059,Cryptography,requires,0.69
+SK064,Solidity,SK063,Blockchain Fundamentals,requires,0.62
+SK064,Solidity,SK004,JavaScript,requires,0.71
+SK066,Figma,SK065,UI/UX Design,requires,0.72
+SK068,Unity,SK006,C#,requires,0.86
+SK068,Unity,SK067,Game Design,requires,0.82
+SK070,ArcGIS,SK069,GIS Fundamentals,requires,0.91
+SK071,Windows Server,SK026,Networking Fundamentals,requires,0.87
+SK072,Active Directory,SK071,Windows Server,requires,0.76
+SK074,ITIL Service Management,SK073,Technical Troubleshooting,requires,0.93
+SK076,Embedded C,SK007,C++,requires,0.67
+SK076,Embedded C,SK075,Computer Architecture,requires,0.61
+SK077,Verilog and FPGA,SK075,Computer Architecture,requires,0.64
+SK078,HL7 and FHIR,SK011,Database Design,requires,0.89
+SK080,Research Methods,SK034,Statistics,requires,0.78
+SK082,C,SK001,Programming Fundamentals,requires,0.85
+SK083,PHP,SK001,Programming Fundamentals,requires,0.8
+SK083,PHP,SK017,HTML and CSS,requires,0.6
+SK084,Kotlin,SK001,Programming Fundamentals,requires,0.85
+SK084,Kotlin,SK008,Object-Oriented Programming,requires,0.6
+SK085,R,SK001,Programming Fundamentals,requires,0.7
+SK076,Embedded C,SK082,C,requires,0.9

@@ -1,0 +1,61 @@
+Workplace Example,occupations,hot,in_demand,category
+Microsoft Office software,31,1,1,Office suite software
+Microsoft PowerPoint,28,1,1,Presentation software
+Microsoft Access,27,1,1,Data base user interface and query software
+Microsoft Visio,26,1,1,Process mapping and design software
+Extensible markup language XML,24,1,1,Enterprise application integration software
+Microsoft Windows,22,1,1,Operating system software
+Microsoft Visual Studio,21,1,1,Development environment software
+Microsoft Word,21,1,1,Word processing software
+Apple macOS,19,1,1,Operating system software
+Microsoft Outlook,18,1,1,Electronic mail software
+Oracle Database,18,1,1,Data base user interface and query software
+SAP software,18,1,1,Enterprise resource planning ERP software
+Google Analytics,15,1,1,Data mining software
+Adobe Photoshop,13,1,1,Graphics or photo imaging software
+Salesforce software,13,1,1,Customer relationship management CRM software
+Adobe Illustrator,11,1,1,Graphics or photo imaging software
+Adobe Creative Cloud software,10,1,1,Graphics or photo imaging software
+Autodesk AutoCAD,9,1,1,Computer aided design CAD software
+Apple iOS,7,1,1,Operating system software
+Autodesk Revit,7,1,1,Computer aided design CAD software
+Prometheus,3,1,1,Data base user interface and query software
+Vue.js,3,1,1,Web platform development software
+Drupal,18,0,1,Web platform development software
+Enterprise application integration EAI software,8,0,1,Enterprise application integration software
+Microsoft Internet Information Services (IIS),8,0,1,Transaction server software
+Web application software,7,0,1,Development environment software
+Web server software,6,0,1,Transaction server software
+Magellan Firmware,5,0,1,Operating system software
+Software development tools,5,0,1,Development environment software
+MITRE ATT&CK software,3,0,1,Program testing software
+Single sign-on SSO,3,0,1,Authentication server software
+JavaScript framework software,2,0,1,Web platform development software
+Qualys Cloud Platform,2,0,1,Cloud-based protection or security software
+Rust programming language,2,0,1,Development environment software
+Tool command language Tcl,2,0,1,Development environment software
+Appium,1,0,1,Program testing software
+Autodesk Maya,1,0,1,Graphics or photo imaging software
+Autodesk Navisworks,1,0,1,Computer aided design CAD software
+Microsoft Internet Information Services (IIS) Manager,1,0,1,Transaction server software
+Microsoft Playwright,1,0,1,Program testing software
+NavisWorks Jetstream,1,0,1,Computer aided design CAD software
+Operational Data Store ODS software,1,0,1,Data base user interface and query software
+PCI Express PCIe,1,0,1,Data base user interface and query software
+REST Assured,1,0,1,Program testing software
+RockWare ArcMap,1,0,1,Map creation software
+TestNG,1,0,1,Program testing software
+Vector database software,1,0,1,Data base management system software
+Very high speed integrated circuit VHSIC hardware description language VHDL simulation software,1,0,1,Analytical or scientific software
+Web application framework software,1,0,1,Web platform development software
+eMASS,1,0,1,Risk management data and analysis software
+Apache Tomcat,19,1,0,Web platform development software
+Eclipse IDE,18,1,0,Development environment software
+Microsoft Active Server Pages ASP,18,1,0,Web platform development software
+Microsoft Visual Basic for Applications VBA,16,1,0,Development environment software
+Apache Maven,15,1,0,Development environment software
+Oracle PeopleSoft,15,1,0,Enterprise resource planning ERP software
+Hibernate ORM,14,1,0,Object oriented data base management software
+Cisco Webex,12,1,0,Video conferencing software
+IBM DB2,11,1,0,Data base user interface and query software
+Google Docs,9,1,0,Word processing software
