@@ -101,6 +101,7 @@ class ExplanationResponse(BaseModel):
     score_meaning: str
     eligible_occupations: int
     explanation: str = Field(description="Exported SHAP-based explanation for the highest-ranked job only.")
+    friendly_explanation: list[str] = Field(description="Plain-language reasons for the highest-ranked job, derived from the same SHAP output.")
 
 class ErrorResponse(BaseModel):
     detail: str

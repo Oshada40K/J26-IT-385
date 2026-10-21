@@ -66,8 +66,9 @@ class CareerIntegrationTests(unittest.TestCase):
         self.assertEqual(set(top), {'candidate_id', 'onet_version', 'model_type', 'score_meaning', 'eligible_occupations', 'unrecognised_skills', 'jobs'})
         for compact, original in zip(top['jobs'], [raw['best_job'], *raw['alternative_jobs']]):
             self.assertEqual(compact, {'ranking': original['rank'], 'job': original['job_title'], 'score': original['match_score_0_to_100']})
-        self.assertEqual(set(explanation), {'candidate_id', 'onet_version', 'model_type', 'score_meaning', 'eligible_occupations', 'explanation'})
-        for key in set(explanation) - {'explanation'}:
+        self.assertEqual(set(explanation), {'candidate_id', 'onet_version', 'model_type', 'score_meaning', 'eligible_occupations', 'explanation', 'friendly_explanation'})
+        self.assertIn(raw['best_job']['job_title'], explanation['friendly_explanation'][0])
+        for key in set(explanation) - {'explanation', 'friendly_explanation'}:
             self.assertEqual(explanation[key], best[key])
         for job in [raw['best_job'], *raw['alternative_jobs']]:
             reconstructed = job['shap_baseline'] + sum(f['shap_score_points'] for f in job['all_shap_factors'])

@@ -112,14 +112,25 @@ function TopJobs({ data }) {
 function Explanation({ data }) {
   // The backend returns one paragraph; show each sentence as its own point.
   const sentences = data.explanation.split(/(?<=\.)\s+/).filter(Boolean)
+  const friendly = data.friendly_explanation || []
   return (
     <>
-      <div className="eyebrow">WHY THIS CAREER / SHAP EXPLAINABILITY</div>
+      <div className="eyebrow">WHY THIS CAREER</div>
       <ul className="explanation-list">
-        {sentences.map((s, i) => (
+        {(friendly.length ? friendly : sentences).map((s, i) => (
           <li key={i} style={{ marginBottom: 4 }}>{s}</li>
         ))}
       </ul>
+      {friendly.length > 0 && (
+        <details style={{ marginTop: 8 }}>
+          <summary className="eyebrow" style={{ cursor: 'pointer' }}>TECHNICAL DETAILS (SHAP)</summary>
+          <ul className="explanation-list">
+            {sentences.map((s, i) => (
+              <li key={i} style={{ marginBottom: 4 }}>{s}</li>
+            ))}
+          </ul>
+        </details>
+      )}
     </>
   )
 }
