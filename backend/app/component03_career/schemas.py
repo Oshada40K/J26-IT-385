@@ -1,4 +1,9 @@
-"""Response contracts preserve the exported score and SHAP fields."""
+"""Response contracts preserve the exported score and SHAP fields.
+
+Pydantic models that validate every input and output. Bad data (e.g. a skill level
+outside 0-5, or an empty candidate ID) is rejected with an error instead of producing
+a wrong recommendation. They also generate the API documentation at /docs.
+"""
 from typing import Annotated, Literal
 from pydantic import BaseModel, Field
 
@@ -94,6 +99,11 @@ class TopJobsResponse(BaseModel):
     unrecognised_skills: list[str]
     jobs: Annotated[list[TopJob], Field(min_length=5, max_length=5)]
 
+class ExplanationFactor(BaseModel):
+    label: str
+    points: float
+    effect: Literal["positive", "negative"]
+
 class ExplanationResponse(BaseModel):
     candidate_id: str
     onet_version: str
@@ -102,6 +112,11 @@ class ExplanationResponse(BaseModel):
     eligible_occupations: int
     explanation: str = Field(description="Exported SHAP-based explanation for the highest-ranked job only.")
     friendly_explanation: list[str] = Field(description="Plain-language reasons for the highest-ranked job, derived from the same SHAP output.")
+    key_reasons: list[str] = Field(description="The SHAP-derived reasons only, without the summary, matched-skill and learning sentences.")
+    match_score: float = Field(description="Displayed 0-100 match score of the highest-ranked job.")
+    matched_technologies: list[str] = Field(description="Candidate technologies used in the highest-ranked job, strongest first.")
+    skills_to_learn: list[str] = Field(description="In-demand technologies for the job that the candidate has not shown.")
+    factors: list[ExplanationFactor] = Field(description="Top SHAP contributions with plain-language labels.")
 
 class ErrorResponse(BaseModel):
     detail: str

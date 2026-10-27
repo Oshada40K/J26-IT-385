@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Icon from '../../components/Icon.jsx'
+import { ErrorState, PageLoader, ReloadButton, SkeletonRoadmap, SkeletonSkillGap } from '../../components/loading/index.js'
+import { cached, hasCached, peek, prime } from '../../api/resourceCache.js'
 import { deleteEvidence, getAnalysis, hasCvSession, listEvidence, recheckEvidence, submitEvidence } from './assessmentApi.js'
 import './RoadmapResults.css'
 
@@ -384,35 +386,41 @@ function Method({ result }) {
 }
 
 export default function RoadmapResults({ assessmentId, onEdit, onNew }) {
-  const [state, setState] = useState({ loading: true, error: '', result: null })
+  // The last analysis is shown at once on a revisit and refreshed in the background.
+  const cacheKey = `c04:analysis:${assessmentId}`
+  const [state, setState] = useState(() => ({ loading: true, error: '', result: peek(cacheKey) ?? null }))
+  const [fresh] = useState(() => !hasCached(cacheKey))
   const [reload, setReload] = useState(0)
   const [evidenceVersion, setEvidenceVersion] = useState(0)
 
   // Proof added or removed: use the regenerated roadmap from the response (or reload it).
   function handleEvidenceChange(response) {
-    if (response?.analysis?.assessment?.assessment_id === assessmentId) setState(s => ({ ...s, result: response.analysis }))
+    if (response?.analysis?.assessment?.assessment_id === assessmentId) { prime(cacheKey, response.analysis); setState(s => ({ ...s, result: response.analysis })) }
     else setReload(v => v + 1)
     setEvidenceVersion(v => v + 1)
   }
 
   useEffect(() => {
     let active = true
-    setState({ loading: true, error: '', result: null })
-    getAnalysis(assessmentId)
+    // Keep the current roadmap on screen while the same assessment refreshes.
+    setState(prev => ({ loading: true, error: '', result: prev.result?.assessment?.assessment_id === assessmentId ? prev.result : peek(cacheKey) ?? null }))
+    cached(cacheKey, () => getAnalysis(assessmentId))
       .then(result => { if (active) setState({ loading: false, error: '', result }) })
-      .catch(error => { if (active) setState({ loading: false, error: error.message, result: null }) })
+      .catch(error => { if (active) setState(prev => ({ loading: false, error: error.message, result: prev.result })) })
     return () => { active = false }
-  }, [assessmentId, reload])
+  }, [assessmentId, reload]) // eslint-disable-line react-hooks/exhaustive-deps -- cacheKey follows assessmentId
 
-  if (state.loading) return <div className="card" role="status">Analysing your skills and building your roadmap…</div>
-  if (state.error) return <div className="card c4r-error">
-    <p className="error-message" role="alert">{state.error}</p>
-    <div className="c4r-actions"><button type="button" onClick={() => setReload(v => v + 1)}>Try again</button><button type="button" className="button-secondary" onClick={onEdit}>Edit my assessment</button></div>
-  </div>
+  const refresh = () => setReload(v => v + 1)
+  if (state.loading && !state.result) return <PageLoader variant="roadmap" delay={0} label="Analysing your skills and building your roadmap…"
+    skeleton={<div className="sk-stack"><SkeletonSkillGap /><SkeletonRoadmap /></div>} />
+  if (state.error && !state.result) return <ErrorState title="We could not build your roadmap" message={state.error} onRetry={refresh}>
+    <button type="button" className="button-secondary" onClick={onEdit}>Edit my assessment</button>
+  </ErrorState>
 
   const { result } = state
   const { assessment } = result
-  return <div className="c4r">
+  return <div className={`c4r ${fresh ? 'fx-stagger' : ''}`} aria-busy={state.loading}>
+    {state.error && <ErrorState title="We could not refresh your roadmap" message={state.error} onRetry={refresh} />}
     <section className="card c4r-overview">
       <div>
         <p className="eyebrow">TARGET CAREER</p>
@@ -422,6 +430,7 @@ export default function RoadmapResults({ assessmentId, onEdit, onNew }) {
       <div className="c4r-actions">
         <button type="button" onClick={onEdit}>Update my assessment</button>
         <button type="button" className="button-secondary" onClick={onNew}>Choose another career</button>
+        <ReloadButton onClick={refresh} loading={state.loading} label="Refresh roadmap" />
       </div>
       {[...assessment.changes, ...result.warnings].map(message => <p key={message} className="c4r-notice" role="status">{message}</p>)}
       {result.inputs.cv_skills_not_in_catalogue.length > 0 && <p className="c4r-notice">CV skills not covered by the C4 skills catalogue (not used): {result.inputs.cv_skills_not_in_catalogue.join(', ')}.</p>}

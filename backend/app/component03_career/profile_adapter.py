@@ -1,4 +1,9 @@
-"""Adapt Component 1's completed CV assessment to the saved matcher contract."""
+"""Adapt Component 1's completed CV assessment to the saved matcher contract.
+
+Component 1 returns {"skills": [{name, level 1-5, confidence, evidence...}]}.
+The model expects {"technical_skills": [{name, level}]}. This converts one into the other.
+Only name + level are used as model input; confidence/evidence are kept in Component 1.
+"""
 from .schemas import TechnicalAssessment, TechnicalProfile
 
 

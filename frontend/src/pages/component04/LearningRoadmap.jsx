@@ -1,26 +1,35 @@
 // Owner: Dewmi - Component 04 page: Career Readiness Assessment form and explainable results.
 import { useEffect, useState } from 'react'
 import Icon from '../../components/Icon.jsx'
+import { PageLoader, SkeletonRoadmap, SkeletonSkillGap } from '../../components/loading/index.js'
 import CareerReadinessForm from './CareerReadinessForm.jsx'
 import RoadmapResults from './RoadmapResults.jsx'
 import { findLatestAssessment, getAssessment } from './assessmentApi.js'
+import { cached, candidateKey, hasCached, invalidate, peek, prime } from '../../api/resourceCache.js'
 import './CareerReadinessForm.css'
 
 export default function LearningRoadmap() {
+  // The latest assessment only changes when one is submitted here (cached below) or after a new
+  // CV upload (which clears the cache), so a revisit opens straight on the last view.
+  const latestKey = candidateKey('c04:latest')
   // view: loading | form | results
-  const [view, setView] = useState('loading')
-  const [record, setRecord] = useState(null)
+  const [view, setView] = useState(() => hasCached(latestKey) ? (peek(latestKey) ? 'results' : 'form') : 'loading')
+  const [record, setRecord] = useState(() => peek(latestKey) ?? null)
 
   useEffect(() => {
+    if (hasCached(latestKey)) return undefined
     let active = true
-    findLatestAssessment()
+    cached(latestKey, findLatestAssessment)
       .then(latest => { if (active) { setRecord(latest); setView(latest ? 'results' : 'form') } })
       .catch(() => { if (active) setView('form') })
     return () => { active = false }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSubmitted(saved) {
-    setRecord(await getAssessment(saved.assessment_id).catch(() => ({ ...saved, form: record?.form })))
+    const next = await getAssessment(saved.assessment_id).catch(() => ({ ...saved, form: record?.form }))
+    invalidate('c04:analysis:')
+    prime(latestKey, next)
+    setRecord(next)
     setView('results')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -42,7 +51,9 @@ export default function LearningRoadmap() {
       </div>
       <span className="component-icon"><Icon name="roadmap" size={28} /></span>
     </div>
-    {view === 'loading' && <div className="card" role="status">Loading…</div>}
+    {view === 'loading' && <PageLoader variant="roadmap" label="Loading your latest assessment…"
+      messages={['Generating Your Learning Roadmap…', 'Loading your latest assessment…', 'Checking your CV evidence…']}
+      skeleton={<div className="sk-stack"><SkeletonSkillGap rows={3} /><SkeletonRoadmap /></div>} />}
     {view === 'form' && <CareerReadinessForm key={record?.assessment_id || 'new'} initialRecord={record}
       onSubmitted={handleSubmitted} onCancel={record ? () => show('results') : undefined} />}
     {view === 'results' && record && <RoadmapResults assessmentId={record.assessment_id}

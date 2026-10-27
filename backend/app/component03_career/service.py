@@ -1,4 +1,9 @@
-"""Fetch component profiles over HTTP and run the unchanged exported matcher."""
+"""Fetch component profiles over HTTP and run the unchanged exported matcher.
+
+Flow for every career API request:
+  Component 1 (CV technical skills) + Component 2 (soft skills)
+      -> validate & adapt -> XGBoost matcher (inference.py) -> ranked jobs + SHAP.
+"""
 import asyncio
 import logging
 import math
@@ -27,6 +32,9 @@ def _load_matcher():
     model.set_params(device="cpu", n_jobs=1)
 
 
+# Runs once when the server starts: load the model (so requests are fast) and
+# create one shared HTTP client for calling the Component 1 and 2 APIs.
+# If the model files are missing, startup fails instead of serving fake results.
 @asynccontextmanager
 async def career_lifespan(app):
     load_dotenv(Path(__file__).resolve().parents[2] / ".env", override=False)
@@ -41,6 +49,8 @@ async def career_lifespan(app):
         yield
 
 
+# Call another component's API. Errors become clear HTTP codes:
+# 504 = upstream timed out, 502 = upstream unreachable / bad response.
 async def _fetch(client, path, headers=None):
     try:
         response = await client.get(path, headers=headers)
@@ -66,6 +76,11 @@ def _predict(soft_input, technical_input):
     return result
 
 
+# Main entry point used by all three career APIs:
+# 1. Pick the profile URLs (real candidate if candidate_id is given, else sample data).
+# 2. Fetch Component 1 and Component 2 profiles IN PARALLEL, forwarding the user's login token.
+# 3. Validate them and make sure both belong to the same candidate.
+# 4. Run the model in a background thread so the server stays responsive.
 async def recommend(request: Request, candidate_id: str | None = None):
     technical_path = os.getenv('CAREER_TECHNICAL_PROFILE_PATH',
         '/api/component01/skills/{candidate_id}/details' if candidate_id else '/api/skill/profile')
