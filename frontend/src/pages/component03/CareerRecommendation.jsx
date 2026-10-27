@@ -8,6 +8,8 @@ import { Link, useLocation } from 'react-router-dom'
 import { API_BASE_URL } from '../../api/client.js'
 import { savedSession } from '../component01/skillApi.js'
 import { ENDPOINTS, describeCareerError, getCareerResult } from './careerApi.js'
+import { PageLoader, ReloadButton, SkeletonCareer } from '../../components/loading/index.js'
+import { cached, candidateKey, hasCached, peek, prime } from '../../api/resourceCache.js'
 import './CareerRecommendation.css'
 
 function ScoreRing({ score }) {
@@ -147,23 +149,27 @@ function ModelCard({ data }) {
 }
 
 const emptyState = { loading: false, data: null, error: null }
+const cacheKey = (key) => candidateKey(`c03:${key}`)
 
 export default function CareerRecommendation() {
   const location = useLocation()
-  const [results, setResults] = useState(() => {
-    const prediction = location.state
-    return prediction?.candidateId === savedSession()?.candidate_id && prediction?.careerResults
-      ? prediction.careerResults
-      : { bestJob: emptyState, topJobs: emptyState, explanation: emptyState }
+  const [prediction] = useState(() => {
+    const state = location.state
+    return state?.candidateId === savedSession()?.candidate_id && state?.careerResults ? state.careerResults : null
   })
+  const [fresh] = useState(() => !Object.keys(ENDPOINTS).some((key) => hasCached(cacheKey(key))))
+  // Results passed from the CV upload, else the last results seen on this page, else nothing yet.
+  const [results, setResults] = useState(() => prediction || Object.fromEntries(Object.keys(ENDPOINTS).map((key) =>
+    [key, hasCached(cacheKey(key)) ? { ...emptyState, data: peek(cacheKey(key)) } : emptyState])))
 
   async function load(key) {
     setResults((prev) => ({ ...prev, [key]: { ...prev[key], loading: true, error: null } }))
     try {
-      const data = await getCareerResult(key, API_BASE_URL, savedSession())
+      const data = await cached(cacheKey(key), () => getCareerResult(key, API_BASE_URL, savedSession()))
       setResults((prev) => ({ ...prev, [key]: { loading: false, data, error: null } }))
     } catch (err) {
-      setResults((prev) => ({ ...prev, [key]: { loading: false, data: null, error: describeCareerError(err, API_BASE_URL) } }))
+      // Keep results already on screen; the error banner offers a retry.
+      setResults((prev) => ({ ...prev, [key]: { loading: false, data: prev[key].data, error: describeCareerError(err, API_BASE_URL) } }))
     }
   }
 
@@ -171,10 +177,13 @@ export default function CareerRecommendation() {
   const states = Object.values(results)
   const anyLoading = states.some((r) => r.loading)
   const errors = [...new Set(states.map((r) => r.error).filter(Boolean))]
-  const nothingYet = states.every((r) => !r.data && !r.error && !r.loading)
 
-  // Load automatically unless results were passed from the CV upload.
-  useEffect(() => { if (nothingYet) loadAll() }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  // Load automatically unless results were passed from the CV upload (those are cached for later
+  // visits). Cached results stay on screen while they are refreshed in the background.
+  useEffect(() => {
+    if (prediction) Object.entries(prediction).forEach(([key, r]) => { if (r.data) prime(cacheKey(key), r.data) })
+    else loadAll()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const best = results.bestJob.data
   const top = results.topJobs.data
@@ -193,60 +202,55 @@ export default function CareerRecommendation() {
             {isSample ? 'Sample profile: upload your CV in Skill assessment to personalise' : '● Based on your CV skills and personality profile'}
           </span>
         </div>
-        <button className="button-secondary c3-refresh" onClick={loadAll} disabled={anyLoading}>
-          {anyLoading ? 'Analysing…' : '↻ Refresh'}
-        </button>
+        <ReloadButton className="c3-refresh" onClick={loadAll} loading={anyLoading} loadingLabel="Analysing…" />
       </div>
 
       {errors.map((error) => (
-        <div className="c3-error" role="alert" key={error}>
+        <div className="c3-error fx-reveal" role="alert" key={error}>
           <span>{error}</span>
-          <button className="button-secondary" onClick={loadAll} disabled={anyLoading}>Try again</button>
+          <ReloadButton onClick={loadAll} loading={anyLoading} label="Try again" loadingLabel="Retrying…" />
         </div>
       ))}
 
-      {anyLoading && !metadata && (
-        <>
-          <div className="c3-skeleton" style={{ height: 220 }} />
-          <div className="c3-grid"><div className="c3-skeleton" style={{ height: 260, margin: 0 }} /><div className="c3-skeleton" style={{ height: 260, margin: 0 }} /></div>
-        </>
-      )}
+      {anyLoading && !metadata && <PageLoader variant="career" label="Finding your best career matches…" skeleton={<SkeletonCareer />} />}
 
-      {(best || top) && (
-        <Hero
-          title={best?.best_job || top.jobs[0].job}
-          score={why?.match_score ?? top?.jobs[0].score}
-          occupations={metadata.eligible_occupations}
-          matchedCount={why?.matched_technologies.length || 0}
-        />
-      )}
+      <div className={fresh ? 'fx-stagger' : undefined}>
+        {(best || top) && (
+          <Hero
+            title={best?.best_job || top.jobs[0].job}
+            score={why?.match_score ?? top?.jobs[0].score}
+            occupations={metadata.eligible_occupations}
+            matchedCount={why?.matched_technologies.length || 0}
+          />
+        )}
 
-      {why && (
-        <>
-          <div className="c3-grid">
-            <WhyCard reasons={why.key_reasons} />
-            <FactorChart factors={why.factors} shapText={why.explanation.split(/(?<=\.)\s+/).filter(Boolean)} />
-          </div>
-          <div className="c3-grid">
-            <SkillsCard title="Your matching skills" subtitle="Skills from your CV that this job uses" skills={why.matched_technologies} kind="have" />
-            <SkillsCard title="Skills to learn next" subtitle="In-demand tools for this job that your CV doesn't show yet" skills={why.skills_to_learn} kind="learn">
-              {why.skills_to_learn.length > 0 && (
-                <p className="c3-note">Turn these into a step-by-step plan in your <Link to="/component04">Learning roadmap →</Link></p>
-              )}
-            </SkillsCard>
-          </div>
-        </>
-      )}
+        {why && (
+          <>
+            <div className="c3-grid">
+              <WhyCard reasons={why.key_reasons} />
+              <FactorChart factors={why.factors} shapText={why.explanation.split(/(?<=\.)\s+/).filter(Boolean)} />
+            </div>
+            <div className="c3-grid">
+              <SkillsCard title="Your matching skills" subtitle="Skills from your CV that this job uses" skills={why.matched_technologies} kind="have" />
+              <SkillsCard title="Skills to learn next" subtitle="In-demand tools for this job that your CV doesn't show yet" skills={why.skills_to_learn} kind="learn">
+                {why.skills_to_learn.length > 0 && (
+                  <p className="c3-note">Turn these into a step-by-step plan in your <Link to="/component04">Learning roadmap →</Link></p>
+                )}
+              </SkillsCard>
+            </div>
+          </>
+        )}
 
-      {top && <TopJobs jobs={top.jobs} />}
+        {top && <TopJobs jobs={top.jobs} />}
 
-      {best?.unrecognised_skills?.length > 0 && (
-        <p className="c3-note" style={{ marginTop: -8, marginBottom: 20 }}>
-          Not used in matching (not in the O*NET skill catalogue): {best.unrecognised_skills.join(', ')}
-        </p>
-      )}
+        {best?.unrecognised_skills?.length > 0 && (
+          <p className="c3-note" style={{ marginTop: -8, marginBottom: 20 }}>
+            Not used in matching (not in the O*NET skill catalogue): {best.unrecognised_skills.join(', ')}
+          </p>
+        )}
 
-      {metadata && <ModelCard data={metadata} />}
+        {metadata && <ModelCard data={metadata} />}
+      </div>
     </div>
   )
 }

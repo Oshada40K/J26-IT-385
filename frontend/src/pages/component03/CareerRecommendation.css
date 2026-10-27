@@ -73,10 +73,8 @@
 .c3-details ul { margin: 10px 0 0; padding-left: 18px; color: var(--color-text-secondary); }
 
 .c3-error { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 18px; margin-bottom: 20px; border-radius: var(--radius-md); background: var(--color-danger-soft); color: var(--color-danger-text); border: 1px solid #FECACA; }
-.c3-skeleton { border-radius: var(--radius-lg); background: linear-gradient(90deg, var(--color-border) 25%, var(--color-background) 50%, var(--color-border) 75%); background-size: 200% 100%; animation: c3-shimmer 1.2s infinite; margin-bottom: 20px; }
 
 @keyframes c3-grow { from { transform: scaleX(0); } }
-@keyframes c3-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
 @media (max-width: 1000px) { .c3-grid { grid-template-columns: 1fr; } .c3-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) {
