@@ -11,3 +11,11 @@ class EvidenceError(ValueError):
     def __init__(self, message, status_code=400):
         super().__init__(message)
         self.status_code = status_code
+
+
+class LearningError(ValueError):
+    """A learning-tutor request that cannot be served; the message is shown to the student as-is."""
+
+    def __init__(self, message, status_code=400):
+        super().__init__(message)
+        self.status_code = status_code

@@ -131,3 +131,35 @@ export async function loadCareerMatches() {
     return []
   }
 }
+
+// ---- Adaptive learning tutor (needs the CV session: progress is private to the student) ----
+const LEARN = id => `/learning/${encodeURIComponent(id)}`
+
+export function getLearningPlan(assessmentId) {
+  return request(LEARN(assessmentId), { headers: authHeaders() }, ROOT)
+}
+
+// kind "lesson" (topicId required, optional mode) or "diagnostic" (optional scope "test_out" + topicId).
+// Questions arrive without answers; answers and explanations come back only after an attempt.
+export function openActivity(assessmentId, { skillId, topicId, kind = 'lesson', mode, scope }) {
+  const params = new URLSearchParams({ skill_id: skillId, kind })
+  if (topicId) params.set('topic_id', topicId)
+  if (mode) params.set('mode', mode)
+  if (scope) params.set('scope', scope)
+  return request(`${LEARN(assessmentId)}/activity?${params}`, { headers: authHeaders() }, ROOT)
+}
+
+// Returns graded feedback, the adaptive decision, the next activity, the new plan and the regenerated "analysis".
+export function submitLearningAttempt(assessmentId, body) {
+  return request(`${LEARN(assessmentId)}/attempts`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify(body),
+  }, ROOT)
+}
+
+export function getLearningHistory(assessmentId) {
+  return request(`${LEARN(assessmentId)}/history`, { headers: authHeaders() }, ROOT)
+}
+
+export function generateLessons(assessmentId, skillId) {
+  return request(`${LEARN(assessmentId)}/generate/${encodeURIComponent(skillId)}`, { method: 'POST', headers: authHeaders() }, ROOT)
+}

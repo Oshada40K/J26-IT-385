@@ -356,6 +356,32 @@ def evidence_summary(candidate_id):
     return out
 
 
+TUTOR_SOURCE = "C4 lessons and quizzes"
+
+
+def merge_tutor_evidence(evidence, candidate_id):
+    """Adaptive tutor results as low-strength C4 evidence: the level demonstrated by mastered lesson stages
+    (tutor.demonstrated_level, already capped at C4_TUTOR_RULES tutor_level_cap, default 3/5). It is used only when
+    it is higher than the level from the CV or other proof, and it never changes the status of existing proof."""
+    from .tutor import rules                                 # local import: tutor.py has no service dependency
+    cap = rules()["tutor_level_cap"]
+    for sid, row in repository.skill_learning(candidate_id).items():
+        level = min(float(row.get("demonstrated_level") or 0), cap)
+        if level <= 0:
+            continue
+        entry = evidence.get(sid)
+        if entry is None:
+            evidence[sid] = {"status": "provisional", "level": level, "source": TUTOR_SOURCE,
+                             "detail": f"Demonstrated in C4 lesson quizzes up to level {level:g}/5 (practice evidence, not verified).",
+                             "evidence_id": None}
+        elif entry.get("level") is None or level > entry["level"]:
+            entry = dict(entry, level=level, source=TUTOR_SOURCE)
+            if EVIDENCE_STATUS_ORDER.get(entry.get("status"), 0) < EVIDENCE_STATUS_ORDER["provisional"]:
+                entry["status"] = "provisional"
+            evidence[sid] = entry
+    return evidence
+
+
 def regenerate(candidate_id):
     """Regenerated analysis for the candidate's latest assessment (None if there is none yet)."""
     record = repository.latest_for(candidate_id)
@@ -404,7 +430,7 @@ def analysis(record):
     Evidence is optional: with none uploaded the roadmap is built from CV evidence + the form."""
     c1 = c1_profile(record["candidate_id"])
     sync_evidence(record["candidate_id"], c1)        # fallback until Component 01 calls on_c1_assessment_updated
-    evidence = evidence_summary(record["candidate_id"])
+    evidence = merge_tutor_evidence(evidence_summary(record["candidate_id"]), record["candidate_id"])
     out = engine().analyze_assessment(c1, record["form"], evidence)
     previous = repository.get(record["previous_assessment_id"]) if record.get("previous_assessment_id") else None
     changes = []

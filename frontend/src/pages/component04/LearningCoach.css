@@ -1,0 +1,91 @@
+/* Owner: Dewmi - Component 04: adaptive learning tutor. Uses the same tokens as RoadmapResults.css. */
+.c4l h3,.c4l h4 { margin: 0; }
+.c4l-next { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin: 12px 0 16px;
+  padding: 16px 18px; border-radius: var(--radius-sm); background: var(--component-soft); border: 1px solid var(--color-border); }
+.c4l-next .eyebrow { margin-bottom: 2px; }
+.c4l-next p.muted { margin: 4px 0 0; font-size: 12px; }
+.c4l-skills { display: grid; gap: 8px; }
+.c4l-skill { border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 10px 14px; background: var(--color-surface); }
+.c4l-skill.status-active,.c4l-skill.status-revision { border-color: var(--component-accent); }
+.c4l-skill summary { display: grid; grid-template-columns: minmax(0, 1fr) 120px auto; gap: 12px; align-items: center; cursor: pointer; list-style: none; }
+.c4l-skill summary::-webkit-details-marker { display: none; }
+.c4l-skill-name { display: grid; min-width: 0; }
+.c4l-skill-name small { color: var(--color-text-secondary); font-size: 11px; }
+.c4l-progress { height: 6px; border-radius: 999px; background: var(--color-background); overflow: hidden; }
+.c4l-progress span { display: block; height: 100%; background: var(--component-accent); transition: width 400ms ease; }
+.c4l-skill-status { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--color-background); white-space: nowrap; }
+.c4l-skill-status.status-active { background: var(--component-soft); color: var(--component-accent); }
+.c4l-skill-status.status-revision { background: var(--color-gold-soft); color: #92400E; }
+.c4l-skill-status.status-completed { background: var(--color-success-soft); color: var(--color-success-text); }
+.c4l-skill > p,.c4l-skill > button { margin: 10px 0 0; font-size: 12px; }
+.c4l-note { padding: 8px 10px; border-radius: var(--radius-sm); background: var(--color-gold-soft); font-size: 12px; }
+.c4l-link { background: none !important; border: 0; padding: 0 0 0 6px; color: var(--component-accent); font-weight: 600; font-size: 12px; cursor: pointer; text-decoration: underline; }
+.c4l-topics { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 4px; }
+.c4l-topics li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 4px 14px; align-items: center; padding: 6px 10px;
+  border-radius: var(--radius-sm); background: var(--color-background); font-size: 12px; }
+.c4l-topics li > span:first-child { display: grid; }
+.c4l-topics small { color: var(--color-text-secondary); font-size: 11px; }
+.c4l-topic-state { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); }
+.c4l-topics li.is-mastered .c4l-topic-state { color: var(--color-success-text); }
+.c4l-topics li.is-revision .c4l-topic-state { color: var(--color-danger-text); }
+.c4l-topics li.is-learning .c4l-topic-state { color: var(--component-accent); }
+.c4l-topics li.is-evidence { opacity: .75; }
+.c4l-topic-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.c4l-topic-actions .c4l-link { padding: 0; }
+.c4l-events { margin: 0; padding-left: 18px; font-size: 12px; display: grid; gap: 6px; }
+
+/* activity */
+.c4l-activity { display: grid; gap: 14px; margin-top: 12px; }
+.c4l-activity-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.c4r-tag.is-ai { border-color: var(--color-ai, var(--component-accent)); color: var(--color-ai, var(--component-accent)); }
+.c4l-lesson { display: grid; gap: 12px; }
+.c4l-part { padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-surface); font-size: 13px; }
+.c4l-part h4 { font-size: 13px; margin-bottom: 6px; }
+.c4l-part p,.c4l-part ul,.c4l-part ol { margin: 4px 0 0; }
+.c4l-part ul,.c4l-part ol { padding-left: 20px; display: grid; gap: 3px; }
+.c4l-part-objective,.c4l-part-main_idea { background: var(--component-soft); }
+.c4l-part-focus,.c4l-part-mistakes { border-left: 3px solid var(--color-gold, #D97706); }
+.c4l-part-challenge { border-left: 3px solid var(--component-accent); }
+.c4l-code { margin: 6px 0; padding: 12px; border-radius: var(--radius-sm); background: var(--color-background); overflow-x: auto;
+  font: 12px/1.5 var(--font-mono); white-space: pre; }
+.c4l-visual { margin: 6px 0 0; }
+.c4l-visual table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.c4l-visual th,.c4l-visual td { padding: 6px 8px; border-bottom: 1px solid var(--color-border); text-align: left; }
+.c4l-visual figcaption { margin-top: 6px; font-size: 11px; color: var(--color-text-secondary); }
+.c4l-rubric { margin: 8px 0 0; border: 0; padding: 0; display: grid; gap: 4px; }
+.c4l-rubric legend { font-weight: 600; font-size: 12px; margin-bottom: 4px; }
+.c4l-rubric label,.c4l-question label { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; cursor: pointer; }
+.c4l-rubric input,.c4l-question input { margin-top: 3px; flex-shrink: 0; }
+.c4l-quiz-title { margin-top: 6px; }
+.c4l-quiz { display: grid; gap: 10px; }
+.c4l-question { margin: 0; padding: 12px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); display: grid; gap: 6px; }
+.c4l-prompt { font-weight: 600; font-size: 13px; }
+.c4l-prompt span { color: var(--component-accent); }
+.c4l-prompt .c4l-code,.c4l-results .c4l-code { font-weight: 400; margin: 6px 0 2px; }
+.c4l-question textarea { width: 100%; font: inherit; font-size: 13px; padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--color-border); }
+.c4l-quiz-actions { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
+
+/* feedback */
+.c4l-feedback { display: grid; gap: 12px; }
+.c4l-decision { display: flex; gap: 14px; align-items: center; padding: 14px 16px; border-radius: var(--radius-sm); border: 1px solid var(--color-border); }
+.c4l-decision p { margin: 4px 0 0; font-size: 13px; }
+.c4l-decision.is-good { background: var(--color-success-soft); }
+.c4l-decision.is-mid { background: var(--color-gold-soft); }
+.c4l-decision.is-low { background: var(--color-danger-soft); }
+.c4l-score { font: 600 28px var(--font-heading); min-width: 64px; text-align: center; }
+.c4l-update { display: flex; gap: 8px; align-items: flex-start; margin: 0; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--color-background); font-size: 12px; }
+.c4l-update.is-changed { background: var(--component-soft); font-weight: 600; }
+.c4l-update svg { flex-shrink: 0; margin-top: 2px; color: var(--component-accent); }
+.c4l-results { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.c4l-results li { padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--color-border); font-size: 12px; }
+.c4l-results li.is-correct { border-left: 3px solid var(--color-success-text); }
+.c4l-results li.is-wrong { border-left: 3px solid var(--color-danger-text); }
+.c4l-results p { margin: 3px 0 0; }
+.c4l-result-head { display: flex; gap: 6px; align-items: flex-start; font-weight: 600; font-size: 13px; }
+
+@media (max-width: 640px) {
+  .c4l-topics li { grid-template-columns: minmax(0, 1fr) auto; }
+  .c4l-topic-actions { grid-column: 1 / -1; justify-content: flex-start; }
+  .c4l-skill summary { grid-template-columns: minmax(0, 1fr) auto; }
+  .c4l-progress { grid-column: 1 / -1; grid-row: 2; }
+}

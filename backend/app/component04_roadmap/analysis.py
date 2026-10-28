@@ -18,6 +18,7 @@ trained models, and adds the student-facing explanation layer:
 5. Career readiness score          - trained linear model C, shown term by term (intercept + coef x value).
 """
 import math
+import os
 import threading
 import warnings
 from contextlib import contextmanager
@@ -31,7 +32,7 @@ from .c4_engine import (A_FEATURES, C_FEATURES, FIVE, GAP_TOLERANCE, LEVEL_MAX, 
 from .errors import ModelsUnavailable
 
 INPUTS_DIR = Path(__file__).with_name("inputs")
-MODELS_DIR = Path(__file__).with_name("trained_models")
+MODELS_DIR = Path(os.getenv("C4_MODELS_DIR") or Path(__file__).with_name("trained_models"))   # override for tests only
 REQUIRED_MODEL_FILES = ("c4_config.json", "A_gap.joblib", "C_readiness.joblib")   # severity now uses CV evidence only
 SCHEMA_VERSION = "c4-analysis-1.0"
 PREREQ_TARGET = 0.5            # c4_engine adds a prerequisite to the roadmap when CV proficiency < 0.5
@@ -632,6 +633,11 @@ class C4Analyzer(C4Engine):
                                    "from the required level (2/5 or less Beginner, 3/5 Intermediate, 4/5 or more Advanced). "
                                    "Self-ratings never raise your starting stage; a low self-rating with level 2/5 or more adds a "
                                    "short refresher.",
+                learning_coach="The learning coach teaches the roadmap skills that have lessons. Quiz scores of 80% or more "
+                               "master a topic; 50-79% gives targeted practice; lower scores re-teach the topic step by step, and "
+                               "repeated low scores go back to the prerequisite. Fully mastered stages count as C4 evidence up to "
+                               "level 3/5 (source 'C4 lessons and quizzes'), only when higher than your CV or proof, and the "
+                               "roadmap and readiness are recalculated with the same method and weights.",
                 learner_profile=PROFILE_RULE + " The profile orders resource types after your own learning methods, sets "
                                                "project difficulty and gives a pace note.",
                 data_sources=["O*NET 31.0 occupation requirements, Hot Technology and In Demand flags (occupation_skill_requirements.csv)",

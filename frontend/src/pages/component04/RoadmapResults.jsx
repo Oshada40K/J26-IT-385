@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import Icon from '../../components/Icon.jsx'
 import { ErrorState, PageLoader, ReloadButton, SkeletonRoadmap, SkeletonSkillGap } from '../../components/loading/index.js'
 import { cached, hasCached, peek, prime } from '../../api/resourceCache.js'
+import LearningCoach from './LearningCoach.jsx'
 import { deleteEvidence, getAnalysis, hasCvSession, listEvidence, recheckEvidence, submitEvidence } from './assessmentApi.js'
 import './RoadmapResults.css'
 
@@ -406,6 +407,7 @@ function Method({ result }) {
     <h3>Resources and roadmap</h3><p>{method.resource_ranking}</p><p>{method.roadmap_ordering}</p>
     {method.adaptive_placement && <><h3>Adaptive placement</h3><p>{method.adaptive_placement}</p></>}
     {method.learner_profile && <><h3>Learner profile</h3><p>{method.learner_profile}</p></>}
+    {method.learning_coach && <><h3>Learning coach</h3><p>{method.learning_coach}</p></>}
     <h3>Data sources</h3><ul>{method.data_sources.map(s => <li key={s}>{s}</li>)}</ul>
     <h3>Limitations</h3><ul>{method.limitations.map(s => <li key={s}>{s}</li>)}</ul>
     <p className="muted">Models: {model.gap_model} (skill gap), {model.readiness_model} (readiness) · C4 {model.versions?.c4} · trained {model.versions?.trained_at} on {model.versions?.training_data} · O*NET {model.versions?.onet}</p>
@@ -467,6 +469,8 @@ export default function RoadmapResults({ assessmentId, onEdit, onNew }) {
     <EvidencePanel version={evidenceVersion} onEvidenceChange={handleEvidenceChange} />
     <Priorities priorities={result.priorities} method={result.method} />
     <Roadmap roadmap={result.roadmap} />
+        <LearningCoach assessmentId={assessmentId}
+      onAnalysis={analysis => handleEvidenceChange({ analysis })} />
     {assessment.history.length > 1 && <section className="card c4r-section" aria-labelledby="c4r-history">
       <h2 id="c4r-history">Assessment history</h2>
       <div className="table-scroll"><table className="c4r-history">

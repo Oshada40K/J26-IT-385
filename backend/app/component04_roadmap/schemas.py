@@ -184,3 +184,23 @@ class EvidenceDeleted(BaseModel):
     deleted: bool
     evidence_id: str
     analysis: dict | None = None
+
+
+class LearningAttempt(BaseModel):
+    """POST /api/roadmap/learning/{assessment_id}/attempts - one quiz, diagnostic or practical self-check.
+    answers: {question_id: option index | [indexes] | text}; for a practical self-check {"rubric": [criterion indexes]}."""
+    skill_id: str = Field(min_length=1, max_length=20)
+    kind: Literal["quiz", "diagnostic", "practical"]
+    topic_id: str | None = Field(default=None, max_length=40)
+    scope: Literal["checkpoint", "claim", "test_out"] | None = None
+    answers: dict = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def _check(self):
+        if self.kind in ("quiz", "practical") and not self.topic_id:
+            raise ValueError("topic_id is required for a quiz or a practical self-check")
+        if self.scope == "test_out" and not self.topic_id:
+            raise ValueError("topic_id is required to test out of a topic")
+        if len(self.answers) > 60 or any(isinstance(v, str) and len(v) > 2000 for v in self.answers.values()):
+            raise ValueError("Too many or too long answers")
+        return self

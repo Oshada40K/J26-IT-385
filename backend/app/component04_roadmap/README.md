@@ -8,6 +8,7 @@ Owner: Dewmi. Frontend: `frontend/src/pages/component04/`. Route: `/component04`
 2. **C3** recommends careers. The C4 page lists C3's top five; careers C4 supports can be selected (32 O*NET IT occupations).
 3. **C4 assessment form** collects confidence ratings for 10–15 career skills, learning methods, weekly hours, projects, certifications and internships.
 4. **C4 analysis** (`GET /api/roadmap/analysis/{assessment_id}`) is recomputed on every request from the **latest** C1 CV assessment and the stored form, so the roadmap changes when the CV is re-uploaded or the assessment is updated.
+5. **C4 learning coach** (`/api/roadmap/learning/...`) teaches the roadmap skills: placement per skill (with a diagnostic when evidence lets the student skip basics or a skill is only claimed), adapted lessons, quizzes, feedback and an adaptive decision. Mastered stages feed back into step 4 as capped C4 evidence, so the roadmap and readiness regenerate.
 
 ## Files
 
@@ -18,6 +19,10 @@ Owner: Dewmi. Frontend: `frontend/src/pages/component04/`. Route: `/component04`
 | `service.py` | Skill selection for the form, C1 integration (read-only), saving assessments. |
 | `repository.py` | Component-local SQLite store (`backend/.data/component04.sqlite3`, override with `C4_DATABASE_PATH`). |
 | `router.py` | API under `/api/roadmap`. |
+| `tutor.py` | Adaptive tutor rules (pure functions): placement, topic states, next activity, grading, decisions, lesson composition. |
+| `learning.py` | Tutor service: ownership checks, plan, activities, attempts, roadmap regeneration and history. |
+| `curriculum/` | Curated lessons for 6 skills (SK001 Programming Fundamentals, SK002 Python, SK008 OOP, SK009 DSA, SK010 SQL, SK014 Git): 27 topics, 135 questions, validated at load. |
+| `lesson_provider.py` | Optional AI lesson generation (server-side key only); output must pass the same validation. |
 | `trained_models/` | `A_gap.joblib`, `A_severity.joblib`, `C_readiness.joblib`, `D_forecast.joblib`, `c4_config.json`. |
 | `inputs/` | O*NET requirements, skills catalogue, prerequisites, learning resources. |
 
@@ -118,6 +123,38 @@ Rejected and pending links add nothing. Each skill has `evidence_status`, `evide
   `repository.save_assessment(...)` in `component01_skill/services/profile_service.py`. Until then the same check
   runs before every C4 analysis (pending/provisional proof becomes verified when the CV level rises).
 
+## Adaptive learning coach
+
+**Endpoints** (new; no existing endpoint or field was renamed). All need the C1 Bearer token and return 403 for another student's assessment.
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/api/roadmap/learning/{assessment_id}` | Plan: per-skill placement, topic states, progress, next activity, events, rules |
+| GET | `/api/roadmap/learning/{assessment_id}/activity?skill_id=&kind=lesson\|diagnostic&topic_id=&mode=&scope=` | Lesson adapted to the learner, or diagnostic questions (never with answers) |
+| POST | `/api/roadmap/learning/{assessment_id}/attempts` | `{skill_id, kind: quiz\|diagnostic\|practical, topic_id, scope, answers}` → graded feedback, decision, roadmap update, new plan and analysis |
+| GET | `/api/roadmap/learning/{assessment_id}/history` | Saved attempts and roadmap-change events |
+| POST | `/api/roadmap/learning/{assessment_id}/generate/{skill_id}` | Optional AI lessons for a skill without curated lessons (503 when not configured) |
+
+**Decision rules** (`tutor.DEFAULT_RULES`, override with the `C4_TUTOR_RULES` JSON environment variable). These are starting settings, not validated values.
+
+| Situation | Decision |
+|---|---|
+| Evidence places the student above Beginner | Checkpoint diagnostic on the skipped topics first; pass (≥ 80 %) → continue at that stage; fail → start from the weakest stage |
+| Skill rated 4–5/5 with CV level 0–1 ("claimed") | Claim-check diagnostic before teaching (confidence is never proof) |
+| Quiz ≥ 80 % | Topic mastered → advance |
+| Quiz 50–79 % | Targeted practice: lesson re-opens in *focused* mode with the missed ideas first |
+| Quiz < 50 % | Re-teach in *foundation* (step-by-step) mode |
+| Same idea missed in 2 attempts | Repeated mistake → foundation mode |
+| 2 low attempts on a topic with a prerequisite | Go back: prerequisite marked *needs revision* |
+| "I know this – test me" passed | Topic skipped as mastered |
+| All topics of a stage mastered | Demonstrated level (Beginner 2, Intermediate 3, Advanced 4) capped at 3/5 → merged as provisional evidence "C4 lessons and quizzes" only when higher than the CV/proof level → roadmap and readiness regenerate (existing analysis, weights unchanged) |
+
+Opening a lesson and practical self-checks are recorded but never count as evidence. The learner profile and learning methods choose the lesson mode and order (project-first learners see the practical task first); the career chooses the worked examples (data vs software).
+
+**Tables** (created automatically in the C4 database): `c4_topic_progress`, `c4_skill_learning`, `c4_learning_attempts`, `c4_learning_events`, `c4_generated_curricula`.
+
+**Optional AI lessons:** set `C4_LLM_API_KEY` (or `ANTHROPIC_API_KEY`) and optionally `C4_LLM_MODEL` on the backend only, never in the frontend or Git. Without a key, skills without curated lessons are shown as *Self-study* and nothing is generated. Generated lessons must pass `curriculum.validate_skill` and are labelled "AI-generated".
+
 ## Data provenance and limitations
 
 - The trained models were trained on **synthetic** data (800 simulated students, `c4_config.json`). No real-student validation or accuracy figures exist in this repository, and none are claimed.
@@ -125,6 +162,7 @@ Rejected and pending links add nothing. Each skill has `evidence_status`, `evide
 - ESCO URIs are empty in the datasets, so ESCO is not used.
 - The readiness score summarises evidence for one career; it is not an employment probability.
 - C1 skills not in the 85-skill C4 catalogue are listed in the results and ignored.
+- Tutor thresholds are design settings, not validated with real students. Short answers are graded by keywords, not by a person. Curated lessons cover 6 skills; others are self-study unless AI lessons are configured. Lesson quizzes are C4's own checks, so they never raise a skill above 3/5; Component 01 (an updated CV) is still needed for verified levels.
 
 ## Model compatibility
 
@@ -137,6 +175,7 @@ The models were saved with scikit-learn 1.6.1 / NumPy 2.x; the backend pins scik
 ```bash
 cd backend
 .venv\Scripts\python -m unittest tests.component04_roadmap.test_c4 -v   # C4 only
+.venv\Scripts\python -m unittest tests.component04_roadmap.test_tutor tests.component04_roadmap.test_learning_api -v   # learning coach
 .venv\Scripts\python -m unittest discover -s tests                   # whole backend (as in CI)
 ```
 

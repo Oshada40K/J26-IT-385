@@ -56,6 +56,7 @@ def connection():
         for column, kind in EVIDENCE_EXTRA_COLUMNS.items():          # add columns to older databases
             if column not in existing:
                 db.execute(f"ALTER TABLE c4_evidence ADD COLUMN {column} {kind}")
+        _create_learning_tables(db)
         yield db
         db.commit()
     finally:
@@ -192,3 +193,162 @@ def delete_evidence(evidence_id):
         path = evidence_dir() / Path(record["file_path"]).name        # only ever inside the private folder
         path.unlink(missing_ok=True)
     return record
+
+
+# ---------------------------------------------------------------------------------------------- adaptive tutor
+# Learning progress is stored per candidate and skill (not per assessment), so it survives a new assessment or a
+# career change. All tables are created with IF NOT EXISTS, so older databases upgrade automatically.
+def _create_learning_tables(db):
+    db.execute("""CREATE TABLE IF NOT EXISTS c4_topic_progress (
+        candidate_id TEXT NOT NULL,
+        skill_id TEXT NOT NULL,
+        topic_id TEXT NOT NULL,
+        state TEXT NOT NULL,
+        attempts INTEGER NOT NULL DEFAULT 0,
+        low_attempts INTEGER NOT NULL DEFAULT 0,
+        best_score REAL,
+        last_score REAL,
+        missed_json TEXT NOT NULL DEFAULT '{}',
+        source TEXT,
+        updated_at TEXT NOT NULL,
+        PRIMARY KEY (candidate_id, skill_id, topic_id))""")
+    db.execute("""CREATE TABLE IF NOT EXISTS c4_skill_learning (
+        candidate_id TEXT NOT NULL,
+        skill_id TEXT NOT NULL,
+        checkpoint TEXT,
+        placed_stage TEXT,
+        mismatch TEXT,
+        demonstrated_level REAL NOT NULL DEFAULT 0,
+        updated_at TEXT NOT NULL,
+        PRIMARY KEY (candidate_id, skill_id))""")
+    db.execute("""CREATE TABLE IF NOT EXISTS c4_learning_attempts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        attempt_id TEXT UNIQUE NOT NULL,
+        candidate_id TEXT NOT NULL,
+        assessment_id TEXT,
+        skill_id TEXT NOT NULL,
+        topic_id TEXT,
+        kind TEXT NOT NULL,
+        score REAL,
+        answers_json TEXT NOT NULL,
+        result_json TEXT NOT NULL,
+        created_at TEXT NOT NULL)""")
+    db.execute("CREATE INDEX IF NOT EXISTS c4_attempts_candidate ON c4_learning_attempts (candidate_id, id)")
+    db.execute("""CREATE TABLE IF NOT EXISTS c4_learning_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        candidate_id TEXT NOT NULL,
+        skill_id TEXT,
+        kind TEXT NOT NULL,
+        message TEXT NOT NULL,
+        created_at TEXT NOT NULL)""")
+    db.execute("CREATE INDEX IF NOT EXISTS c4_events_candidate ON c4_learning_events (candidate_id, id)")
+    db.execute("""CREATE TABLE IF NOT EXISTS c4_generated_curricula (
+        skill_id TEXT PRIMARY KEY,
+        provider TEXT NOT NULL,
+        model TEXT,
+        content_json TEXT NOT NULL,
+        created_at TEXT NOT NULL)""")
+
+
+def _progress_row(row):
+    out = dict(row)
+    out["missed"] = json.loads(out.pop("missed_json") or "{}")
+    return out
+
+
+def topic_progress(candidate_id, skill_id=None):
+    """{skill_id: {topic_id: row}} (or {topic_id: row} for one skill)."""
+    with connection() as db:
+        if skill_id:
+            rows = db.execute("SELECT * FROM c4_topic_progress WHERE candidate_id=? AND skill_id=?", (candidate_id, skill_id)).fetchall()
+            return {r["topic_id"]: _progress_row(r) for r in rows}
+        rows = db.execute("SELECT * FROM c4_topic_progress WHERE candidate_id=?", (candidate_id,)).fetchall()
+    out = {}
+    for r in rows:
+        out.setdefault(r["skill_id"], {})[r["topic_id"]] = _progress_row(r)
+    return out
+
+
+def save_topic_progress(candidate_id, skill_id, topic_id, now, state, attempts=0, low_attempts=0, best_score=None,
+                        last_score=None, missed=None, source=None):
+    with connection() as db:
+        db.execute("""INSERT INTO c4_topic_progress (candidate_id, skill_id, topic_id, state, attempts, low_attempts, best_score,
+                      last_score, missed_json, source, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)
+                      ON CONFLICT(candidate_id, skill_id, topic_id) DO UPDATE SET state=excluded.state,
+                      attempts=excluded.attempts, low_attempts=excluded.low_attempts, best_score=excluded.best_score,
+                      last_score=excluded.last_score, missed_json=excluded.missed_json, source=excluded.source,
+                      updated_at=excluded.updated_at""",
+                   (candidate_id, skill_id, topic_id, state, attempts, low_attempts, best_score, last_score,
+                    json.dumps(missed or {}), source, now))
+
+
+def skill_learning(candidate_id):
+    """{skill_id: row} for the candidate."""
+    with connection() as db:
+        rows = db.execute("SELECT * FROM c4_skill_learning WHERE candidate_id=?", (candidate_id,)).fetchall()
+    return {r["skill_id"]: dict(r) for r in rows}
+
+
+def save_skill_learning(candidate_id, skill_id, now, **fields):
+    allowed = {k: v for k, v in fields.items() if k in ("checkpoint", "placed_stage", "mismatch", "demonstrated_level")}
+    current = skill_learning(candidate_id).get(skill_id) or {}
+    row = {**{"checkpoint": None, "placed_stage": None, "mismatch": None, "demonstrated_level": 0}, **current, **allowed}
+    with connection() as db:
+        db.execute("""INSERT INTO c4_skill_learning (candidate_id, skill_id, checkpoint, placed_stage, mismatch, demonstrated_level,
+                      updated_at) VALUES (?,?,?,?,?,?,?) ON CONFLICT(candidate_id, skill_id) DO UPDATE SET
+                      checkpoint=excluded.checkpoint, placed_stage=excluded.placed_stage, mismatch=excluded.mismatch,
+                      demonstrated_level=excluded.demonstrated_level, updated_at=excluded.updated_at""",
+                   (candidate_id, skill_id, row["checkpoint"], row["placed_stage"], row["mismatch"],
+                    row["demonstrated_level"], now))
+
+
+def save_attempt(record):
+    with connection() as db:
+        db.execute("""INSERT INTO c4_learning_attempts (attempt_id, candidate_id, assessment_id, skill_id, topic_id, kind, score,
+                      answers_json, result_json, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                   (record["attempt_id"], record["candidate_id"], record.get("assessment_id"), record["skill_id"],
+                    record.get("topic_id"), record["kind"], record.get("score"), json.dumps(record.get("answers") or {}),
+                    json.dumps(record.get("result") or {}), record["created_at"]))
+
+
+def attempts_for(candidate_id, limit=50):
+    with connection() as db:
+        rows = db.execute("SELECT * FROM c4_learning_attempts WHERE candidate_id=? ORDER BY id DESC LIMIT ?",
+                          (candidate_id, limit)).fetchall()
+    out = []
+    for r in rows:
+        item = dict(r)
+        item.pop("id", None)
+        item["answers"] = json.loads(item.pop("answers_json") or "{}")
+        item["result"] = json.loads(item.pop("result_json") or "{}")
+        out.append(item)
+    return out
+
+
+def add_learning_event(candidate_id, skill_id, kind, message, now):
+    with connection() as db:
+        db.execute("INSERT INTO c4_learning_events (candidate_id, skill_id, kind, message, created_at) VALUES (?,?,?,?,?)",
+                   (candidate_id, skill_id, kind, message, now))
+
+
+def learning_events(candidate_id, limit=20):
+    with connection() as db:
+        rows = db.execute("SELECT skill_id, kind, message, created_at FROM c4_learning_events WHERE candidate_id=? "
+                          "ORDER BY id DESC LIMIT ?", (candidate_id, limit)).fetchall()
+    return [dict(r) for r in rows]
+
+
+def generated_curriculum(skill_id):
+    with connection() as db:
+        row = db.execute("SELECT * FROM c4_generated_curricula WHERE skill_id=?", (skill_id,)).fetchone()
+    if not row:
+        return None
+    return {**dict(row), "topics": json.loads(row["content_json"])}
+
+
+def save_generated_curriculum(skill_id, provider, model, topics, now):
+    with connection() as db:
+        db.execute("""INSERT INTO c4_generated_curricula (skill_id, provider, model, content_json, created_at) VALUES (?,?,?,?,?)
+                      ON CONFLICT(skill_id) DO UPDATE SET provider=excluded.provider, model=excluded.model,
+                      content_json=excluded.content_json, created_at=excluded.created_at""",
+                   (skill_id, provider, model, json.dumps(topics), now))

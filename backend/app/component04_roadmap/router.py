@@ -6,10 +6,11 @@ from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
 
 from . import repository, service
-from .errors import EvidenceError, ModelsUnavailable
+from .errors import EvidenceError, LearningError, ModelsUnavailable
 from .evidence_check import MAX_FILE_BYTES
 from .schemas import (AnalysisResponse, AssessmentRecord, AssessmentSaved, AssessmentSubmission, Career, EvidenceDeleted,
-                      EvidenceRecord, EvidenceReview, EvidenceSubmission, QuestionRequest, QuestionResponse)
+                      EvidenceRecord, EvidenceReview, EvidenceSubmission, LearningAttempt, QuestionRequest,
+                      QuestionResponse)
 
 router = APIRouter(prefix="/api/roadmap", tags=["Learning Roadmap & Skill Gap"])
 security = HTTPBearer(auto_error=False)
@@ -199,3 +200,58 @@ async def delete_evidence(evidence_id: str, owner: Annotated[str | None, Depends
         return await run_in_threadpool(service.delete_evidence, evidence_id, owner)
     except EvidenceError as exc:
         raise HTTPException(exc.status_code, str(exc)) from exc
+
+
+
+# ------------------------------------------------------------------ adaptive learning tutor (new, additive)
+async def _learning(fn, assessment_id, owner, *args):
+    """Shared wrapper: the assessment must exist and belong to the signed-in candidate (learning progress is
+    private, so anonymous assessments cannot use the tutor)."""
+    from . import learning                                   # imported lazily, like the engine
+    record = await run_in_threadpool(_owned_record, assessment_id, owner)
+    await run_in_threadpool(_engine_or_503)
+    try:
+        return await run_in_threadpool(getattr(learning, fn), record, owner, *args)
+    except LearningError as exc:
+        raise HTTPException(exc.status_code, str(exc)) from exc
+    except ModelsUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+
+
+@router.get("/learning/{assessment_id}", summary="Adaptive learning plan: per-skill placement, progress and next activity")
+async def learning_plan(assessment_id: str, owner: Annotated[str | None, Depends(_candidate)]):
+    return await _learning("plan", assessment_id, owner)
+
+
+@router.get("/learning/{assessment_id}/activity",
+            summary="Open a personalised lesson or a diagnostic (questions are sent without answers)")
+async def learning_activity(assessment_id: str, skill_id: str, owner: Annotated[str | None, Depends(_candidate)],
+                            kind: str = "lesson", topic_id: str | None = None, mode: str | None = None,
+                            scope: str | None = None):
+    if kind not in ("lesson", "diagnostic"):
+        raise HTTPException(400, "kind must be 'lesson' or 'diagnostic'.")
+    if mode not in (None, "standard", "foundation", "focused", "challenge"):
+        raise HTTPException(400, "Unknown lesson mode.")
+    if scope not in (None, "checkpoint", "claim", "test_out"):
+        raise HTTPException(400, "Unknown diagnostic scope.")
+    if kind == "lesson" and not topic_id:
+        raise HTTPException(400, "topic_id is required for a lesson.")
+    return await _learning("open_activity", assessment_id, owner, skill_id, topic_id, kind, mode, scope)
+
+
+@router.post("/learning/{assessment_id}/attempts",
+             summary="Submit a quiz, diagnostic or practical self-check; returns feedback, the adaptive decision and the regenerated roadmap")
+async def learning_attempt(assessment_id: str, body: LearningAttempt, owner: Annotated[str | None, Depends(_candidate)]):
+    return await _learning("submit_attempt", assessment_id, owner, body.skill_id, body.kind, body.answers,
+                           body.topic_id, body.scope)
+
+
+@router.get("/learning/{assessment_id}/history", summary="The student's quiz attempts and roadmap-change events")
+async def learning_history(assessment_id: str, owner: Annotated[str | None, Depends(_candidate)]):
+    return await _learning("history", assessment_id, owner)
+
+
+@router.post("/learning/{assessment_id}/generate/{skill_id}",
+             summary="Optional: create validated AI lessons for a roadmap skill without curated lessons (needs C4_LLM_API_KEY)")
+async def learning_generate(assessment_id: str, skill_id: str, owner: Annotated[str | None, Depends(_candidate)]):
+    return await _learning("generate_lessons", assessment_id, owner, skill_id)
