@@ -4,7 +4,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import Icon from '../../components/Icon.jsx'
+import { ErrorState, PageLoader, SkeletonForm, Spinner } from '../../components/loading/index.js'
 import { getCareers, getQuestions, loadCareerMatches, loadCvSkills, submitAssessment } from './assessmentApi.js'
+import { cached, candidateKey, hasCached, invalidate, peek } from '../../api/resourceCache.js'
 import './CareerReadinessForm.css'
 
 const CONFIDENCE_PROMPT = 'Rate how confident you are that you can use this skill to complete a practical task.'
@@ -158,13 +160,32 @@ function previousAnswers(record) {
   }
 }
 
+// Career list, C03 matches and C01 skills -> picker data, plus the career to preselect:
+// one passed from Component 03 takes priority, then the best supported match.
+function deriveBoot({ careers, jobs, cvSkills }, state) {
+  const byName = Object.fromEntries(careers.map(c => [norm(c.career_name), c.career_id]))
+  const matches = jobs.map(job => ({ ...job, careerId: byName[norm(job.job)] || '' }))
+  const passed = state?.careerId || byName[norm(state?.careerName)]
+  const preferred = careers.some(c => c.career_id === passed) ? passed : matches.find(m => m.careerId)?.careerId || ''
+  return { boot: { loading: false, error: '', careers, matches, cvSkills }, preferred }
+}
+
+const questionsKey = (careerId, cvSkills) => `c04:questions:${careerId}:${JSON.stringify(cvSkills)}`
+
 export default function CareerReadinessForm({ initialRecord = null, onSubmitted, onCancel }) {
   const location = useLocation()
   const [initial] = useState(() => previousAnswers(initialRecord))
-  const [boot, setBoot] = useState({ loading: true, error: '', careers: [], matches: [], cvSkills: [] })
+  // Reopening the form (e.g. "Update my assessment") reuses the data loaded last time, so it
+  // renders immediately instead of flashing a loader.
+  const bootKey = candidateKey('c04:boot')
+  const [cachedBoot] = useState(() => hasCached(bootKey) ? deriveBoot(peek(bootKey), location.state) : null)
+  const [boot, setBoot] = useState(() => cachedBoot?.boot ?? { loading: true, error: '', careers: [], matches: [], cvSkills: [] })
   const [reload, setReload] = useState(0)
-  const [careerId, setCareerId] = useState(initial.careerId)
-  const [questions, setQuestions] = useState({ loading: false, error: '', data: null })
+  const [careerId, setCareerId] = useState(() => initial.careerId || cachedBoot?.preferred || '')
+  const [questions, setQuestions] = useState(() => {
+    const key = cachedBoot && careerId && questionsKey(careerId, cachedBoot.boot.cvSkills)
+    return { loading: false, error: '', data: key && hasCached(key) ? peek(key) : null }
+  })
   const [questionsRetry, setQuestionsRetry] = useState(0)
   const [ratings, setRatings] = useState(initial.ratings)
   const [methods, setMethods] = useState(initial.methods)
@@ -176,29 +197,37 @@ export default function CareerReadinessForm({ initialRecord = null, onSubmitted,
   const [submitError, setSubmitError] = useState('')
 
   useEffect(() => {
+    if (cachedBoot && reload === 0) return undefined
     let active = true
     setBoot(prev => ({ ...prev, loading: true, error: '' }))
-    Promise.all([getCareers(), loadCareerMatches(), loadCvSkills()]).then(([careers, jobs, cvSkills]) => {
+    cached(bootKey, () => Promise.all([getCareers(), loadCareerMatches(), loadCvSkills()])
+      .then(([careers, jobs, cvSkills]) => ({ careers, jobs, cvSkills }))).then(raw => {
+      // No C03 matches usually means that service failed; try again next time instead of caching it.
+      if (!raw.jobs.length) invalidate(bootKey)
       if (!active) return
-      const byName = Object.fromEntries(careers.map(c => [norm(c.career_name), c.career_id]))
-      const matches = jobs.map(job => ({ ...job, careerId: byName[norm(job.job)] || '' }))
-      setBoot({ loading: false, error: '', careers, matches, cvSkills })
-      // A career passed from Component 03 takes priority, then the best supported match.
-      const passed = location.state?.careerId || byName[norm(location.state?.careerName)]
-      setCareerId(current => current || (careers.some(c => c.career_id === passed) ? passed : matches.find(m => m.careerId)?.careerId || ''))
+      const { boot: next, preferred } = deriveBoot(raw, location.state)
+      setBoot(next)
+      setCareerId(current => current || preferred)
     }).catch(error => { if (active) setBoot(prev => ({ ...prev, loading: false, error: error.message })) })
     return () => { active = false }
   }, [reload]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Wait for the CV skills: asking earlier fetched the questions twice and blanked the form in between.
   useEffect(() => {
-    if (!careerId) return undefined
+    if (!careerId || boot.loading) return undefined
+    const key = questionsKey(careerId, boot.cvSkills)
+    if (hasCached(key) && questionsRetry === 0) {
+      const data = peek(key)
+      setQuestions(prev => prev.data === data ? prev : { loading: false, error: '', data })
+      return undefined
+    }
     let active = true
     setQuestions({ loading: true, error: '', data: null })
-    getQuestions(careerId, boot.cvSkills)
+    cached(key, () => getQuestions(careerId, boot.cvSkills))
       .then(data => { if (active) setQuestions({ loading: false, error: '', data }) })
       .catch(error => { if (active) setQuestions({ loading: false, error: error.message, data: null }) })
     return () => { active = false }
-  }, [careerId, boot.cvSkills, questionsRetry])
+  }, [careerId, boot.loading, boot.cvSkills, questionsRetry])
 
   const skills = useMemo(() => questions.data?.skills || [], [questions.data])
   const form = { ratings, methods, otherText, hours, experience }
@@ -246,16 +275,17 @@ export default function CareerReadinessForm({ initialRecord = null, onSubmitted,
   }
 
   return <>
-    {boot.loading ? <div className="card" role="status">Loading your assessment…</div>
-      : boot.error ? <div className="card"><p className="error-message" role="alert">{boot.error}</p><button type="button" onClick={() => setReload(v => v + 1)}>Try again</button></div>
+    {boot.loading ? <PageLoader variant="roadmap" label="Loading your assessment…" skeleton={<SkeletonForm fields={3} />}
+      messages={['Preparing Your Readiness Assessment…', 'Loading careers and your CV skills…', 'Matching your top careers…']} />
+      : boot.error ? <ErrorState title="We could not prepare your assessment" message={boot.error} onRetry={() => setReload(v => v + 1)} />
       : <>
         <CareerPicker careers={boot.careers} matches={boot.matches} careerId={careerId} cvSkillCount={boot.cvSkills.length}
           onChange={id => { setCareerId(id); setSubmitError('') }} />
 
         {!careerId ? <div className="card c4-empty"><p>Select a career above to start the assessment.</p></div>
-          : questions.loading ? <div className="card" role="status">Preparing skills for this career…</div>
-          : questions.error ? <div className="card"><p className="error-message" role="alert">{questions.error}</p><button type="button" onClick={() => setQuestionsRetry(v => v + 1)}>Try again</button></div>
-          : questions.data && <form className="c4-form" onSubmit={handleSubmit} noValidate>
+          : questions.loading ? <div className="fx-delayed"><SkeletonForm fields={3} label="Preparing skills for this career…" /></div>
+          : questions.error ? <ErrorState title="We could not load the skills for this career" message={questions.error} onRetry={() => setQuestionsRetry(v => v + 1)} />
+          : questions.data && <form className="c4-form fx-reveal" onSubmit={handleSubmit} noValidate>
             <ProgressCard sections={sections} percent={percent} />
 
             {errorCount > 0 && <div className="c4-error-summary" role="alert">
@@ -331,7 +361,7 @@ export default function CareerReadinessForm({ initialRecord = null, onSubmitted,
               <p className="muted">Your responses are used only for this research assessment.</p>
               <div className="c4-submit-actions">
                 {onCancel && <button type="button" className="button-secondary" onClick={onCancel}>Back to my results</button>}
-                <button type="submit" className="button-ai" disabled={submitting}>{submitting ? 'Analysing…' : <>Submit Assessment <Icon name="arrow" size={16} /></>}</button>
+                <button type="submit" className="button-ai" disabled={submitting}>{submitting ? <><Spinner />Analysing…</> : <>Submit Assessment <Icon name="arrow" size={16} /></>}</button>
               </div>
             </div>
           </form>}

@@ -1,5 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import Icon from '../../components/Icon.jsx'
+import { AILoader, ErrorState, PageLoader, ReloadButton, SkeletonDashboard, SkeletonForm, Spinner } from '../../components/loading/index.js'
+import { cached, hasCached, peek } from '../../api/resourceCache.js'
 import { analyseTextAnswers, assessProfile, getQuestionnaire, getScenarios, scoreQuestionnaire, scoreScenarios } from './personalityApi.js'
 import './PersonalityProfile.css'
 
@@ -145,20 +147,25 @@ function ResetPart({ part, disabled, onReset }) {
 }
 
 function Questionnaire({ answers, onAnswer, onScored, canReset, onReset }) {
-  const [data, setData] = useState(null)
+  // The statements never change, so after the first load they come from the cache.
+  const [data, setData] = useState(() => peek('c02:questionnaire') ?? null)
+  const [fresh] = useState(() => !hasCached('c02:questionnaire'))
   const [loadError, setLoadError] = useState('')
+  const [attempt, setAttempt] = useState(0)
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
+    if (hasCached('c02:questionnaire')) return undefined
     let active = true
-    getQuestionnaire().then(d => { if (active) setData(d) }).catch(err => { if (active) setLoadError(err.message) })
+    setLoadError('')
+    cached('c02:questionnaire', getQuestionnaire).then(d => { if (active) setData(d) }).catch(err => { if (active) setLoadError(err.message) })
     return () => { active = false }
-  }, [])
+  }, [attempt])
 
-  if (loadError) return <div className="card"><p className="error-message" role="alert">{loadError}</p></div>
-  if (!data) return <div className="card" role="status">Loading the questionnaire…</div>
+  if (loadError) return <ErrorState title="The questionnaire did not load" message={loadError} onRetry={() => setAttempt(n => n + 1)} />
+  if (!data) return <div className="fx-delayed"><SkeletonForm fields={4} label="Loading the questionnaire…" /></div>
 
   const pages = Math.ceil(data.items.length / MAX_PAGE_SIZE)
   const pageStart = n => Math.round(n * data.items.length / pages)
@@ -190,7 +197,7 @@ function Questionnaire({ answers, onAnswer, onScored, canReset, onReset }) {
     returnToStart('personality-questionnaire-title')
   }
 
-  return <form className="card personality-form" onSubmit={submit}>
+  return <form className={`card personality-form ${fresh ? 'fx-reveal' : ''}`} onSubmit={submit}>
     <div className="personality-form-heading">
       <h2 id="personality-questionnaire-title" tabIndex={-1}>Big Five questionnaire</h2>
       <ResetPart part="Big Five questionnaire" disabled={!canReset || loading} onReset={reset} />
@@ -214,7 +221,7 @@ function Questionnaire({ answers, onAnswer, onScored, canReset, onReset }) {
       <button type="button" className="button-secondary" onClick={() => goTo(page - 1)} disabled={page === 0 || loading}>Back</button>
       {page < pages - 1
         ? <button type="button" onClick={() => goTo(page + 1)} disabled={!pageDone}>Next page <Icon name="arrow" size={16} /></button>
-        : <button type="submit" className="button-ai" disabled={!allDone || loading}>{loading ? 'Scoring…' : <>Score my answers <Icon name="spark" size={16} /></>}</button>}
+        : <button type="submit" className="button-ai" disabled={!allDone || loading}>{loading ? <><Spinner />Scoring…</> : <>Score my answers <Icon name="spark" size={16} /></>}</button>}
     </div>
     {!pageDone && <p className="personality-hint">Answer every statement on this page to continue.</p>}
     {error && <p className="error-message" role="alert">{error}</p>}
@@ -222,19 +229,23 @@ function Questionnaire({ answers, onAnswer, onScored, canReset, onReset }) {
 }
 
 function Scenarios({ answers, onAnswer, onScored, canReset, onReset }) {
-  const [data, setData] = useState(null)
+  const [data, setData] = useState(() => peek('c02:scenarios') ?? null)
+  const [fresh] = useState(() => !hasCached('c02:scenarios'))
   const [loadError, setLoadError] = useState('')
+  const [attempt, setAttempt] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
+    if (hasCached('c02:scenarios')) return undefined
     let active = true
-    getScenarios().then(d => { if (active) setData(d) }).catch(err => { if (active) setLoadError(err.message) })
+    setLoadError('')
+    cached('c02:scenarios', getScenarios).then(d => { if (active) setData(d) }).catch(err => { if (active) setLoadError(err.message) })
     return () => { active = false }
-  }, [])
+  }, [attempt])
 
-  if (loadError) return <div className="card"><p className="error-message" role="alert">{loadError}</p></div>
-  if (!data) return <div className="card" role="status">Loading the scenarios…</div>
+  if (loadError) return <ErrorState title="The scenarios did not load" message={loadError} onRetry={() => setAttempt(n => n + 1)} />
+  if (!data) return <div className="fx-delayed"><SkeletonForm fields={3} label="Loading the scenarios…" /></div>
 
   const answered = data.scenarios.filter(s => answers[s.id]).length
   const allDone = answered === data.scenarios.length
@@ -257,7 +268,7 @@ function Scenarios({ answers, onAnswer, onScored, canReset, onReset }) {
     returnToStart('personality-sjt-title')
   }
 
-  return <form className="card personality-form" onSubmit={submit}>
+  return <form className={`card personality-form ${fresh ? 'fx-reveal' : ''}`} onSubmit={submit}>
     <div className="personality-form-heading">
       <h2 id="personality-sjt-title" tabIndex={-1}>Situational judgement</h2>
       <ResetPart part="Situational judgement" disabled={!canReset || loading} onReset={reset} />
@@ -279,7 +290,7 @@ function Scenarios({ answers, onAnswer, onScored, canReset, onReset }) {
     </fieldset>)}
     <div className="personality-submit" id="personality-sjt-actions">
       <span className={allDone ? 'muted' : 'personality-hint'}>{allDone ? 'All scenarios answered' : `${data.scenarios.length - answered} scenarios left`}</span>
-      <button type="submit" className="button-ai" disabled={!allDone || loading}>{loading ? 'Scoring…' : <>Score my choices <Icon name="spark" size={16} /></>}</button>
+      <button type="submit" className="button-ai" disabled={!allDone || loading}>{loading ? <><Spinner />Scoring…</> : <>Score my choices <Icon name="spark" size={16} /></>}</button>
     </div>
     {error && <p className="error-message" role="alert">{error}</p>}
   </form>
@@ -319,41 +330,48 @@ function Writing({ answers, onAnswer, onScored, canReset, onReset }) {
     </label>)}
     <div className="personality-submit">
       <span className={totalWords >= MIN_WORDS ? 'muted' : 'personality-hint'}>{totalWords} words in total{totalWords < MIN_WORDS && ` · at least ${MIN_WORDS} needed`}</span>
-      <button type="submit" className="button-ai" disabled={totalWords < MIN_WORDS || loading}>{loading ? 'Analysing…' : <>Analyse my answers <Icon name="spark" size={16} /></>}</button>
+      <button type="submit" className="button-ai" disabled={totalWords < MIN_WORDS || loading}>{loading ? <><Spinner />Analysing…</> : <>Analyse my answers <Icon name="spark" size={16} /></>}</button>
     </div>
-    {loading && <p className="muted" role="status">The first analysis can take up to a minute while the language model loads.</p>}
+    {loading && <AILoader size="sm" variant="personality" label="Analysing your answers. The first analysis can take up to a minute while the language model loads."
+      messages={['Evaluating Your Personality…', 'Reading your written answers…', 'The first run can take up to a minute…']} />}
     {error && <p className="error-message" role="alert">{error}</p>}
   </form>
 }
 
 function FinalProfile({ draft }) {
-  const [result, setResult] = useState(null)
-  const [loading, setLoading] = useState(true)
+  // Only send the parts that were completed and scored.
+  const texts = QUESTIONS.map(q => draft.text[q.id] || '').filter(a => a.trim())
+  const payload = {
+    questionnaire: draft.questionnaire ? draft.likert : null,
+    sjt: draft.sjt ? draft.choices : null,
+    answers: draft.writing ? texts : null,
+  }
+  // The same answers always give the same profile, so a revisit reuses it; "Recalculate" asks again.
+  const cacheKey = `c02:assess:${JSON.stringify(payload)}`
+  const [result, setResult] = useState(() => peek(cacheKey) ?? null)
+  const [fresh] = useState(() => !hasCached(cacheKey))
+  const [loading, setLoading] = useState(() => !hasCached(cacheKey))
   const [error, setError] = useState('')
   const [reload, setReload] = useState(0)
 
   useEffect(() => {
+    if (reload === 0 && hasCached(cacheKey)) { setResult(peek(cacheKey)); return undefined }
     let active = true
     setLoading(true)
     setError('')
-    // Only send the parts that were completed and scored.
-    const texts = QUESTIONS.map(q => draft.text[q.id] || '').filter(a => a.trim())
-    assessProfile({
-      questionnaire: draft.questionnaire ? draft.likert : null,
-      sjt: draft.sjt ? draft.choices : null,
-      answers: draft.writing ? texts : null,
-    }).then(r => { if (active) setResult(r) })
+    cached(cacheKey, () => assessProfile(payload)).then(r => { if (active) setResult(r) })
       .catch(err => { if (active) setError(err.message) })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
-  }, [draft.questionnaire, draft.sjt, draft.writing, reload])
+  }, [cacheKey, reload]) // eslint-disable-line react-hooks/exhaustive-deps -- payload is encoded in cacheKey
 
-  if (loading) return <div className="card" role="status">Combining your answers, choices and writing…</div>
-  if (error) return <div className="card"><p className="error-message" role="alert">{error}</p><button onClick={() => setReload(v => v + 1)}>Try again</button></div>
+  const recalculate = () => setReload(v => v + 1)
+  if (loading && !result) return <PageLoader variant="personality" label="Combining your answers, choices and writing…" skeleton={<SkeletonDashboard cards={2} />} />
+  if (error) return <ErrorState title="We could not build your profile" message={error} onRetry={recalculate} />
 
   const c = result.consistency
   const used = Object.keys(result.sources).map(s => SOURCE_LABELS[s]).join(', ')
-  return <div className="personality-final">
+  return <div className={`personality-final ${fresh ? 'fx-stagger' : ''}`} aria-busy={loading}>
     <section className="card personality-pcs">
       <div>
         <p className="eyebrow">PERSONALITY CONSISTENCY SCORE</p>
@@ -398,7 +416,7 @@ function FinalProfile({ draft }) {
       })}
       {result.notes.map(n => <p key={n} className="personality-warning">{n}</p>)}
       <div className="personality-final-actions">
-        <button type="button" className="button-secondary" onClick={() => setReload(v => v + 1)}>Recalculate</button>
+        <ReloadButton onClick={recalculate} loading={loading} label="Recalculate" loadingLabel="Recalculating…" />
       </div>
       <details className="personality-json">
         <summary>Profile JSON sent to career prediction (Component 3)</summary>

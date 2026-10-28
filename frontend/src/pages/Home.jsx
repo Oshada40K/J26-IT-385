@@ -4,6 +4,13 @@ import { savedSession, uploadCV } from './component01/skillApi.js'
 import { API_BASE_URL } from '../api/client.js'
 import { uploadAndPredictCV } from './component03/careerApi.js'
 import Icon from '../components/Icon.jsx'
+import { AILoader } from '../components/loading/index.js'
+import { invalidate } from '../api/resourceCache.js'
+
+const CV_STEPS = [
+  { label: 'Analyzing Your Skills…', messages: ['Extracting skills from your CV…', 'Reviewing the evidence behind each skill…', 'Estimating your skill levels…'] },
+  { label: 'Finding the Best Career Matches…', messages: ['Comparing your profile with O*NET occupations…', 'Ranking your top five careers…', 'Explaining your best match with SHAP…'] },
+]
 
 export default function Home() {
   const navigate = useNavigate()
@@ -36,8 +43,9 @@ export default function Home() {
         uploadCV, savedSession, baseUrl: API_BASE_URL,
         onAssessed: () => setPredicting(true),
       })
+      invalidate() // a new CV changes skills, career matches and roadmap data
       navigate('/component03', { state: prediction })
-    } catch (err) { setError(err.message) }
+    } catch (err) { invalidate(); setError(err.message) }
     finally { processing.current = false; setUploading(false); setPredicting(false) }
   }
 
@@ -45,7 +53,9 @@ export default function Home() {
     <section className="home-intro">
       <h1>Big possibilities.<br /><span>Start with your CV.</span></h1>
     </section>
-    <section className="cv-panel" aria-labelledby="cv-title">
+    <section className="cv-panel" aria-labelledby="cv-title" aria-busy={uploading}>
+      {/* Visual only: the cv-feedback live region below announces progress. */}
+      {uploading && <div className="cv-processing" aria-hidden="true"><AILoader mode="overlay" variant={predicting ? 'career' : 'skills'} steps={CV_STEPS} activeStep={predicting ? 1 : 0} /></div>}
       <div className="cv-art" aria-hidden="true">
         <div className="cv-art-ring" />
         <span className="cv-spark spark-one"><Icon size={20} /></span>

@@ -3,6 +3,7 @@
 import { API_BASE_URL } from '../../api/client.js'
 import { getSkillDetails, savedSession } from '../component01/skillApi.js'
 import { getCareerResult } from '../component03/careerApi.js'
+import { candidateKey, reuse } from '../../api/resourceCache.js'
 
 const ROOT = `${API_BASE_URL}/api/roadmap`
 const BASE = `${ROOT}/assessment`
@@ -114,7 +115,7 @@ export async function findLatestAssessment() {
 // C1 skills from the uploaded CV; an empty list when no CV has been assessed yet.
 export async function loadCvSkills() {
   try {
-    const details = await getSkillDetails()
+    const details = await reuse(candidateKey('c01:details'), getSkillDetails) // already loaded by Component 01
     return (details?.skills || []).map(skill => ({ name: skill.name, level: skill.level }))
   } catch {
     return []
@@ -124,7 +125,7 @@ export async function loadCvSkills() {
 // C3's ranked careers for the current candidate (or the sample profile).
 export async function loadCareerMatches() {
   try {
-    const data = await getCareerResult('topJobs', API_BASE_URL, savedSession())
+    const data = await reuse(candidateKey('c03:topJobs'), () => getCareerResult('topJobs', API_BASE_URL, savedSession())) // already loaded by Component 03
     return data.jobs || []
   } catch {
     return []
