@@ -371,7 +371,7 @@ def merge_tutor_evidence(evidence, candidate_id):
             continue
         entry = evidence.get(sid)
         if entry is None:
-            evidence[sid] = {"status": "provisional", "level": level, "source": TUTOR_SOURCE,
+            evidence[sid] = {"status": "provisional", "level": level, "source": TUTOR_SOURCE, "tutor_only": True,
                              "detail": f"Demonstrated in C4 lesson quizzes up to level {level:g}/5 (practice evidence, not verified).",
                              "evidence_id": None}
         elif entry.get("level") is None or level > entry["level"]:

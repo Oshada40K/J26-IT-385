@@ -506,6 +506,9 @@ class C4Analyzer(C4Engine):
         self.ensure_models()
         st = self.student_from_json(c1, {}, form, form["career_id"])
         proof = {sid: (e if isinstance(e, dict) else {"status": e}) for sid, e in (evidence or {}).items()}
+        # Lesson-only evidence (C4 tutor) is shown only when it is higher than the CV level; otherwise it adds nothing.
+        proof = {sid: e for sid, e in proof.items() if not (e.get("tutor_only") and
+                 (e.get("level") or 0) / LEVEL_MAX <= st["proficiencies"].get(sid, 0.0))}
         st["evidence_status"] = {sid: e.get("status", "none") for sid, e in proof.items()}
         st["verified_skills"] = [s for s, v in st["evidence_status"].items() if v == "verified"]
         st["evidence_source"] = {}

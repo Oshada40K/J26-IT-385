@@ -197,6 +197,14 @@ class TutorScenarios(unittest.TestCase):
         stronger = service.merge_tutor_evidence({PF: {"status": "verified", "level": 4, "source": "Component 01 (verified)"}}, "i")
         self.assertEqual(stronger[PF]["level"], 4)                         # stronger proof is never replaced
 
+    # Lesson evidence below the CV level adds nothing and shows no "provisionally verified" badge
+    def test_lesson_evidence_below_cv_level_is_ignored(self):
+        rec = self.student("cv3", [{"name": "Programming Fundamentals", "level": 3}], {PF: 3})
+        repository.save_skill_learning("cv3", PF, "2026-10-01", demonstrated_level=2)
+        gap = next(s for s in service.analysis(rec)["skill_gaps"]["skills"] if s["skill_id"] == PF)
+        self.assertEqual(gap["evidence_status"], "none")
+        self.assertEqual(gap["current_level"], 3)
+
     # J - a claimed skill (rated 5/5, nothing in the CV) is checked before teaching; a confirmed claim is recorded
     def test_J_claimed_skill_gets_a_claim_check(self):
         rec = self.student("j", [], {GIT: 5})
