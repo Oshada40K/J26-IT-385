@@ -331,32 +331,57 @@ function RoadmapStep({ step }) {
   return <details className="c4r-step">
     <summary>
       <span className="c4r-step-number">{step.step}</span>
-      <span className="c4r-step-title"><strong>{step.skill_name}</strong><small>{step.reason}</small></span>
+      <span className="c4r-step-title"><strong>{step.skill_name}</strong><small>{step.reason}</small>
+        {step.entry_stage && <span className="c4r-placement-tags">
+          <span className="c4r-tag">Start: {step.entry_stage} → Target: {step.target_stage}</span>
+          {step.skipped_stages?.length > 0 && <span className="c4r-tag is-skipped">Skipped: {step.skipped_stages.join(', ')}</span>}
+        </span>}
+      </span>
       <span className="c4r-step-meta"><span className={`c4r-status ${STATUS[step.status].className}`}>{STATUS[step.status].label}</span><small>Weeks {step.start_week}–{step.end_week} · {step.estimated_hours} h</small></span>
     </summary>
     <div className="c4r-step-body">
+      {step.placement_reason && <p className="c4r-placement">{step.placement_reason}</p>}
       {step.prerequisites.length > 0 && <p className="muted">Builds on: {step.prerequisites.join(', ')}</p>}
       <div className="c4r-step-grid">
         <div><h4>Learning activities</h4><ul>{step.activities.map(a => <li key={a}>{a}</li>)}</ul></div>
         <div><h4>Practical project</h4><p>{step.project}</p></div>
         <div><h4>Milestones</h4><ul className="c4r-milestones">{step.milestones.map(m => <li key={m}><Icon name="check" size={14} />{m}</li>)}</ul></div>
-        <div><h4>Recommended resources</h4>{step.resources.length ? <ul className="c4r-resources">{step.resources.map(r => <Resource key={r.resource_id} resource={r} />)}</ul> : <p className="muted">No resources are available for this skill in the current dataset.</p>}</div>
+        <div><h4>Recommended resources</h4>{step.resources.length ? <ul className="c4r-resources">{step.resources.map(r => <Resource key={r.resource_id} resource={r} />)}</ul> : <p className="muted">{step.resource_note || 'No resources are available for this skill in the current dataset.'}</p>}</div>
       </div>
     </div>
   </details>
+}
+
+function LearnerProfile({ profile }) {
+  if (!profile) return null
+  return <div className={`c4r-profile profile-${profile.level.toLowerCase()}`}>
+    <div className="c4r-profile-head">
+      <h3>Your learning profile</h3>
+      <span className="c4r-profile-level">{profile.level}</span>
+      <small className="muted">{profile.score}/{profile.max_score} points</small>
+    </div>
+    <ul>{profile.reasons.map(reason => <li key={reason}>{reason}</li>)}</ul>
+    <p className="c4r-profile-pace"><Icon name="spark" size={15} />{profile.pace_note}</p>
+    <details className="c4r-breakdown">
+      <summary>How your profile is used</summary>
+      <p className="muted">{profile.rule}</p>
+      <p className="muted">Resource types after your own learning methods: {profile.resource_type_order.join(' → ')}. It also sets project difficulty and the pace note. Each skill still starts at the level your own evidence shows.</p>
+    </details>
+  </div>
 }
 
 function Roadmap({ roadmap }) {
   return <section className="card c4r-section" aria-labelledby="c4r-roadmap">
     <div className="c4r-section-title"><span className="step-number">04</span><h2 id="c4r-roadmap">Personalised learning roadmap</h2></div>
     <p className="c4r-caution"><Icon name="spark" size={15} />Your roadmap is based on your CV. Adding proof for claimed skills is optional and will update your roadmap automatically.</p>
+    <LearnerProfile profile={roadmap.learner_profile} />
     {roadmap.total_steps === 0 ? <p>Your CV evidence already meets every requirement for this career. Keep your skills current and add new evidence to your CV.</p> : <>
       <div className="c4r-stats">
         <div><strong>{roadmap.total_steps}</strong><span>Skills to develop</span></div>
         <div><strong>{Math.round(roadmap.total_hours)}</strong><span>Estimated hours</span></div>
         <div><strong>{roadmap.total_weeks}</strong><span>Weeks at {roadmap.weekly_hours} h/week</span></div>
       </div>
-      <p className="muted">Prerequisites come first. Durations are planning estimates; select a step to see activities, a project, milestones and resources.</p>
+      <p className="muted">Each skill starts at the level your own evidence shows, so stages you already know are skipped. Prerequisites come first. Durations are planning estimates; select a step to see activities, a project, milestones and resources.</p>
       <div className="c4r-stages">
         {roadmap.stages.map(stage => <div key={stage.stage} className={`c4r-stage stage-${stage.stage.toLowerCase()}`}>
           <div className="c4r-stage-head">
@@ -377,6 +402,8 @@ function Method({ result }) {
     <summary>Method, data sources and limitations</summary>
     <h3>Skill gap analysis</h3><p>{method.gap_analysis}</p>
     <h3>Resources and roadmap</h3><p>{method.resource_ranking}</p><p>{method.roadmap_ordering}</p>
+    {method.adaptive_placement && <><h3>Adaptive placement</h3><p>{method.adaptive_placement}</p></>}
+    {method.learner_profile && <><h3>Learner profile</h3><p>{method.learner_profile}</p></>}
     <h3>Data sources</h3><ul>{method.data_sources.map(s => <li key={s}>{s}</li>)}</ul>
     <h3>Limitations</h3><ul>{method.limitations.map(s => <li key={s}>{s}</li>)}</ul>
     <p className="muted">Models: {model.gap_model} (skill gap), {model.readiness_model} (readiness) · C4 {model.versions?.c4} · trained {model.versions?.trained_at} on {model.versions?.training_data} · O*NET {model.versions?.onet}</p>

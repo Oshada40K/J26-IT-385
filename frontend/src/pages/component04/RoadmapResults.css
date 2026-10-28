@@ -160,6 +160,18 @@
 .c4r-step-grid h4 { margin-bottom: 6px; font-size: 13px; }
 .c4r-step-grid ul { margin: 0; padding-left: 18px; font-size: 12px; }
 .c4r-step-grid p { margin: 0; font-size: 12px; }
+.c4r-placement-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.c4r-tag.is-skipped { background: var(--color-background); text-decoration: line-through; }
+.c4r-placement { margin: 0 0 10px; padding: 8px 12px; border-left: 3px solid var(--component-accent); border-radius: var(--radius-sm); background: var(--component-soft); font-size: 12px; }
+.c4r-profile { margin: 14px 0; padding: 14px 16px; border: 1px solid var(--color-border); border-left: 4px solid var(--component-accent); border-radius: var(--radius-md); background: var(--color-surface); }
+.c4r-profile-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; }
+.c4r-profile-head h3 { margin: 0; font-size: 15px; }
+.c4r-profile-level { padding: 3px 12px; border-radius: 999px; font-weight: 600; font-size: 12px; background: var(--component-soft); color: var(--component-accent); }
+.c4r-profile.profile-novice .c4r-profile-level { background: var(--color-gold-soft); color: #92400E; }
+.c4r-profile.profile-experienced .c4r-profile-level { background: var(--color-success-soft); color: var(--color-success-text); }
+.c4r-profile ul { margin: 10px 0; padding-left: 18px; font-size: 12px; }
+.c4r-profile-pace { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 8px; font-size: 12px; color: var(--component-accent); font-weight: 500; }
+.c4r-profile-pace svg { flex-shrink: 0; margin-top: 3px; }
 .c4r-milestones,.c4r-resources { padding-left: 0 !important; list-style: none; display: grid; gap: 6px; }
 .c4r-milestones li { display: flex; gap: 6px; align-items: flex-start; }
 .c4r-milestones svg { flex-shrink: 0; margin-top: 3px; color: var(--component-accent); }

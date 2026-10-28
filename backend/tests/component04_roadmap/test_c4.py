@@ -184,9 +184,9 @@ class C4Tests(unittest.TestCase):
         stages = [s["stage"] for s in result["roadmap"]["stages"]]
         self.assertEqual(stages, sorted(stages, key=["Beginner", "Intermediate", "Advanced"].index))
         eng = service.engine()
-        for step in steps:
-            available = set(eng.res[eng.res.skill_id == step["skill_id"]].resource_type)
-            if "video" in available:
+        for step in steps:                          # preferred type first among resources at the starting stage
+            res = eng.res[eng.res.skill_id == step["skill_id"]]
+            if "video" in set(res[res.level == step["entry_stage"]].resource_type):
                 self.assertEqual(step["resources"][0]["type"], "video")
 
     @needs_models
@@ -262,8 +262,107 @@ class C4Tests(unittest.TestCase):
         self.assertEqual(severity(low), severity(high))
         self.assertNotEqual(severity(high), "none")
 
+    # ------------------------------------------------------------------ adaptive learner model
+    LEVELS = ["Beginner", "Intermediate", "Advanced"]
+
+    @staticmethod
+    def step_for(result, skill_id):
+        return next((s for stage in result["roadmap"]["stages"] for s in stage["steps"] if s["skill_id"] == skill_id), None)
+
+    @needs_models
+    def test_intermediate_student_skips_beginner_stage(self):
+        base = [{"name": "Python", "level": 3, "confidence": "medium"}]
+        a, _, _ = self.analyse(base)                                                     # JavaScript CV level 0
+        b, _, _ = self.analyse(base + [{"name": "JavaScript", "level": 3, "confidence": "medium"}])   # level 3
+        step_a, step_b = self.step_for(a, "SK004"), self.step_for(b, "SK004")
+        self.assertEqual((step_a["entry_stage"], step_a["skipped_stages"]), ("Beginner", []))
+        self.assertEqual((step_b["entry_stage"], step_b["target_stage"]), ("Intermediate", "Advanced"))
+        self.assertIn("Beginner", step_b["skipped_stages"])
+        self.assertIn("level 3/5", step_b["placement_reason"])
+        self.assertIn("Beginner lessons are skipped", step_b["placement_reason"])
+        self.assertTrue(step_b["resources"])
+        self.assertFalse([r for r in step_b["resources"] if r["level"] == "Beginner"])
+        self.assertTrue(all(r["level"] == "Beginner" for r in step_a["resources"]))      # JavaScript has many
+        self.assertLess(step_b["estimated_hours"], step_a["estimated_hours"])
+        self.assertTrue(step_b["project"].startswith("Small end-to-end project"))
+        self.assertTrue(step_a["project"].startswith("Guided exercise"))
+        for result in (a, b):
+            steps = [s for stage in result["roadmap"]["stages"] for s in stage["steps"]]
+            for s in steps:     # grouped by entry stage; a prerequisite may be pulled forward for the skills that need it
+                pulled = "build on it" in s["placement_reason"] or "builds on it" in s["placement_reason"]
+                self.assertEqual(s["stage"] == s["entry_stage"], not pulled, s["skill_name"])
+                self.assertLessEqual(self.LEVELS.index(s["stage"]), self.LEVELS.index(s["entry_stage"]))
+            self.assertEqual([s["step"] for s in steps], list(range(1, len(steps) + 1)))
+            self.assertEqual([s["start_week"] for s in steps], sorted(s["start_week"] for s in steps))
+
+    @needs_models
+    def test_skill_at_required_level_is_not_in_roadmap(self):
+        result = self.analyse_with_ratings([{"name": "JavaScript", "level": 4, "confidence": "medium"}], {"SK004": 4}, default=3)
+        js = next(s for s in result["skill_gaps"]["skills"] if s["skill_id"] == "SK004")
+        self.assertEqual(js["status"], "met")
+        self.assertIsNone(self.step_for(result, "SK004"))
+        roadmap_ids = {s["skill_id"] for stage in result["roadmap"]["stages"] for s in stage["steps"]}
+        self.assertFalse(roadmap_ids & {s["skill_id"] for s in result["skill_gaps"]["skills"] if s["status"] == "met"})
+
+    @needs_models
+    def test_self_rating_never_raises_entry_stage(self):
+        cv = [{"name": "Python", "level": 3, "confidence": "medium"}]
+        high = self.step_for(self.analyse_with_ratings(cv, {"SK028": 5}), "SK028")     # AWS rated 5/5, CV level 0
+        low = self.step_for(self.analyse_with_ratings(cv, {"SK028": 1}), "SK028")
+        self.assertEqual((high["entry_stage"], high["skipped_stages"], high["status"]), ("Beginner", [], "unverified"))
+        self.assertEqual(high["reason"], "verify claimed skill")
+        self.assertIn("self-ratings never raise your starting level", high["placement_reason"])
+        self.assertEqual(low["entry_stage"], high["entry_stage"])
+        # A low rating with real evidence (level >= 2) adds a short refresher; a high rating does not.
+        refresh = self.step_for(self.analyse_with_ratings(cv + [{"name": "JavaScript", "level": 3, "confidence": "medium"}],
+                                                          {"SK004": 1}), "SK004")
+        self.assertTrue(refresh["refresher"])
+        self.assertTrue(refresh["activities"][0].startswith("Refresher"))
+        self.assertEqual(refresh["entry_stage"], "Intermediate")
+        confident = self.step_for(self.analyse_with_ratings(cv + [{"name": "JavaScript", "level": 3, "confidence": "medium"}],
+                                                            {"SK004": 5}), "SK004")
+        self.assertFalse(confident["refresher"])
+        self.assertEqual(confident["entry_stage"], "Intermediate")
+
+    @needs_models
+    def test_learner_profile_changes_resource_type_order(self):
+        eng = service.engine()
+        record = lambda **activity: {"career_id": SOFTWARE_DEVELOPERS, "confidence": [], "preferences": {},
+                                     "activity": {"num_projects": 0, "num_certifications": 0, "num_internships": 0, **activity}}
+        novice = eng.analyze_assessment({"candidate_id": None, "skills": []}, record())
+        experienced = eng.analyze_assessment({"candidate_id": None, "skills": self.STRONG_CV},
+                                             record(num_projects=4, num_certifications=2, num_internships=1))
+        self.assertEqual(novice["learner_profile"]["level"], "Novice")
+        self.assertEqual(experienced["learner_profile"]["level"], "Experienced")
+        self.assertEqual(experienced["roadmap"]["learner_profile"], experienced["learner_profile"])
+        self.assertEqual(len(novice["learner_profile"]["reasons"]), 5)
+        self.assertNotEqual(novice["learner_profile"]["pace_note"], experienced["learner_profile"]["pace_note"])
+        # Same skill, same starting stage, no learning methods chosen: only the profile differs.
+        order = lambda profile: [r["type"] for r in eng.recommend_resources("SK004", 0.0, [], profile=profile)]
+        first_novice = order(novice["learner_profile"])
+        first_experienced = order(experienced["learner_profile"])
+        self.assertNotEqual(first_novice, first_experienced)
+        self.assertIn(first_novice[0], ("course", "video"))
+        self.assertIn(first_experienced[0], ("project", "documentation", "certification"))
+        # The student's own learning methods still come before the profile order.
+        self.assertEqual(eng.recommend_resources("SK004", 0.0, ["video"], profile=experienced["learner_profile"])[0]["type"], "video")
+
+    @needs_models
+    def test_no_lower_level_resource_when_none_at_entry_stage(self):
+        eng = service.engine()
+        self.assertFalse(set(eng.res[eng.res.skill_id == "SK014"].level) - {"Beginner"})       # Git: Beginner only
+        self.assertEqual(eng.recommend_resources("SK014", 0.6, ["video"]), [])               # level 3 -> Intermediate
+        self.assertEqual(eng.recommend_resources("SK004", 0.8, ["video"]), [])               # JavaScript, no Advanced
+        result, _, _ = self.analyse([{"name": "Git", "level": 3, "confidence": "medium"}])
+        git = self.step_for(result, "SK014")
+        self.assertEqual((git["entry_stage"], git["resources"]), ("Intermediate", []))
+        self.assertEqual(git["resource_note"], "No Intermediate resource in the dataset for Git; use the practical project.")
+        for step in (s for stage in result["roadmap"]["stages"] for s in stage["steps"]):    # never below entry stage
+            for r in step["resources"]:
+                self.assertGreaterEqual(self.LEVELS.index(r["level"]), self.LEVELS.index(step["entry_stage"]))
+
     # ------------------------------------------------------------------ optional evidence
-    STRONG_CV = [{"name": n, "level": l, "confidence": "medium"} for n, l in
+    STRONG_CV =[{"name": n, "level": l, "confidence": "medium"} for n, l in
                  [("Python", 4), ("React", 2), ("Kubernetes", 2), ("JavaScript", 3), ("Git", 3), ("HTML", 4)]]
 
     @needs_models

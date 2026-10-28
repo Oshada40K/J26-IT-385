@@ -9,10 +9,12 @@ trained models, and adds the student-facing explanation layer:
                                      model A for review flags, and "unverified" claimed skills (see _gap_status).
 2. Multi-factor prioritisation     - transparent weighted sum using the weights learned in the notebook
                                      (c4_config.json "B"); the demand factor uses real O*NET flags.
-3. Adaptive resources              - learning_resources.csv ranked by the student's learning methods and
-                                     current proficiency.
-4. Staged roadmap                  - prerequisite-ordered steps from make_roadmap, grouped into
-                                     Beginner / Intermediate / Advanced with activities and milestones.
+3. Adaptive resources              - learning_resources.csv filtered to the student's entry stage or above,
+                                     ranked by level, learning methods and the learner profile.
+4. Adaptive roadmap                - prerequisite-ordered steps from make_roadmap, each placed at the student's
+                                     own entry stage (entry_level, from evidence only) and grouped by it, with
+                                     level-matched activities, projects and milestones; learner_profile adapts
+                                     resource types, project difficulty and pace.
 5. Career readiness score          - trained linear model C, shown term by term (intercept + coef x value).
 """
 import math
@@ -111,6 +113,39 @@ VERIFY_ACTIVITIES = ["Build a small project, or earn a certificate, that shows y
                      "Add it to your CV and upload the updated CV in Component 01 so the evidence is counted."]
 REVIEW_ACTIVITIES = ["Build a small piece of work that demonstrates {skill}.",
                      "Describe this work clearly in your CV or portfolio so the evidence is visible."]
+REFRESHER_ACTIVITY = ("Refresher: your evidence shows you already know some {skill}, but you rated your confidence low. "
+                      "Spend one short session reviewing what you have already done before starting new topics.")
+
+# Adaptive placement: where each student starts in a skill comes from their own evidence, never from the
+# skill's catalogue level or their self-rating.
+STAGE_ORD = {s: i for i, s in enumerate(STAGES)}
+PROJECT_LEVELS = {
+    "Beginner": ("Guided exercise", "Follow a tutorial or worked example for the first version, then change one feature on your own."),
+    "Intermediate": ("Small end-to-end project", "Build it yourself from start to finish, including setup, testing and a short README."),
+    "Advanced": ("Realistic capstone", "Make it realistic: add error handling, automated tests and deployment or monitoring, "
+                                       "and document your design trade-offs."),
+}
+# Learner profile (see learner_profile): resource types ranked after the student's own learning methods.
+LEARNER_TYPE_ORDER = {
+    "Novice": ["course", "video", "documentation", "project", "certification"],
+    "Developing": ["course", "project", "video", "documentation", "certification"],
+    "Experienced": ["project", "documentation", "certification", "course", "video"],
+}
+PROJECT_PROFILE_NOTES = {
+    "Novice": "Work through it in small steps and ask a peer or mentor to review it.",
+    "Developing": "",
+    "Experienced": "",
+}
+PACE_NOTES = {
+    "Novice": "Take it step by step: plan short, regular sessions and finish each activity before moving on. "
+              "The hour estimates are a minimum, so allow extra time.",
+    "Developing": "Follow the plan at your weekly hours and check each milestone before moving to the next skill.",
+    "Experienced": "You can move quickly through topics you already know: skim familiar activities and spend most of "
+                   "your time on the practical projects.",
+}
+PROFILE_RULE = ("Points: importance-weighted CV proficiency >= 60% = 2, >= 30% = 1; required skills within 90% of the "
+                "needed level >= 50% = 1; projects >= 3 = 2, 1-2 = 1; internships >= 1 = 1; certifications >= 1 = 1 "
+                "(maximum 7). Novice 0-2, Developing 3-4, Experienced 5-7.")
 
 LIMITATIONS = [
     "The trained models (skill gap and readiness) were trained on synthetic data for 800 simulated students, "
@@ -170,8 +205,18 @@ def _target_level(value):
     return int(math.ceil(float(value) * LEVEL_MAX - 1e-9))
 
 
-def _resource_level(proficiency):
-    return "Beginner" if proficiency < 0.4 else "Intermediate" if proficiency < 0.7 else "Advanced"
+def entry_stage_of(level):
+    """Evidence level (0-5) -> the stage the student starts at: 0-1 Beginner, 2-3 Intermediate, 4-5 Advanced."""
+    return "Beginner" if level <= 1 else "Intermediate" if level <= 3 else "Advanced"
+
+
+def target_stage_of(level):
+    """Target level (0-5) -> the stage the student must reach: <=2 Beginner, 3 Intermediate, >=4 Advanced."""
+    return "Beginner" if level <= 2 else "Intermediate" if level == 3 else "Advanced"
+
+
+def _plural(n, word):
+    return f"{n} {word}{'' if n == 1 else 's'}"
 
 
 class C4Analyzer(C4Engine):
@@ -211,22 +256,64 @@ class C4Analyzer(C4Engine):
         pf["f_demand_velocity"] = [sum(self.onet_flags.get((st["career_id"], s), (0, 0))) / 2 for s in pf.skill_id]
         return pf
 
+    # ------------------------------------------------------------------ adaptive learner model
+    def entry_level(self, st, skill_id):
+        """Per-skill placement from the student's own evidence ONLY (CV level or usable proof, already merged into
+        st["proficiencies"]). Self-ratings are never read here, so they can never raise the starting stage.
+        Returns (evidence level 0-5, entry stage)."""
+        level = _to_level(st["proficiencies"].get(skill_id, 0.0))
+        return level, entry_stage_of(level)
+
+    def learner_profile(self, g, activity):
+        """Overall learner level for this career from CV evidence and practical experience (rule: PROFILE_RULE)."""
+        rf = self.readiness_features(g, {**activity, "academic_year": 0})
+        wpr, cov = float(rf["weighted_proficiency_ratio"]), float(rf["coverage_ratio"])
+        projects, internships, certificates = (int(activity.get(k) or 0) for k in
+                                               ("num_projects", "num_internships", "num_certifications"))
+        parts = [
+            (2 if wpr >= 0.6 else 1 if wpr >= 0.3 else 0,
+             f"Your CV evidence reaches {wpr:.0%} of the skill levels this career needs (weighted by importance)"),
+            (1 if cov >= 0.5 else 0, f"{cov:.0%} of the required skills are already within 90% of the needed level"),
+            (2 if projects >= 3 else 1 if projects >= 1 else 0, f"You reported {_plural(projects, 'relevant project')}"),
+            (1 if internships >= 1 else 0, f"You reported {_plural(internships, 'internship')}"),
+            (1 if certificates >= 1 else 0, f"You reported {_plural(certificates, 'certification')}"),
+        ]
+        score = sum(p for p, _ in parts)
+        level = "Experienced" if score >= 5 else "Developing" if score >= 3 else "Novice"
+        return dict(level=level, score=score, max_score=7,
+                    reasons=[f"{text} (+{_plural(p, 'point')})." for p, text in parts],
+                    resource_type_order=LEARNER_TYPE_ORDER[level], pace_note=PACE_NOTES[level], rule=PROFILE_RULE)
+
+    def project_for(self, skill_id, name, entry, target, profile):
+        """Practical project matched to the entry stage. Experienced learners get one stage harder (never above the
+        target stage); Novice learners get extra guidance. Returns (project stage, text)."""
+        stage = entry
+        if profile["level"] == "Experienced" and STAGE_ORD[entry] < STAGE_ORD[target]:
+            stage = STAGES[STAGE_ORD[entry] + 1]
+        label, extra = PROJECT_LEVELS[stage]
+        task = PROJECT_TEMPLATES[CATEGORY_FAMILY.get(self.category.get(skill_id), "general")].format(skill=name)
+        return stage, " ".join(t for t in (f"{label} ({stage}): {task}", extra, PROJECT_PROFILE_NOTES[profile["level"]]) if t)
+
     # ------------------------------------------------------------------ feature 3: adaptive resources
-    def recommend_resources(self, skill_id, proficiency, resource_types, k=3, first_types=()):
-        """first_types: resource types ranked before the student's preference (in order)."""
-        r = self.res[self.res.skill_id == skill_id]
+    def recommend_resources(self, skill_id, proficiency, resource_types, k=3, first_types=(), entry_stage=None, profile=None):
+        """Level-matched resources. Resources BELOW the student's entry stage are never returned (no beginner lessons
+        for an intermediate student). Ranking (lexicographic): first_types (verify path, in order) > entry stage,
+        then the next stage up > the student's learning methods > learner-profile type order > free > rating.
+        At most two resources of the same type. Returns [] when nothing exists at or above the entry stage."""
+        entry = entry_stage or entry_stage_of(_to_level(proficiency))
+        r = self.res[(self.res.skill_id == skill_id) & (self.res.level.map(STAGE_ORD) >= STAGE_ORD[entry])]
         if r.empty:
             return []
-        target = _resource_level(proficiency)
-        adjacent = {"Beginner": "Intermediate", "Intermediate": "Advanced", "Advanced": "Intermediate"}[target]
         preferred = set(resource_types)
-        score = (r.resource_type.isin(preferred) * 3.0 + (r.level == target) * 1.5 + (r.level == adjacent) * 0.5
-                 + r.is_free * 0.3 + r.rating.fillna(4.0) / 10)
-        for i, t in enumerate(first_types):             # e.g. project +20, certification +10
-            score = score + (r.resource_type == t) * (20.0 / (i + 1))
-        ranked = r.assign(_score=score).sort_values(["_score", "resource_id"], ascending=[False, True])
+        type_order = (profile or {}).get("resource_type_order", [])
+        first_rank = {t: i for i, t in enumerate(first_types)}
+        profile_rank = {t: i for i, t in enumerate(type_order)}
+        ranked = sorted(r.itertuples(), key=lambda x: (
+            first_rank.get(x.resource_type, len(first_rank)), STAGE_ORD[x.level] - STAGE_ORD[entry],
+            x.resource_type not in preferred, profile_rank.get(x.resource_type, len(profile_rank)),
+            -int(x.is_free), -(4.0 if np.isnan(x.rating) else float(x.rating)), x.resource_id))
         picks, per_type = [], {}
-        for x in ranked.itertuples():                   # at most two resources of the same type
+        for x in ranked:                                # at most two resources of the same type
             if per_type.get(x.resource_type, 0) < 2:
                 picks.append(x)
                 per_type[x.resource_type] = per_type.get(x.resource_type, 0) + 1
@@ -235,11 +322,17 @@ class C4Analyzer(C4Engine):
         out = []
         for x in picks:
             why = []
+            label = RESOURCE_TYPE_LABELS.get(x.resource_type, x.resource_type)
             if x.resource_type in first_types:
                 why.append("a project or certificate lets you verify this skill in your CV")
             elif x.resource_type in preferred:
-                why.append(f"matches your preference for {RESOURCE_TYPE_LABELS.get(x.resource_type, x.resource_type)} learning")
-            why.append(f"{x.level.lower()} level" + (" suits your current proficiency" if x.level == target else ""))
+                why.append(f"matches your preference for {label} learning")
+            elif x.resource_type in type_order[:2]:
+                why.append(f"{label} suits your {profile['level'].lower()} learner profile")
+            gap = STAGE_ORD[x.level] - STAGE_ORD[entry]
+            why.append(f"{x.level.lower()} level " + ("matches your starting stage" if gap == 0 else
+                                                      "is the next stage up from where you start" if gap == 1 else
+                                                      "is a later stage for this skill"))
             if x.is_free:
                 why.append("free to access")
             out.append(dict(resource_id=x.resource_id, title=x.title, type=x.resource_type, level=x.level,
@@ -302,34 +395,90 @@ class C4Analyzer(C4Engine):
                             "trained linear readiness model (c4_config.json 'C').")
 
     # ------------------------------------------------------------------ feature 4: roadmap
-    def _roadmap(self, st, g, prio):
+    def _placement_reason(self, st, sid, name, level, entry, target_stage, target_level, skipped, status, rating):
+        source = st["evidence_source"].get(sid)
+        shown = f"your proof ({source})" if source else "your CV"
+        reason = (f"You start at {entry} because {shown} shows "
+                  + (f"no evidence of {name} yet." if level == 0 else f"level {level}/5."))
+        if skipped:
+            reason += f" {' and '.join(skipped)} lessons are skipped."
+        reason += (f" Your target is {target_stage} (level {target_level}/5)." if target_stage != entry
+                   else f" You stay at {entry} level until you reach {target_level}/5.")
+        if status == "unverified" and isinstance(rating, (int, float)):
+            reason += f" You rated yourself {rating:g}/5, but self-ratings never raise your starting level."
+        return reason
+
+    def _roadmap(self, st, g, prio, ratings=None, profile=None):
+        """Adaptive roadmap: make_roadmap gives the skills, prerequisite order and hours; each step is then placed
+        at the student's own entry stage (entry_level) and grouped by it, not by the skill's catalogue level."""
         rows = {r.skill_id: r for r in g.itertuples()}
         types = st["preferences"].get("resource_types", [])
+        ratings = ratings or {}
+        profile = profile or self.learner_profile(g, st["activity"])
+        base = self.make_roadmap(st, g, prio)
+        ids = {s["skill_id"] for s in base}
+        placed = {s["skill_id"]: self.entry_level(st, s["skill_id"]) for s in base}
+        # Phase = entry stage, except that a prerequisite is pulled forward into the earliest phase of the skills
+        # that build on it, so prerequisites still come first. make_roadmap's order is topological, so walking it
+        # backwards visits every dependent before its prerequisites.
+        phase, pulled_by = {}, {}
+        for step in reversed(base):
+            sid = step["skill_id"]
+            dependents = [d for d in ids if sid in self.pre[d]]
+            phase[sid] = min([STAGE_ORD[placed[sid][1]]] + [phase[d] for d in dependents])
+            pulled_by[sid] = sorted(self.name[d] for d in dependents if phase[d] < STAGE_ORD[placed[sid][1]])
         steps = []
-        for step in self.make_roadmap(st, g, prio):
-            sid, name, stage = step["skill_id"], step["skill_name"], step["stage"]
+        for step in base:
+            sid, name = step["skill_id"], step["skill_name"]
             current = float(st["proficiencies"].get(sid, 0.0))
             row = rows.get(sid)
             status = row.status if row is not None else "prerequisite"
             target = float(row.required_level) - GAP_TOLERANCE if row is not None else PREREQ_TARGET
+            level, entry = placed[sid]
+            target_level = max(_target_level(target), level)
+            target_stage = target_stage_of(_target_level(target))
+            if STAGE_ORD[target_stage] < STAGE_ORD[entry]:
+                target_stage = entry
+            skipped = STAGES[:STAGE_ORD[entry]]
+            rating = ratings.get(sid)
             reason = {"gap": "Required for the career and below the required level",
                       "review": "Required for the career; your CV evidence meets the level but should be confirmed",
                       "unverified": VERIFY_REASON}.get(
                 status, step["reason"][0].upper() + step["reason"][1:])
-            template = {"review": REVIEW_ACTIVITIES, "unverified": VERIFY_ACTIVITIES}.get(status, STAGE_ACTIVITIES[stage])
+            template = {"review": REVIEW_ACTIVITIES, "unverified": VERIFY_ACTIVITIES}.get(status, STAGE_ACTIVITIES[entry])
             activities = [a.format(skill=name) for a in template]
-            project = PROJECT_TEMPLATES[CATEGORY_FAMILY.get(self.category.get(sid), "general")].format(skill=name)
-            milestones = [f"Reach Component 01 evidence level {max(_target_level(target), _to_level(current))}/5 in {name} "
-                          f"(currently {_to_level(current)}/5), confirmed by uploading your updated CV.",
+            refresher = level >= 2 and isinstance(rating, (int, float)) and rating <= 2
+            if refresher:
+                activities.insert(0, REFRESHER_ACTIVITY.format(skill=name))
+            project_level, project = self.project_for(sid, name, entry, target_stage, profile)
+            placement = self._placement_reason(st, sid, name, level, entry, target_stage, target_level, skipped, status, rating)
+            if pulled_by[sid]:
+                placement += (f" It is placed in the {STAGES[phase[sid]]} part of your roadmap because "
+                              f"{', '.join(pulled_by[sid])} {'builds' if len(pulled_by[sid]) == 1 else 'build'} on it.")
+            resources = self.recommend_resources(sid, current, types, first_types=VERIFY_TYPES if status == "unverified" else (),
+                                                 entry_stage=entry, profile=profile)
+            milestones = [f"Reach Component 01 evidence level {target_level}/5 in {name} "
+                          f"(currently {level}/5), confirmed by uploading your updated CV.",
                           "Complete the practical project and add it to your CV or portfolio.",
                           f"Rate your confidence in {name} as 4 (Confident) or higher in your next assessment."]
-            steps.append(dict(step=step["step"], skill_id=sid, skill_name=name, stage=stage, status=status, reason=reason,
-                              prerequisites=step["prerequisites"], estimated_hours=step["estimated_hours"],
+            steps.append(dict(step=step["step"], skill_id=sid, skill_name=name, stage=STAGES[phase[sid]], status=status,
+                              reason=reason, prerequisites=step["prerequisites"], estimated_hours=step["estimated_hours"],
                               start_week=step["start_week"], end_week=step["end_week"],
-                              current_level=_to_level(current), target_level=max(_target_level(target), _to_level(current)),
-                              activities=activities, project=project, milestones=milestones,
-                              resources=self.recommend_resources(
-                                  sid, current, types, first_types=VERIFY_TYPES if status == "unverified" else ())))
+                              current_level=level, target_level=target_level,
+                              entry_stage=entry, target_stage=target_stage, skipped_stages=skipped,
+                              placement_reason=placement, skill_level=self.level[sid], refresher=refresher,
+                              activities=activities, project=project, project_level=project_level, milestones=milestones,
+                              resources=resources,
+                              resource_note=None if resources else
+                              f"No {entry} resource in the dataset for {name}; use the practical project."))
+        # Group by phase (entry stage), keeping make_roadmap's order inside each phase; then renumber and re-time.
+        steps.sort(key=lambda s: (STAGE_ORD[s["stage"]], s["step"]))
+        hours_pw = max(float(st["preferences"].get("weekly_study_hours", 6)), 1.0)
+        week = 0.0
+        for number, s in enumerate(steps, 1):
+            start = week
+            week += s["estimated_hours"] / hours_pw
+            s.update(step=number, start_week=int(math.floor(start)) + 1, end_week=int(math.ceil(week - 1e-9)))
         stages = []
         for stage in STAGES:
             items = [s for s in steps if s["stage"] == stage]
@@ -342,10 +491,9 @@ class C4Analyzer(C4Engine):
                                          f"{'skill' if len(items) == 1 else 'skills'} "
                                          f"({', '.join(s['skill_name'] for s in items)}) and complete "
                                          f"{len(items)} practical {'project' if len(items) == 1 else 'projects'}."))
-        hours_pw = max(float(st["preferences"].get("weekly_study_hours", 6)), 1.0)
         return dict(weekly_hours=hours_pw, total_steps=len(steps),
                     total_hours=round(sum(s["estimated_hours"] for s in steps), 1),
-                    total_weeks=max((s["end_week"] for s in steps), default=0), stages=stages)
+                    total_weeks=max((s["end_week"] for s in steps), default=0), stages=stages, learner_profile=profile)
 
     # ------------------------------------------------------------------ public entry point
     def analyze_assessment(self, c1, form, evidence=None):
@@ -436,6 +584,7 @@ class C4Analyzer(C4Engine):
         order = {"unverified": 0, "gap": 0, "review": 1, "met": 2}
         skills.sort(key=lambda s: (order[s["status"]], s["priority_rank"] or 999, s["skill_name"]))
 
+        profile = self.learner_profile(g, st["activity"])
         unmapped = [m["c1_name"] for m in st["skill_mapping"] if not m["skill_id"]]
         warnings_ = [w for w in st["warnings"] if not w.startswith("C1 skills not in")]
         if not c1.get("skills"):
@@ -457,7 +606,8 @@ class C4Analyzer(C4Engine):
                                          critical=sum(s["severity"] == "critical" for s in skills)),
                             skills=skills),
             priorities=priorities,
-            roadmap=self._roadmap(st, g, prio),
+            learner_profile=profile,
+            roadmap=self._roadmap(st, g, prio, ratings, profile),
             method=dict(
                 gap_analysis="Each O*NET requirement is compared with your CV proficiency (Component 01 level / 5). "
                              "It is a gap when the proficiency is more than 0.05 below the O*NET required level. Severity uses CV "
@@ -469,10 +619,21 @@ class C4Analyzer(C4Engine):
                                  + f"; claimed but unverified skills x {UNVERIFIED_PRIORITY_FACTOR}",
                 priority_factors=[dict(key=FACTORS[f][0], label=FACTORS[f][1], definition=FACTORS[f][2], weight=weights[f]) for f in FIVE],
                 priority_weights_source="Weights learned in the C4 training notebook (c4_config.json 'B') and used as a transparent weighted sum.",
-                resource_ranking="Resources are ranked by your preferred learning methods, a level that suits your current proficiency, "
-                                 "free access and rating (when available). At most two resources of the same type are shown.",
-                roadmap_ordering="Skills are ordered so that prerequisites come first, then by level (Beginner, Intermediate, Advanced) "
-                                 "and by priority. Missing prerequisites with CV proficiency below 0.5 are added automatically.",
+                resource_ranking="Resources below your starting stage for a skill are never shown. Resources at your starting stage "
+                                 "come first, then the next stage up; within a level they are ranked by your learning methods, "
+                                 "then by your learner profile, free access and rating (when available). At most two resources "
+                                 "of the same type are shown. If the dataset has nothing at or above your starting stage, the "
+                                 "practical project is recommended instead.",
+                roadmap_ordering="Skills are ordered so that prerequisites come first, then by your starting stage (Beginner, "
+                                 "Intermediate, Advanced) and by priority. Missing prerequisites with CV proficiency below 0.5 "
+                                 "are added automatically.",
+                adaptive_placement="Each skill starts at the stage your own evidence shows (CV level or usable proof): level 0-1 "
+                                   "Beginner, 2-3 Intermediate, 4-5 Advanced. Earlier stages are skipped. The target stage comes "
+                                   "from the required level (2/5 or less Beginner, 3/5 Intermediate, 4/5 or more Advanced). "
+                                   "Self-ratings never raise your starting stage; a low self-rating with level 2/5 or more adds a "
+                                   "short refresher.",
+                learner_profile=PROFILE_RULE + " The profile orders resource types after your own learning methods, sets "
+                                               "project difficulty and gives a pace note.",
                 data_sources=["O*NET 31.0 occupation requirements, Hot Technology and In Demand flags (occupation_skill_requirements.csv)",
                               "C4 skills catalogue and prerequisite graph (skills_catalog.csv, skill_prerequisites.csv)",
                               "Learning resources from roadmap.sh and the Coursera dataset on Kaggle (learning_resources.csv)",

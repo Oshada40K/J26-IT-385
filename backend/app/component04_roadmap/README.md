@@ -35,11 +35,42 @@ Owner: Dewmi. Frontend: `frontend/src/pages/component04/`. Route: `/component04`
 | Career relevance | O*NET-derived importance | 0.1689 |
 | Low self-confidence | 1 − normalised rating (1 = not studied, 0.5 = not rated) | 0.3455 |
 
-**3. Resources.** `learning_resources.csv` (roadmap.sh and the Coursera Kaggle dataset) ranked by the student's learning methods (+3), level suited to current proficiency (+1.5, adjacent +0.5), free (+0.3) and rating/10 (4.0 if missing); at most two of one type.
+**3. Level-matched resources.** `learning_resources.csv` (roadmap.sh and the Coursera Kaggle dataset). Resources **below the student's entry stage are excluded** (an Intermediate student never gets Beginner resources). The rest are ranked in this order: verify types first for claimed skills (project, certification) → entry stage, then the next stage up → the student's learning methods → learner-profile type order → free → rating (4.0 if missing); at most two of one type, three in total. If nothing exists at or above the entry stage, no lower-level resource is returned; the step gets `resource_note` = "No <level> resource in the dataset for <skill>; use the practical project" (only 18 of 85 skills have Advanced resources).
 
-**4. Roadmap.** `make_roadmap` orders gap/review skills and missing prerequisites (proficiency < 0.5) topologically, then by level and priority. Steps are grouped into Beginner → Intermediate → Advanced (no prerequisite in the data has a higher level than its dependent skill). Hours = max(4, distance × 40/60/80 by level); weeks use the student's weekly hours. Each step has activities, a practical project, resources and measurable milestones (target C1 level, project, confidence ≥ 4).
+**4. Adaptive roadmap.** `make_roadmap` (unchanged) chooses the skills (gap/review skills and missing prerequisites with proficiency < 0.5), their prerequisite order and hours = max(4, distance × 40/60/80 by the skill's catalogue level), or 10 h to verify a claimed skill. `C4Analyzer._roadmap` then places each step for **this student** (see 6) and groups the steps by entry stage, Beginner → Intermediate → Advanced, keeping `make_roadmap`'s order inside each group. A prerequisite is pulled forward into the earliest group of the skills that build on it, so prerequisites always come first (`placement_reason` says so). Steps are renumbered and weeks are recomputed from the student's weekly hours. Each step has level-matched activities (`STAGE_ACTIVITIES[entry_stage]`; the verify and review paths keep their own activities), a practical project, resources and measurable milestones (target C1 level, project, confidence ≥ 4).
 
 **5. Readiness score.** `score = intercept + Σ coefficient × value` from the trained linear model (`C_readiness`), limited to 0–100 and shown term by term. Academic year is not collected, so its training mean is used.
+
+**6. Adaptive learner model** (`analysis.py`; `c4_engine.py` is unchanged).
+
+*Per-skill placement* (`C4Analyzer.entry_level`) uses the student's own evidence only: `E = round(current_proficiency × 5)`, where proficiency is the CV level or usable proof, as in 1.
+
+| Evidence level E | Entry stage | Required level → target level `ceil((required − 0.05) × 5)` | Target stage |
+|---|---|---|---|
+| 0–1 | Beginner | ≤ 2 | Beginner |
+| 2–3 | Intermediate | 3 | Intermediate |
+| 4–5 | Advanced | ≥ 4 | Advanced |
+
+If the target stage is below the entry stage, the entry stage is used. Stages below the entry stage are listed in `skipped_stages`. **Self-ratings are never read for placement**, so a 5/5 rating with CV level 0 still starts at Beginner; claimed (unverified) skills keep the "verify claimed skill" path. If E ≥ 2 and the self-rating is ≤ 2, a short refresher activity is added first (`refresher: true`); hours are unchanged.
+
+New step fields: `entry_stage`, `target_stage`, `skipped_stages`, `placement_reason` (plain English, for example "You start at Intermediate because your CV shows level 3/5. Beginner lessons are skipped. Your target is Advanced (level 4/5)."), `skill_level` (catalogue level), `refresher`, `project_level` and `resource_note`. The existing `stage` field is now the roadmap group the step is shown in (its entry stage, or an earlier one if a prerequisite was pulled forward).
+
+*Learner profile* (`C4Analyzer.learner_profile`, returned as `learner_profile` in the analysis and in `roadmap`). Points (maximum 7):
+
+| Input | Points |
+|---|---|
+| `weighted_proficiency_ratio` (importance-weighted CV proficiency) | ≥ 0.6 → 2, ≥ 0.3 → 1, else 0 |
+| `coverage_ratio` (required skills within 90% of the needed level) | ≥ 0.5 → 1 |
+| `num_projects` | ≥ 3 → 2, 1–2 → 1 |
+| `num_internships` | ≥ 1 → 1 |
+| `num_certifications` | ≥ 1 → 1 |
+
+Level: **Novice** 0–2, **Developing** 3–4, **Experienced** 5–7. `reasons` lists each input with its points. The profile is used for three things:
+- (a) Resource-type order after the student's own learning methods: Novice course → video → documentation → project → certification; Developing course → project → video → documentation → certification; Experienced project → documentation → certification → course → video.
+- (b) Project difficulty, set from the entry stage: Beginner = guided exercise, Intermediate = small end-to-end project, Advanced = realistic capstone. Experienced learners get one stage harder, never above the target stage. Novice learners get an extra "work in small steps, ask for review" line.
+- (c) A `pace_note`.
+
+It never changes a skill's entry stage.
 
 ## Claimed skills and optional proof
 
