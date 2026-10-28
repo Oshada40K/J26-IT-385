@@ -205,6 +205,29 @@ class TutorScenarios(unittest.TestCase):
         self.assertEqual(gap["evidence_status"], "none")
         self.assertEqual(gap["current_level"], 3)
 
+    # Lessons open in order: later topics stay locked until the earlier ones are done (also enforced on the server)
+    def test_lessons_are_locked_until_earlier_topics_are_done(self):
+        rec = self.student("lk", [{"name": "Programming Fundamentals", "level": 3}], {PF: 3})
+        pf = self.skill(learning.plan(rec, "lk"), PF)
+        self.assertTrue(all(t["locked"] for t in pf["topics"]))          # checkpoint pending: take the check first
+        with self.assertRaises(LearningError) as ctx:
+            learning.open_activity(rec, "lk", PF, "pf-a1")
+        self.assertEqual(ctx.exception.status_code, 409)
+        diag = learning.open_activity(rec, "lk", PF, kind="diagnostic")    # fail the checkpoint -> back to Beginner
+        learning.submit_attempt(rec, "lk", PF, "diagnostic",
+                                answers(diag["questions"], PF, wrong=[q["id"] for q in diag["questions"]]), scope="checkpoint")
+        locks = {t["topic_id"]: t["locked"] for t in self.skill(learning.plan(rec, "lk"), PF)["topics"]}
+        self.assertFalse(locks["pf-b1"])
+        self.assertTrue(locks["pf-i1"] and locks["pf-a1"])
+        for kind, call in (("lesson", lambda: learning.open_activity(rec, "lk", PF, "pf-a1")),
+                           ("quiz", lambda: learning.submit_attempt(rec, "lk", PF, "quiz", {}, "pf-i1")),
+                           ("test_out", lambda: learning.open_activity(rec, "lk", PF, "pf-i1", "diagnostic", scope="test_out"))):
+            with self.assertRaises(LearningError, msg=kind) as ctx:
+                call()
+            self.assertEqual(ctx.exception.status_code, 409)
+        self.quiz(rec, "lk", PF, "pf-b1")                                   # mastered -> stays open for review
+        self.assertEqual(learning.open_activity(rec, "lk", PF, "pf-b1")["why_now"], "You are reviewing this topic.")
+
     # J - a claimed skill (rated 5/5, nothing in the CV) is checked before teaching; a confirmed claim is recorded
     def test_J_claimed_skill_gets_a_claim_check(self):
         rec = self.student("j", [], {GIT: 5})

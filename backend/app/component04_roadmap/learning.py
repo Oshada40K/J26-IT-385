@@ -71,12 +71,14 @@ def _skill_view(ctx, step, progress_all, learning_all):
     nxt = tutor.next_in_skill(topics, states, place)
     in_scope = {t["id"] for t in tutor.topics_in_scope(topics, place["target_stage"])}
     done = sum(states[t] in ("mastered", "from_evidence") for t in in_scope)
+    locks = tutor.lock_reasons(topics, states, place)
     view.update(placement=place, mismatch=state.get("mismatch"),
                 demonstrated_level=tutor.demonstrated_level(topics, states, ctx["cfg"]),
                 progress=dict(done=done, total=len(in_scope), percent=round(100 * done / len(in_scope)) if in_scope else 100),
                 topics=[dict(topic_id=t["id"], title=t["title"], stage=t["stage"], state=states[t["id"]],
                              in_scope=t["id"] in in_scope, best_score=(progress.get(t["id"]) or {}).get("best_score"),
-                             attempts=(progress.get(t["id"]) or {}).get("attempts", 0)) for t in topics],
+                             attempts=(progress.get(t["id"]) or {}).get("attempts", 0),
+                             locked=bool(locks[t["id"]]), lock_reason=locks[t["id"]]) for t in topics],
                 next=nxt)
     if nxt is None:
         view["status"] = "completed"
@@ -156,9 +158,18 @@ def _topic(topics, topic_id):
     return topic
 
 
-def _diagnostic_scope(topics, place, scope, topic_id):
+def _open_topic(topics, states, place, topic_id):
+    """The topic, if it is unlocked for this student (tutor.lock_reasons); 409 with the reason otherwise."""
+    topic = _topic(topics, topic_id)
+    reason = tutor.lock_reasons(topics, states, place)[topic["id"]]
+    if reason:
+        raise LearningError(reason, 409)
+    return topic
+
+
+def _diagnostic_scope(topics, place, scope, topic_id, states=None):
     if scope == "test_out":
-        return [_topic(topics, topic_id)]
+        return [_open_topic(topics, states, place, topic_id)]
     if not place["checkpoint"]:
         raise LearningError("There is no pending diagnostic for this skill.", 409)
     return [t for t in topics if t["id"] in place["checkpoint_topics"]]
@@ -171,13 +182,13 @@ def open_activity(record, owner, skill_id, topic_id=None, kind="lesson", mode=No
     step, view, topics, place, states = _skill_parts(ctx, skill_id)
     if kind == "diagnostic":
         scope = scope or place["checkpoint"]
-        chosen = _diagnostic_scope(topics, place, scope, topic_id)
+        chosen = _diagnostic_scope(topics, place, scope, topic_id, states)
         return dict(kind="diagnostic", scope=scope, skill_id=skill_id, skill_name=step["skill_name"],
                     reason=place["reason"] if scope != "test_out" else
                     f"Answer {len(chosen[0]['diagnostic'])} questions. Pass and you can skip '{chosen[0]['title']}'.",
                     topics=[dict(topic_id=t["id"], title=t["title"], stage=t["stage"]) for t in chosen],
                     questions=[tutor.public_question(q) for t in chosen for q in t["diagnostic"]])
-    topic = _topic(topics, topic_id)
+    topic = _open_topic(topics, states, place, topic_id)
     prev = repository.topic_progress(owner, skill_id).get(topic["id"], {})
     chosen_mode = tutor.lesson_mode(topic, prev, ctx["profile"]["level"], mode, ctx["cfg"])
     lesson = tutor.compose_lesson(topic, chosen_mode, tutor.career_family(ctx["career"]["career_name"]), prev,
@@ -186,7 +197,7 @@ def open_activity(record, owner, skill_id, topic_id=None, kind="lesson", mode=No
     lesson["supplementary_resources"] = engine.recommend_resources(
         skill_id, step["current_level"] / 5, ctx["style"], k=2, entry_stage=topic["stage"], profile=ctx["profile"])
     lesson["why_now"] = (view["next"] or {}).get("reason") if (view["next"] or {}).get("topic_id") == topic["id"] else \
-        "You opened this topic yourself."
+        "You are reviewing this topic." if states[topic["id"]] == "mastered" else "You opened this topic yourself."
     lesson["state"] = states[topic["id"]]
     if states[topic["id"]] == "not_started":                     # opening a lesson is recorded, but is not evidence
         repository.save_topic_progress(owner, skill_id, topic["id"], _now(), "learning", source="opened")
@@ -206,7 +217,7 @@ def submit_attempt(record, owner, skill_id, kind, answers, topic_id=None, scope=
                   demonstrated=view["demonstrated_level"])
     progress = repository.topic_progress(owner, skill_id)
     if kind == "quiz":
-        topic = _topic(topics, topic_id)
+        topic = _open_topic(topics, states, place, topic_id)
         graded = tutor.grade(topic["quiz"], answers)
         fields, decision = tutor.decide_after_quiz(topic, topics, graded, progress.get(topic["id"], {}), cfg)
         repository.save_topic_progress(owner, skill_id, topic["id"], now, source="quiz", **fields)
@@ -218,7 +229,7 @@ def submit_attempt(record, owner, skill_id, kind, answers, topic_id=None, scope=
                                            missed=back.get("missed"), source="prerequisite")
     elif kind == "diagnostic":
         scope = scope or place["checkpoint"]
-        chosen = _diagnostic_scope(topics, place, scope, topic_id)
+        chosen = _diagnostic_scope(topics, place, scope, topic_id, states)
         graded = tutor.grade([q for t in chosen for q in t["diagnostic"]], answers)
         new_states, passed, decision = tutor.decide_after_diagnostic(chosen, graded, scope, cfg, ctx["ratings"].get(skill_id))
         for tid, state in new_states.items():
@@ -234,7 +245,7 @@ def submit_attempt(record, owner, skill_id, kind, answers, topic_id=None, scope=
             repository.save_skill_learning(owner, skill_id, now, checkpoint="passed" if passed else "failed",
                                            placed_stage=placed, mismatch=decision.get("mismatch"))
     else:   # practical self-check: recorded as practice only
-        topic = _topic(topics, topic_id)
+        topic = _open_topic(topics, states, place, topic_id)
         checked = sorted({int(i) for i in (answers or {}).get("rubric", []) if str(i).isdigit()
                           and 0 <= int(i) < len(topic["practical"]["rubric"])})
         graded = dict(score=None, correct=len(checked), total=len(topic["practical"]["rubric"]), results=[],

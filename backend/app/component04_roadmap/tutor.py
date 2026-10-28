@@ -115,6 +115,26 @@ def topic_states(topics, progress, place):
     return states
 
 
+def lock_reasons(topics, states, place):
+    """{topic_id: None (open) or the reason it is locked}. Lessons open in order: a topic opens only when every earlier
+    topic of the skill is mastered or covered by evidence (so a re-teach or prerequisite decision cannot be skipped).
+    Mastered topics always stay open for review. While a checkpoint / claim check is pending, only mastered topics open.
+    A student who already knows a locked topic proves it with the diagnostic, not by opening later lessons."""
+    if place["checkpoint"]:
+        return {t["id"]: None if states[t["id"]] == "mastered" else
+                "Take the short check for this skill first, so the coach knows where you should start." for t in topics}
+    first = next((t for t in topics if states[t["id"]] not in ("mastered", "from_evidence")), None)
+    out, reached = {}, False
+    for t in topics:
+        if states[t["id"]] in ("mastered", "from_evidence") or not reached:
+            out[t["id"]] = None
+        else:
+            out[t["id"]] = f"Finish '{first['title']}' first. Lessons open in order so each one builds on the last."
+        if first is not None and t["id"] == first["id"]:
+            reached = True
+    return out
+
+
 def next_in_skill(topics, states, place):
     """The next activity inside one skill, or None when every topic in scope is done.
     Order: pending checkpoint -> earliest topic needing revision -> first unfinished topic whose prerequisites are met."""

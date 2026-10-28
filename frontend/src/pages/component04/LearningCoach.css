@@ -30,6 +30,10 @@
 .c4l-topics li.is-revision .c4l-topic-state { color: var(--color-danger-text); }
 .c4l-topics li.is-learning .c4l-topic-state { color: var(--component-accent); }
 .c4l-topics li.is-evidence { opacity: .75; }
+.c4l-topics li.is-locked { opacity: .6; }
+.c4l-topics li.is-locked .c4l-topic-state { color: var(--color-text-secondary); }
+.c4l-lock { font-size: 11px; }
+.c4l-lock-reason { color: var(--color-text-secondary); font-size: 11px; max-width: 320px; text-align: right; }
 .c4l-topic-actions { display: flex; gap: 10px; justify-content: flex-end; }
 .c4l-topic-actions .c4l-link { padding: 0; }
 .c4l-events { margin: 0; padding-left: 18px; font-size: 12px; display: grid; gap: 6px; }

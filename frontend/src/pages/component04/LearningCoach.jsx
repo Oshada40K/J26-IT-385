@@ -243,14 +243,18 @@ function SkillCard({ skill, ai, onOpen, onGenerate, busy }) {
       <button type="button" className="c4l-link" onClick={() => onOpen({ skillId: skill.skill_id, kind: 'diagnostic' })}>Take the diagnostic</button></p>}
     {skill.mismatch === 'confirmed' && <p className="c4l-note">Your diagnostic did not support your high self-rating yet. That is useful: the lessons now start where you need them.</p>}
     {skill.topics.length > 0 && <ol className="c4l-topics">
-      {skill.topics.filter(t => t.in_scope).map(t => <li key={t.topic_id} className={TOPIC_STATE[t.state].className}>
-        <span><strong>{t.title}</strong><small>{t.stage}{t.best_score != null ? ` · best ${Math.round(t.best_score * 100)}%` : ''}</small></span>
-        <span className="c4l-topic-state">{TOPIC_STATE[t.state].label}</span>
+      {skill.topics.filter(t => t.in_scope).map(t => <li key={t.topic_id}
+        className={`${TOPIC_STATE[t.state].className} ${t.locked ? 'is-locked' : ''}`}>
+        <span><strong>{t.locked && <span className="c4l-lock" aria-hidden="true">🔒 </span>}{t.title}</strong>
+          <small>{t.stage}{t.best_score != null ? ` · best ${Math.round(t.best_score * 100)}%` : ''}</small></span>
+        <span className="c4l-topic-state">{t.locked ? 'Locked' : TOPIC_STATE[t.state].label}</span>
         <span className="c4l-topic-actions">
-          <button type="button" className="c4l-link" onClick={() => onOpen({ skillId: skill.skill_id, topicId: t.topic_id })}>
-            {t.state === 'mastered' ? 'Review' : 'Open lesson'}</button>
-          {['not_started', 'learning'].includes(t.state) && !skill.placement?.checkpoint && <button type="button" className="c4l-link"
-            onClick={() => onOpen({ skillId: skill.skill_id, topicId: t.topic_id, kind: 'diagnostic', scope: 'test_out' })}>I know this – test me</button>}
+          {t.locked ? <small className="c4l-lock-reason">{t.lock_reason}</small> : <>
+            <button type="button" className="c4l-link" onClick={() => onOpen({ skillId: skill.skill_id, topicId: t.topic_id })}>
+              {t.state === 'mastered' ? 'Review' : 'Open lesson'}</button>
+            {['not_started', 'learning'].includes(t.state) && <button type="button" className="c4l-link"
+              onClick={() => onOpen({ skillId: skill.skill_id, topicId: t.topic_id, kind: 'diagnostic', scope: 'test_out' })}>I know this – test me</button>}
+          </>}
         </span>
       </li>)}
     </ol>}
