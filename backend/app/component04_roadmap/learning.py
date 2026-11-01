@@ -42,6 +42,9 @@ def _context(record, owner):
     """Ownership check, then the student's current analysis and the facts the tutor needs."""
     if not owner:
         raise LearningError("Upload your CV in Component 01 to use the learning tutor, so your progress can be saved.", 401)
+    if not record.get("candidate_id"):
+        raise LearningError("This assessment was submitted before your CV was uploaded, so it is not linked to your CV. "
+                            "Submit the assessment again to unlock the lessons.", 409)
     if record.get("candidate_id") != owner:
         raise LearningError("You can only see your own learning progress.", 403)
     analysis = service.analysis(record)

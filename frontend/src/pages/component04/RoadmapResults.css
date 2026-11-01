@@ -278,3 +278,6 @@
   .c4r-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .c4r-confidence { grid-template-columns: 1fr; }
 }
+.c4r-link-cv { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.c4r-link-cv span { flex: 1 1 360px; }
+.c4r-link-cv button,.c4r-link-cv .button { min-height: 38px; padding: 8px 14px; }

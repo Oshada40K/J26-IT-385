@@ -228,6 +228,15 @@ class TutorScenarios(unittest.TestCase):
         self.quiz(rec, "lk", PF, "pf-b1")                                   # mastered -> stays open for review
         self.assertEqual(learning.open_activity(rec, "lk", PF, "pf-b1")["why_now"], "You are reviewing this topic.")
 
+    # An assessment submitted before the CV upload (no candidate) gets a clear "submit again" message, not "forbidden"
+    def test_assessment_without_cv_explains_how_to_unlock_lessons(self):
+        rec = self.student("nocv", [], {PF: 2})
+        rec = dict(rec, candidate_id=None)
+        with self.assertRaises(LearningError) as ctx:
+            learning.plan(rec, "nocv")
+        self.assertEqual(ctx.exception.status_code, 409)
+        self.assertIn("Submit the assessment again", str(ctx.exception))
+
     # J - a claimed skill (rated 5/5, nothing in the CV) is checked before teaching; a confirmed claim is recorded
     def test_J_claimed_skill_gets_a_claim_check(self):
         rec = self.student("j", [], {GIT: 5})

@@ -424,7 +424,9 @@ function Dashboard({ result, coach, onOpen, onTab }) {
   const { skill_gaps: { summary }, roadmap } = result
   const totals = lessonTotals(coach.plan)
   return <>
-    {coach.plan && <NextActivityCard plan={coach.plan} onOpen={onOpen} />}
+    {coach.plan ? <NextActivityCard plan={coach.plan} onOpen={onOpen} />
+      : !coach.loading && <p className="c4r-notice" role="status">{coach.error ||
+        'Upload your CV in Component 01 and submit your assessment to unlock the interactive lessons.'}</p>}
     <div className="c4r-kpis">
       <button type="button" className="c4r-kpi" onClick={() => onTab('gaps')}><strong>{summary.met}/{summary.required}</strong><span>Required skills met</span></button>
       <button type="button" className="c4r-kpi" onClick={() => onTab('roadmap')}><strong>{roadmap.total_steps}</strong><span>Skills to develop</span></button>
@@ -693,7 +695,17 @@ export default function RoadmapResults({ assessmentId, onEdit, onNew }) {
         <button type="button" className="button-secondary" onClick={onNew}>Choose another career</button>
         <ReloadButton onClick={refresh} loading={state.loading} label="Refresh roadmap" />
       </div>
-      {[...result.assessment.changes, ...result.warnings].map(message => <p key={message} className="c4r-notice" role="status">{message}</p>)}
+      {!result.candidate_id && hasCvSession() ? <div className="c4r-notice c4r-link-cv" role="status">
+        <span>Your CV is uploaded, but this assessment was submitted before it, so it does not use your CV evidence and the lessons
+          are locked. Submit the assessment again to link it to your CV.</span>
+        <button type="button" onClick={onEdit}>Submit again with my CV</button>
+      </div> : !result.candidate_id && <div className="c4r-notice c4r-link-cv" role="status">
+        <span>Upload your CV in Component 01, then submit this assessment again: your roadmap will use your CV evidence and the
+          interactive lessons will unlock.</span>
+        <Link className="button" to="/component01">Upload my CV</Link>
+      </div>}
+      {[...result.assessment.changes, ...result.warnings.filter(w => result.candidate_id || !w.startsWith('No CV skills'))]
+        .map(message => <p key={message} className="c4r-notice" role="status">{message}</p>)}
       {result.inputs.cv_skills_not_in_catalogue.length > 0 && <p className="c4r-notice">CV skills not covered by the C4 skills catalogue (not used): {result.inputs.cv_skills_not_in_catalogue.join(', ')}.</p>}
     </section>
 
