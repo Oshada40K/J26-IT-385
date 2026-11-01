@@ -1,9 +1,9 @@
-// Owner: Dewmi - Component 04: adaptive learning tutor inside the roadmap page.
+// Owner: Dewmi - Component 04: adaptive learning tutor, shown inside the roadmap steps (RoadmapResults.jsx).
 // Flow: next activity -> lesson adapted to the learner -> quiz (answers hidden until submitted) -> feedback and the
 // tutor's decision (advance / targeted practice / re-teach / prerequisite) -> the regenerated roadmap and readiness.
 import { useEffect, useState } from 'react'
 import Icon from '../../components/Icon.jsx'
-import { generateLessons, getLearningPlan, hasCvSession, openActivity, submitLearningAttempt } from './assessmentApi.js'
+import { getLearningPlan, hasCvSession, openActivity, submitLearningAttempt } from './assessmentApi.js'
 import './LearningCoach.css'
 
 const TOPIC_STATE = {
@@ -13,9 +13,9 @@ const TOPIC_STATE = {
   mastered: { label: 'Mastered', className: 'is-mastered' },
   from_evidence: { label: 'Covered by your evidence', className: 'is-evidence' },
 }
-const SKILL_STATUS = {
+export const SKILL_STATUS = {
   active: 'Learning now', revision: 'Revision', next: 'Next', upcoming: 'Upcoming', pending: 'Upcoming',
-  completed: 'Lessons done', self_study: 'Self-study',
+  completed: 'Lessons done', self_study: 'Lessons coming soon',
 }
 const DECISION = {
   advance: { title: 'Mastered – moving on', className: 'is-good' },
@@ -137,7 +137,7 @@ function Feedback({ result, onContinue, onRetry }) {
 }
 
 // ------------------------------------------------------------------ activity (lesson or diagnostic)
-function Activity({ assessmentId, request, onDone, onClose }) {
+export function Activity({ assessmentId, request, onDone, onClose }) {
   const [state, setState] = useState({ loading: true, error: '', activity: null, result: null, busy: false })
   const [rubric, setRubric] = useState([])
   const [practicalNote, setPracticalNote] = useState('')
@@ -177,7 +177,7 @@ function Activity({ assessmentId, request, onDone, onClose }) {
   if (state.loading) return <div className="c4l-activity" role="status">Preparing your activity…</div>
   if (state.error && !state.activity) return <div className="c4l-activity">
     <p className="error-message" role="alert">{state.error}</p>
-    <button type="button" className="button-secondary" onClick={onClose}>Back to my plan</button>
+    <button type="button" className="button-secondary" onClick={onClose}>Back to my roadmap</button>
   </div>
   const { activity, result } = state
   const isLesson = activity.kind !== 'diagnostic'
@@ -192,7 +192,7 @@ function Activity({ assessmentId, request, onDone, onClose }) {
           {activity.ai_generated && <span className="c4r-tag is-ai">AI-generated</span>}
         </div>
       </div>
-      <button type="button" className="button-secondary" onClick={onClose}>Back to my plan</button>
+      <button type="button" className="button-secondary" onClick={onClose}>Back to my roadmap</button>
     </div>
     {(activity.why_now || activity.reason) && <p className="c4r-caution"><Icon name="spark" size={15} />{activity.why_now || activity.reason}</p>}
 
@@ -224,25 +224,70 @@ function Activity({ assessmentId, request, onDone, onClose }) {
   </div>
 }
 
-// ------------------------------------------------------------------ plan overview
-function SkillCard({ skill, ai, onOpen, onGenerate, busy }) {
-  return <details className={`c4l-skill status-${skill.status}`} open={['active', 'revision'].includes(skill.status)}>
-    <summary>
-      <span className="c4l-skill-name"><strong>{skill.skill_name}</strong>
-        <small>{skill.entry_stage} → {skill.target_stage}{skill.placement && skill.placement.placed_stage !== skill.entry_stage ? ` · now from ${skill.placement.placed_stage}` : ''}</small>
-      </span>
-      {skill.progress && <span className="c4l-progress" aria-label={`${skill.progress.done} of ${skill.progress.total} topics done`}>
-        <span style={{ width: `${skill.progress.percent}%` }} />
-      </span>}
-      <span className={`c4l-skill-status status-${skill.status}`}>{SKILL_STATUS[skill.status] || skill.status}</span>
-    </summary>
-    {skill.message && <p className="muted">{skill.message}</p>}
-    {skill.status === 'self_study' && ai.configured && <button type="button" className="button-secondary" disabled={busy}
+// ------------------------------------------------------------------ pieces used by the roadmap page
+// The learning plan (per-skill placement, topics, locks, next activity, events). Kept while it refreshes.
+export function useLearningPlan(assessmentId, version = 0) {
+  const signedIn = hasCvSession()
+  const [state, setState] = useState({ loading: signedIn, error: '', plan: null })
+  const [retry, setRetry] = useState(0)
+
+  useEffect(() => {
+    if (!signedIn) { setState({ loading: false, error: '', plan: null }); return undefined }
+    let active = true
+    setState(s => ({ ...s, loading: true }))
+    getLearningPlan(assessmentId)
+      .then(plan => { if (active) setState({ loading: false, error: '', plan }) })
+      .catch(error => { if (active) setState(s => ({ loading: false, error: error.message, plan: s.plan })) })
+    return () => { active = false }
+  }, [assessmentId, version, retry, signedIn])
+
+  return { ...state, signedIn, setPlan: plan => setState({ loading: false, error: '', plan }),
+    setError: error => setState(s => ({ ...s, error })), reload: () => setRetry(v => v + 1) }
+}
+
+// {skill_id: lessons view} for joining the plan to the roadmap steps.
+export const lessonsBySkill = plan => Object.fromEntries((plan?.skills || []).map(s => [s.skill_id, s]))
+
+// Lesson progress over every roadmap skill that has lessons.
+export function lessonTotals(plan) {
+  const skills = (plan?.skills || []).filter(s => s.progress)
+  const done = skills.reduce((n, s) => n + s.progress.done, 0)
+  const total = skills.reduce((n, s) => n + s.progress.total, 0)
+  return { done, total, percent: total ? Math.round(100 * done / total) : 0, skills: skills.length }
+}
+
+export function NextActivityCard({ plan, onOpen, compact = false }) {
+  const next = plan?.next_activity
+  return <div className={`c4l-next ${compact ? 'is-compact' : ''}`}>
+    <div>
+      <p className="eyebrow">{next ? (next.kind === 'diagnostic' ? 'QUICK CHECK FIRST' : next.kind === 'revision' ? 'REVISION' : 'CONTINUE LEARNING') : 'ALL LESSONS DONE'}</p>
+      <h3>{plan.message}</h3>
+      {next?.reason && <p className="muted">{next.reason}</p>}
+    </div>
+    {next && <button type="button" onClick={() => onOpen(next)}>{next.kind === 'diagnostic' ? 'Start the check' : 'Continue'} <Icon name="arrow" size={14} /></button>}
+  </div>
+}
+
+// Lessons of one roadmap skill: placement check, topic list with locks, or the "coming soon" note.
+export function SkillLessons({ skill, ai, onOpen, onGenerate, busy }) {
+  if (!skill) return null
+  if (skill.status === 'self_study') return <div className="c4l-lessons is-empty">
+    <h4>Lessons</h4>
+    <p className="muted">Interactive lessons for {skill.skill_name} are coming soon. Until then, learn with the resources and the
+      practical project below; your progress is confirmed when your updated CV (Component 01) shows the skill.</p>
+    {ai.configured && <button type="button" className="button-secondary" disabled={busy}
       onClick={() => onGenerate(skill.skill_id)}>{busy ? 'Creating lessons…' : 'Create AI lessons for this skill'}</button>}
+  </div>
+  return <div className="c4l-lessons">
+    <div className="c4l-lessons-head">
+      <h4>Lessons</h4>
+      {skill.progress && <span className="c4l-progress-text">{skill.progress.done}/{skill.progress.total} done</span>}
+    </div>
     {skill.placement?.checkpoint && <p className="c4l-note">{skill.placement.reason}
-      <button type="button" className="c4l-link" onClick={() => onOpen({ skillId: skill.skill_id, kind: 'diagnostic' })}>Take the diagnostic</button></p>}
-    {skill.mismatch === 'confirmed' && <p className="c4l-note">Your diagnostic did not support your high self-rating yet. That is useful: the lessons now start where you need them.</p>}
-    {skill.topics.length > 0 && <ol className="c4l-topics">
+      <button type="button" className="c4l-link" onClick={() => onOpen({ skillId: skill.skill_id, kind: 'diagnostic' })}>Take the quick check</button></p>}
+    {skill.mismatch === 'confirmed' && <p className="c4l-note">Your quick check did not support your high self-rating yet. That is useful: the lessons now start where you need them.</p>}
+    {skill.status === 'completed' && <p className="c4l-note is-done">{skill.message}</p>}
+    <ol className="c4l-topics">
       {skill.topics.filter(t => t.in_scope).map(t => <li key={t.topic_id}
         className={`${TOPIC_STATE[t.state].className} ${t.locked ? 'is-locked' : ''}`}>
         <span><strong>{t.locked && <span className="c4l-lock" aria-hidden="true">🔒 </span>}{t.title}</strong>
@@ -257,92 +302,27 @@ function SkillCard({ skill, ai, onOpen, onGenerate, busy }) {
           </>}
         </span>
       </li>)}
-    </ol>}
+    </ol>
+  </div>
+}
+
+export function RoadmapEvents({ events }) {
+  if (!events?.length) return <p className="muted">No changes yet. Your roadmap updates when you pass lessons and quizzes, add proof, or upload an updated CV.</p>
+  return <ul className="c4l-events">{events.map(e => <li key={`${e.created_at}-${e.kind}-${e.message}`}>
+    <small className="muted">{formatDate(e.created_at)}</small> {e.message}
+  </li>)}</ul>
+}
+
+export function CoachRules({ plan }) {
+  return <details className="c4r-breakdown">
+    <summary>How the coach decides</summary>
+    <p className="muted">{plan.rules.explanation}</p>
+    <p className="muted">{plan.ai.configured
+      ? `Optional AI lessons are enabled (${plan.ai.provider}, ${plan.ai.model}). They are checked automatically and labelled “AI-generated”.`
+      : 'AI lesson generation is not configured on this server, so only the curated lessons are used.'}</p>
   </details>
 }
 
-export default function LearningCoach({ assessmentId, onAnalysis }) {
-  const [state, setState] = useState({ loading: true, error: '', plan: null })
-  const [request, setRequest] = useState(null)
-  const [generating, setGenerating] = useState(null)
-  const [reload, setReload] = useState(0)
-  const signedIn = hasCvSession()
-
-  useEffect(() => {
-    if (!signedIn) { setState({ loading: false, error: '', plan: null }); return undefined }
-    let active = true
-    getLearningPlan(assessmentId)
-      .then(plan => { if (active) setState({ loading: false, error: '', plan }) })
-      .catch(error => { if (active) setState({ loading: false, error: error.message, plan: null }) })
-    return () => { active = false }
-  }, [assessmentId, reload, signedIn])
-
-  function open(next) {
-    setRequest({ skillId: next.skillId ?? next.skill_id, topicId: next.topicId ?? next.topic_id ?? undefined,
-      kind: next.kind === 'diagnostic' ? 'diagnostic' : 'lesson', scope: next.scope })
-  }
-
-  function handleDone(result) {
-    if (result.plan) setState(s => ({ ...s, plan: result.plan }))
-    if (result.analysis) onAnalysis?.(result.analysis)
-  }
-
-  async function handleGenerate(skillId) {
-    setGenerating(skillId)
-    try {
-      const plan = await generateLessons(assessmentId, skillId)
-      setState({ loading: false, error: '', plan })
-    } catch (error) {
-      setState(s => ({ ...s, error: error.message }))   // the current plan stays on screen
-    }
-    finally { setGenerating(null) }
-  }
-
-  const title = <div className="c4r-section-title"><span className="step-number">05</span><h2 id="c4l-title">Your learning coach</h2></div>
-  if (!signedIn) return <section className="card c4r-section" aria-labelledby="c4l-title">{title}
-    <p className="muted">Upload your CV in Component 01 to use the interactive lessons. Your progress is saved to your own profile.</p>
-  </section>
-  if (state.loading) return <section className="card c4r-section" aria-labelledby="c4l-title">{title}<p role="status">Loading your lessons…</p></section>
-  if (!state.plan) return <section className="card c4r-section" aria-labelledby="c4l-title">{title}
-    <p className="error-message" role="alert">{state.error || 'The learning coach is not available.'}</p>
-    <button type="button" className="button-secondary" onClick={() => { setState(s => ({ ...s, loading: true })); setReload(v => v + 1) }}>Try again</button>
-  </section>
-
-  const { plan } = state
-  const next = plan.next_activity
-  return <section className="card c4r-section c4l" aria-labelledby="c4l-title">
-    {title}
-    <p className="muted">Lessons follow your roadmap order and start at your level. Quiz results update your roadmap and readiness score.</p>
-    {state.error && <p className="error-message" role="alert">{state.error}</p>}
-
-    {request ? <Activity assessmentId={assessmentId} request={request} onDone={handleDone}
-      onClose={() => setRequest(null)} />
-      : <>
-        <div className="c4l-next">
-          <div>
-            <p className="eyebrow">{next ? (next.kind === 'diagnostic' ? 'QUICK CHECK FIRST' : next.kind === 'revision' ? 'REVISION' : 'NEXT LESSON') : 'ALL LESSONS DONE'}</p>
-            <h3>{plan.message}</h3>
-            {next?.reason && <p className="muted">{next.reason}</p>}
-          </div>
-          {next && <button type="button" onClick={() => open(next)}>{next.kind === 'diagnostic' ? 'Start the check' : 'Start'} <Icon name="arrow" size={14} /></button>}
-        </div>
-        <div className="c4l-skills">
-          {plan.skills.map(skill => <SkillCard key={skill.skill_id} skill={skill} ai={plan.ai} onOpen={open}
-            onGenerate={handleGenerate} busy={generating === skill.skill_id} />)}
-        </div>
-        {plan.events.length > 0 && <details className="c4r-breakdown" open>
-          <summary>Why your roadmap changed</summary>
-          <ul className="c4l-events">{plan.events.map(e => <li key={`${e.created_at}-${e.kind}-${e.message}`}>
-            <small className="muted">{formatDate(e.created_at)}</small> {e.message}
-          </li>)}</ul>
-        </details>}
-        <details className="c4r-breakdown">
-          <summary>How the coach decides</summary>
-          <p className="muted">{plan.rules.explanation}</p>
-          <p className="muted">{plan.ai.configured
-            ? `Optional AI lessons are enabled (${plan.ai.provider}, ${plan.ai.model}). They are checked automatically and labelled “AI-generated”.`
-            : 'AI lesson generation is not configured on this server, so only the curated lessons are used. Skills without lessons are marked “Self-study”.'}</p>
-        </details>
-      </>}
-  </section>
-}
+// Turns a "next activity" or a topic click into an activity request.
+export const activityRequest = next => ({ skillId: next.skillId ?? next.skill_id, topicId: next.topicId ?? next.topic_id ?? undefined,
+  kind: next.kind === 'diagnostic' ? 'diagnostic' : 'lesson', scope: next.scope })
