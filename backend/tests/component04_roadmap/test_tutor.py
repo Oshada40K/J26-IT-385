@@ -351,6 +351,43 @@ class TutorScenarios(unittest.TestCase):
         self.assertEqual(career["text"], topic(PY, "py-b1")["career_examples"]["data"])
 
 
+class ModelLoading(unittest.TestCase):
+    # Page load sends the analysis and the lesson plan at the same time; the second must not see half-loaded models.
+    def test_concurrent_first_requests_wait_for_all_models(self):
+        import threading
+        import time
+        from app.component04_roadmap.analysis import C4Analyzer
+        engine = C4Analyzer()
+        real_load = engine.load_models
+
+        def slow_load(models_dir):                           # cfg is set first, then each model, like the real loader
+            real_load(models_dir)
+            models, engine.models = dict(engine.models), {}
+            time.sleep(0.3)
+            engine.models.update(models)
+
+        errors = []
+
+        def use():
+            try:
+                engine.ensure_models()
+                engine.models["A_gap"]
+            except Exception as exc:                         # noqa: BLE001 - any failure is the bug
+                errors.append(repr(exc))
+        with patch.object(engine, "load_models", side_effect=slow_load):
+            first = threading.Thread(target=use)
+            first.start()
+            deadline = time.time() + 30
+            while not engine.cfg and time.time() < deadline:  # wait until cfg is set but the models are not
+                time.sleep(0.005)
+            others = [threading.Thread(target=use) for _ in range(3)]
+            for t in others:
+                t.start()
+            for t in [first, *others]:
+                t.join()
+        self.assertEqual(errors, [])
+
+
 class CurriculumAndRules(unittest.TestCase):
     def test_bank_is_valid(self):
         self.assertEqual(set(BANK), {"SK001", "SK002", "SK008", "SK009", "SK010", "SK014"})

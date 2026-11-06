@@ -224,6 +224,7 @@ class C4Analyzer(C4Engine):
     def __init__(self, inputs_dir=INPUTS_DIR, models_dir=MODELS_DIR):
         super().__init__(str(inputs_dir), None)          # models are loaded lazily, see ensure_models
         self.models_dir = Path(models_dir)
+        self._models_ready = False                        # set only after every model file is loaded
         self.category = self.cat.set_index("skill_id").category.to_dict()
         r = self.req
         self.onet_flags = {(c, s): (int(h), int(d)) for c, s, h, d in zip(r.career_id, r.skill_id, r.hot_technology, r.in_demand)}
@@ -233,10 +234,12 @@ class C4Analyzer(C4Engine):
         return all((self.models_dir / name).exists() for name in REQUIRED_MODEL_FILES)
 
     def ensure_models(self):
-        if self.cfg:
+        # load_models sets cfg before the models, so cfg alone does not mean "loaded": a second request arriving
+        # during loading (e.g. the analysis and the lesson plan at page load) must wait for the lock.
+        if self._models_ready:
             return
         with _load_lock:
-            if self.cfg:
+            if self._models_ready:
                 return
             missing = [name for name in REQUIRED_MODEL_FILES if not (self.models_dir / name).exists()]
             if missing:
@@ -249,6 +252,7 @@ class C4Analyzer(C4Engine):
             except Exception as exc:
                 self.cfg, self.models = {}, {}
                 raise ModelsUnavailable(f"The trained models could not be loaded: {exc}") from exc
+            self._models_ready = True
 
     # ------------------------------------------------------------------ factor 2: real O*NET demand
     def priority_frame(self, g, st):
