@@ -357,9 +357,11 @@ MODE_LABELS = {
 
 
 def compose_lesson(topic, mode, family, prev=None, style_types=(), skill_name="", career_name=""):
-    """The lesson the student sees. Content changes with the mode (not only the label):
-    foundation adds step-by-step support and all common mistakes; focused puts the missed ideas first;
-    challenge skips the beginner support and adds a harder task; standard is the full normal lesson."""
+    """The lesson the student sees, in a lecture-notes layout (main idea, explain from zero, real-life example, visual,
+    worked example, key ideas, memory trick, interview hack, common mistakes, practice, summary, memory test, next).
+    Content changes with the mode (not only the label): foundation opens the step-by-step part and all common mistakes;
+    focused puts the missed ideas first; challenge folds the beginner support away and adds a harder task.
+    Learning-style changes that need resources (video first, reading) are added by learning.open_activity."""
     prev = prev or {}
     missed = sorted((prev.get("missed") or {}).items(), key=lambda kv: -kv[1])
     example_text = (topic.get("career_examples") or {}).get(family) or (topic.get("career_examples") or {}).get("software")
@@ -368,19 +370,23 @@ def compose_lesson(topic, mode, family, prev=None, style_types=(), skill_name=""
         sections.append(dict(kind="focus", title="Focus on what you missed",
                              items=[f"{c} (missed in {n} attempt{'s' if n > 1 else ''})" for c, n in missed]))
     sections.append(dict(kind="main_idea", title="Main idea", text=topic["main_idea"]))
+    sections.append(dict(kind="from_zero", title="Explain from zero", text=topic.get("from_zero"), items=list(topic["foundation"]),
+                         collapsed=mode == "challenge"))
     if example_text:
-        sections.append(dict(kind="career", title=f"Why it matters for {career_name or 'your career'}", text=example_text))
-    if mode == "foundation":
-        sections.append(dict(kind="steps", title="Step by step", items=list(topic["foundation"])))
-    sections.append(dict(kind="explanation", title="Explanation", text=topic["explanation"]))
+        sections.append(dict(kind="career", title=f"Real-life example: {career_name or 'your career'}", text=example_text))
+    sections.append(dict(kind="explanation", title="How it works", text=topic["explanation"]))
     if topic.get("visual") and mode != "challenge":
         sections.append(dict(kind="visual", title=topic["visual"]["caption"], visual=topic["visual"]))
     sections.append(dict(kind="worked_example", title=f"Worked example: {topic['example']['title']}", example=topic["example"]))
     sections.append(dict(kind="key_ideas", title="Key ideas to remember", items=list(topic["key_ideas"])))
+    if topic.get("memory_trick"):
+        sections.append(dict(kind="memory_trick", title="Memory trick", text=topic["memory_trick"]))
+    if topic.get("career_hack"):
+        sections.append(dict(kind="career_hack", title="Interview and job hack", text=topic["career_hack"]))
     if mode != "challenge" or missed:
         sections.append(dict(kind="mistakes", title="Common mistakes", items=list(topic["mistakes"])))
-    hands_on = any(t in ("project",) for t in style_types[:1])
-    practice = [dict(kind="practice", title="Practice", text=topic["practice"]),
+    hands_on = "project" in style_types                    # chose hands-on projects or interactive exercises
+    practice = [dict(kind="practice", title="Try it yourself", text=topic["practice"]),
                 dict(kind="practical", title="Practical task (self-check)", text=topic["practical"]["task"],
                      items=list(topic["practical"]["rubric"]),
                      note="Use the checklist to judge your own work. Self-checks are recorded as practice, not as proof of mastery.")]
@@ -389,7 +395,10 @@ def compose_lesson(topic, mode, family, prev=None, style_types=(), skill_name=""
     if hands_on:
         practice.reverse()                                   # project-based learners see the practical task first
     sections.extend(practice)
-    sections.append(dict(kind="summary", title="Summary", text=f"{topic['main_idea']} {topic['key_ideas'][0]}"))
+    sections.append(dict(kind="summary", title="Mini summary", text=f"{topic['main_idea']} {topic['key_ideas'][0]}"))
+    if topic.get("recall"):
+        sections.append(dict(kind="recall", title="Memory test", recall=[dict(q=r["q"], a=r["a"]) for r in topic["recall"]],
+                             note="Try to answer in your own words first, then reveal the answer. This is practice and is not graded."))
     sections.append(dict(kind="next", title="What comes next", text=topic["next_link"]))
     return dict(topic_id=topic["id"], title=topic["title"], stage=topic["stage"], skill_name=skill_name, mode=mode,
                 mode_label=MODE_LABELS[mode], sections=sections,

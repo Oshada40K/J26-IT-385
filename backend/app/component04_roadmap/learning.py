@@ -78,7 +78,7 @@ def _skill_view(ctx, step, progress_all, learning_all):
     view.update(placement=place, mismatch=state.get("mismatch"),
                 demonstrated_level=tutor.demonstrated_level(topics, states, ctx["cfg"]),
                 progress=dict(done=done, total=len(in_scope), percent=round(100 * done / len(in_scope)) if in_scope else 100),
-                topics=[dict(topic_id=t["id"], title=t["title"], stage=t["stage"], state=states[t["id"]],
+                topics=[dict(topic_id=t["id"], title=t["title"], stage=t["stage"], state=states[t["id"]], objective=t["objective"],
                              in_scope=t["id"] in in_scope, best_score=(progress.get(t["id"]) or {}).get("best_score"),
                              attempts=(progress.get(t["id"]) or {}).get("attempts", 0),
                              locked=bool(locks[t["id"]]), lock_reason=locks[t["id"]]) for t in topics],
@@ -198,7 +198,8 @@ def open_activity(record, owner, skill_id, topic_id=None, kind="lesson", mode=No
                                   ctx["style"], step["skill_name"], ctx["career"]["career_name"])
     engine = service.engine()
     lesson["supplementary_resources"] = engine.recommend_resources(
-        skill_id, step["current_level"] / 5, ctx["style"], k=2, entry_stage=topic["stage"], profile=ctx["profile"])
+        skill_id, step["current_level"] / 5, ctx["style"], k=3, entry_stage=topic["stage"], profile=ctx["profile"])
+    _personalise(lesson, ctx, prev, topics, topic)
     lesson["why_now"] = (view["next"] or {}).get("reason") if (view["next"] or {}).get("topic_id") == topic["id"] else \
         "You are reviewing this topic." if states[topic["id"]] == "mastered" else "You opened this topic yourself."
     lesson["state"] = states[topic["id"]]
@@ -206,6 +207,44 @@ def open_activity(record, owner, skill_id, topic_id=None, kind="lesson", mode=No
         repository.save_topic_progress(owner, skill_id, topic["id"], _now(), "learning", source="opened")
         lesson["state"] = "learning"
     return lesson
+
+
+def _mode_reason(mode, prev, level):
+    if mode == "focused":
+        return "Focused revision: your last quiz showed which ideas to work on, so they come first."
+    if mode == "foundation" and prev.get("state") == "needs_revision":
+        return "Step-by-step again: your last score was low, so the lesson explains it more simply."
+    if mode == "foundation":
+        return f"Step-by-step version: your learner profile is {level}."
+    if mode == "challenge":
+        return f"Fast track with a challenge: your learner profile is {level}."
+    return f"Standard version: your learner profile is {level}."
+
+
+def _personalise(lesson, ctx, prev, topics, topic):
+    """Arrange the lesson for this student and say how: lesson version (profile and last result), video first or extra
+    reading (learning methods, using a level-matched resource from the dataset), practical first, career examples."""
+    methods = ctx["analysis"]["inputs"].get("learning_methods") or []
+    resources = lesson.get("supplementary_resources") or []
+    sections = lesson["sections"]
+    notes = [_mode_reason(lesson["mode"], prev, ctx["profile"]["level"])]
+    video = next((r for r in resources if r.get("type") == "video"), None)
+    if "video_tutorials" in methods and video:
+        sections.insert(1, dict(kind="watch_first", title="Watch first", resource=video,
+                                text="A short video at this level to watch before you read the lesson."))
+        notes.append("Video first: you prefer video tutorials.")
+    docs = next((r for r in resources if r.get("type") == "documentation"), None)
+    if "reading" in methods and docs:
+        at = next((i for i, x in enumerate(sections) if x["kind"] == "explanation"), len(sections) - 1) + 1
+        sections.insert(at, dict(kind="read_more", title="Read more", resource=docs,
+                                 text="Documentation at this level for a deeper read."))
+        notes.append("Further reading added: you prefer reading documentation.")
+    if "project" in (ctx["style"] or []):
+        notes.append("Practical task first: you prefer hands-on learning.")
+    notes.append(f"Examples chosen for {ctx['career']['career_name']}.")
+    lesson["personalised"] = notes
+    lesson["topic_number"] = next(i for i, t in enumerate(topics, 1) if t["id"] == topic["id"])
+    lesson["topic_total"] = len(topics)
 
 
 def submit_attempt(record, owner, skill_id, kind, answers, topic_id=None, scope=None):

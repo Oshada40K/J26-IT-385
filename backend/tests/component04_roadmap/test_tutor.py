@@ -87,7 +87,9 @@ class TutorScenarios(unittest.TestCase):
         self.assertEqual(plan["next_activity"]["topic_id"], "pf-b1")
         lesson = learning.open_activity(rec, "a", PF, "pf-b1")
         self.assertEqual(lesson["mode"], "foundation")                      # novice learners get step-by-step lessons
-        self.assertIn("steps", [s["kind"] for s in lesson["sections"]])
+        part = next(s for s in lesson["sections"] if s["kind"] == "from_zero")
+        self.assertFalse(part["collapsed"])                                # explained from zero, open by default
+        self.assertTrue(part["text"] and part["items"])
 
     # B - evidence lets a student skip the basics, confirmed by a checkpoint diagnostic first
     def test_B_evidence_skips_basics_with_checkpoint(self):
@@ -315,6 +317,27 @@ class TutorScenarios(unittest.TestCase):
         pf = next((s for s in plan["skills"] if s["skill_id"] == PF), None)
         if pf:                                                              # still a gap: now starts higher
             self.assertEqual(pf["entry_stage"], "Advanced")
+
+    # Lessons follow the lecture-notes layout and are arranged by the student's own preferences
+    def test_lesson_layout_and_preferences(self):
+        rec = self.student("pref", [], {PF: 1}, methods=("video_tutorials", "hands_on_projects"))
+        lesson = learning.open_activity(rec, "pref", PF, "pf-b1")
+        kinds = [s["kind"] for s in lesson["sections"]]
+        for kind in ("main_idea", "from_zero", "key_ideas", "memory_trick", "career_hack", "mistakes", "summary", "recall", "next"):
+            self.assertIn(kind, kinds)
+        self.assertLess(kinds.index("main_idea"), kinds.index("from_zero"))
+        self.assertLess(kinds.index("practical"), kinds.index("practice"))          # hands-on learners: practical first
+        self.assertTrue(any("Step-by-step" in n for n in lesson["personalised"]))   # novice profile
+        self.assertTrue(any("hands-on" in n for n in lesson["personalised"]))
+        if "watch_first" in kinds:                                                  # only when the dataset has a video
+            self.assertEqual(kinds[1], "watch_first")
+            self.assertTrue(any("Video first" in n for n in lesson["personalised"]))
+        self.assertEqual((lesson["topic_number"], lesson["topic_total"]), (1, len(BANK[PF])))
+        recall = next(s for s in lesson["sections"] if s["kind"] == "recall")
+        self.assertTrue(all(r["q"] and r["a"] for r in recall["recall"]))
+        reader = self.student("read", [], {PF: 1}, methods=("reading",))
+        kinds = [s["kind"] for s in learning.open_activity(reader, "read", PF, "pf-b1")["sections"]]
+        self.assertNotIn("watch_first", kinds)                                       # no video for a reader
 
     # Career-specific examples: the same topic uses a data example for a data career
     def test_career_specific_examples(self):

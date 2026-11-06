@@ -9,6 +9,7 @@ diagnostic questions. validate_topic() checks the structure, so a broken lesson 
 lessons can be checked with the same rules.
 """
 from . import dsa, git, oop, programming_fundamentals, python, sql
+from .enrichment import ENRICHMENT
 
 STAGES = ("Beginner", "Intermediate", "Advanced")
 QUESTION_TYPES = ("single", "multi", "short")
@@ -62,6 +63,7 @@ def validate_topic(topic, skill_id="?"):
         raise CurriculumError(f"{where}: the practical task needs a task and a rubric")
     for q in topic["quiz"] + topic["diagnostic"]:
         validate_question(q, where)
+    validate_enrichment(topic, where)
     return topic
 
 
@@ -87,9 +89,29 @@ def validate_skill(skill_id, topics):
     return topics
 
 
+ENRICHMENT_KEYS = ("from_zero", "memory_trick", "career_hack", "recall")
+
+
+def validate_enrichment(topic, where):
+    """Optional lecture-style parts (from_zero, memory_trick, career_hack, recall). Checked when present."""
+    for key in ("from_zero", "memory_trick", "career_hack"):
+        if key in topic and (not isinstance(topic[key], str) or not topic[key].strip()):
+            raise CurriculumError(f"{where}: '{key}' must be a non-empty text")
+    for item in topic.get("recall") or []:
+        if not isinstance(item, dict) or not item.get("q") or not item.get("a"):
+            raise CurriculumError(f"{where}: each recall item needs a question 'q' and an answer 'a'")
+
+
 def load():
-    """{skill_id: [topic, ...]} for every curated skill, validated."""
-    bank = {}
+    """{skill_id: [topic, ...]} for every curated skill, validated, with the lecture-style parts merged in."""
+    bank, ids = {}, set()
     for module in MODULES:
-        bank[module.SKILL_ID] = validate_skill(module.SKILL_ID, module.TOPICS)
+        topics = [dict(t, **ENRICHMENT.get(t["id"], {})) for t in module.TOPICS]
+        for t in topics:
+            validate_enrichment(t, f"{module.SKILL_ID}/{t['id']}")
+        bank[module.SKILL_ID] = validate_skill(module.SKILL_ID, topics)
+        ids.update(t["id"] for t in topics)
+    unknown = set(ENRICHMENT) - ids
+    if unknown:
+        raise CurriculumError(f"enrichment for unknown topics: {sorted(unknown)}")
     return bank

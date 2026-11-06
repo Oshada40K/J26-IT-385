@@ -93,3 +93,31 @@
   .c4l-skill summary { grid-template-columns: minmax(0, 1fr) auto; }
   .c4l-progress { grid-column: 1 / -1; grid-row: 2; }
 }
+
+/* lecture-notes lesson style */
+.c4l-part h4 { display: flex; align-items: center; gap: 8px; }
+.c4l-part-icon { font-size: 15px; line-height: 1; }
+details.c4l-part > summary { cursor: pointer; list-style: none; }
+details.c4l-part > summary::-webkit-details-marker { display: none; }
+details.c4l-part > summary h4 { display: inline-flex; margin: 0; }
+details.c4l-part[open] > summary { margin-bottom: 6px; }
+.c4l-part-from_zero { background: var(--color-background); }
+.c4l-sub { font-weight: 600; font-size: 12px; margin-top: 8px !important; }
+.c4l-part-memory_trick { background: var(--color-ai-soft, var(--component-soft)); border-color: transparent; }
+.c4l-part-career_hack { background: var(--color-gold-soft); border-color: transparent; }
+.c4l-part-summary { background: var(--component-soft); border-color: transparent; font-weight: 500; }
+.c4l-part-watch_first,.c4l-part-read_more { border-left: 3px solid var(--component-accent); }
+.c4l-resource-card { display: grid; gap: 6px; justify-items: start; margin-top: 6px; }
+.c4l-resource-card .c4r-tags { margin: 0; }
+.c4l-resource-card .c4r-tag { text-transform: capitalize; }
+.c4l-resource-card .button { min-height: 34px; padding: 6px 12px; font-size: 12px; }
+.c4l-recall { list-style: none; padding: 0 !important; display: grid; gap: 8px; }
+.c4l-recall p { margin: 0; }
+.c4l-recall-answer { padding: 6px 10px; border-radius: var(--radius-sm); background: var(--color-success-soft); }
+.c4l-recall .c4l-link { padding-left: 0; }
+.c4l-arranged { padding: 10px 14px; border-radius: var(--radius-sm); border: 1px dashed var(--component-accent); font-size: 12px; }
+.c4l-arranged ul { margin: 4px 0 0; padding-left: 18px; display: grid; gap: 2px; }
+.c4l-q-level { justify-self: start; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--component-accent); }
+.c4l-quiz-note { margin: -4px 0 0; font-size: 12px; }
+.c4l-objective { display: block; margin-top: 2px; color: var(--color-text-secondary); }
+details.c4l-part > summary h4 { color: var(--color-text); }

@@ -44,11 +44,45 @@ function Visual({ visual }) {
   </figure>
 }
 
+// Lecture-notes headings: the same icon always means the same kind of part.
+const PART_ICON = {
+  objective: '🎯', watch_first: '▶️', focus: '🔁', main_idea: '💡', from_zero: '🧠', career: '🌍', explanation: '📖', read_more: '📚',
+  visual: '📊', worked_example: '💻', key_ideas: '🔑', memory_trick: '🧩', career_hack: '⚡', mistakes: '⚠️', practice: '✍️',
+  practical: '🛠️', challenge: '🚀', summary: '📌', recall: '🧠', next: '➡️',
+}
+
+function ResourceCard({ resource, text }) {
+  return <div className="c4l-resource-card">
+    <div className="c4r-tags"><span className="c4r-tag">{resource.type}</span><span className="c4r-tag">{resource.level}</span>
+      {resource.duration_hours ? <span className="c4r-tag">{resource.duration_hours} h</span> : null}</div>
+    <strong>{resource.title}</strong>
+    {text && <small className="muted">{text}</small>}
+    {resource.url && <a className="button button-secondary" href={resource.url} target="_blank" rel="noopener noreferrer">
+      Open <Icon name="arrow" size={13} /></a>}
+  </div>
+}
+
+function RecallItem({ item, index }) {
+  const [shown, setShown] = useState(false)
+  return <li>
+    <p><strong>{index + 1}. {item.q}</strong></p>
+    {shown ? <p className="c4l-recall-answer">{item.a}</p>
+      : <button type="button" className="c4l-link" onClick={() => setShown(true)}>Show answer</button>}
+  </li>
+}
+
 function Section({ section, rubric, onRubric }) {
   const list = items => <ul>{items.map(item => <li key={item}>{item}</li>)}</ul>
-  return <section className={`c4l-part c4l-part-${section.kind}`}>
-    <h4>{section.title}</h4>
+  const title = <h4><span className="c4l-part-icon" aria-hidden="true">{PART_ICON[section.kind] || '•'}</span>{section.title}</h4>
+  if (section.kind === 'from_zero') return <details className="c4l-part c4l-part-from_zero" open={!section.collapsed}>
+    <summary>{title}{section.collapsed && <small className="muted"> (you can skip this: fast-track version)</small>}</summary>
     {section.text && <p>{section.text}</p>}
+    {section.items?.length > 0 && <><p className="c4l-sub">Step by step</p><ol>{section.items.map(item => <li key={item}>{item}</li>)}</ol></>}
+  </details>
+  return <section className={`c4l-part c4l-part-${section.kind}`}>
+    {title}
+    {section.text && !['watch_first', 'read_more'].includes(section.kind) && <p>{section.text}</p>}
+    {['watch_first', 'read_more'].includes(section.kind) && <ResourceCard resource={section.resource} text={section.text} />}
     {section.kind === 'steps' && <ol>{section.items.map(item => <li key={item}>{item}</li>)}</ol>}
     {['focus', 'key_ideas', 'mistakes'].includes(section.kind) && list(section.items)}
     {section.kind === 'visual' && <Visual visual={section.visual} />}
@@ -56,6 +90,8 @@ function Section({ section, rubric, onRubric }) {
       <pre className="c4l-code"><code>{section.example.code}</code></pre>
       <ol>{section.example.steps.map(step => <li key={step}>{step}</li>)}</ol>
     </>}
+    {section.kind === 'recall' && <><ol className="c4l-recall">{section.recall.map((item, i) => <RecallItem key={item.q} item={item} index={i} />)}</ol>
+      <p className="muted">{section.note}</p></>}
     {section.kind === 'practical' && <>
       <fieldset className="c4l-rubric"><legend>Self-check</legend>
         {section.items.map((item, i) => <label key={item}>
@@ -75,9 +111,12 @@ function Prompt({ text }) {
   return <>{lines[lines.length - 1]}<pre className="c4l-code"><code>{lines.slice(0, -1).join('\n')}</code></pre></>
 }
 
-function Question({ q, index, value, onChange }) {
+const QUESTION_LEVEL = ['Quick check', 'Apply it', 'Think deeper']
+
+function Question({ q, index, value, onChange, levels }) {
   const name = `c4l-${q.id}`
   return <fieldset className="c4l-question" aria-labelledby={`${name}-prompt`}>
+    {levels && <span className="c4l-q-level">Q{index + 1} · {QUESTION_LEVEL[index] || 'Practice'}{q.type === 'short' ? ' · write your answer' : ''}</span>}
     <div className="c4l-prompt" id={`${name}-prompt`}><span>{index + 1}.</span> <Prompt text={q.prompt} />{q.type === 'multi' && <small> (choose all that apply)</small>}</div>
     {q.type === 'single' && q.options.map((option, i) => <label key={option}>
       <input type="radio" name={name} checked={value === i} onChange={() => onChange(i)} /> {option}
@@ -94,12 +133,12 @@ function Question({ q, index, value, onChange }) {
   </fieldset>
 }
 
-function QuestionForm({ questions, submitLabel, busy, onSubmit }) {
+function QuestionForm({ questions, submitLabel, busy, onSubmit, levels = false }) {
   const [answers, setAnswers] = useState({})
   const answered = questions.filter(q => answers[q.id] !== undefined && answers[q.id] !== '' &&
     !(Array.isArray(answers[q.id]) && answers[q.id].length === 0)).length
   return <form className="c4l-quiz" onSubmit={event => { event.preventDefault(); onSubmit(answers) }}>
-    {questions.map((q, i) => <Question key={q.id} q={q} index={i} value={answers[q.id]}
+    {questions.map((q, i) => <Question key={q.id} q={q} index={i} value={answers[q.id]} levels={levels}
       onChange={value => setAnswers(a => ({ ...a, [q.id]: value }))} />)}
     <div className="c4l-quiz-actions">
       <small className="muted">{answered} of {questions.length} answered{answered < questions.length ? ' – unanswered questions count as wrong' : ''}</small>
@@ -184,7 +223,7 @@ export function Activity({ assessmentId, request, onDone, onClose }) {
   return <div className="c4l-activity">
     <div className="c4l-activity-head">
       <div>
-        <p className="eyebrow">{activity.skill_name} · {isLesson ? `${activity.stage} lesson` : 'Diagnostic'}</p>
+        <p className="eyebrow">{activity.skill_name} · {isLesson ? `Topic ${activity.topic_number} of ${activity.topic_total} · ${activity.stage}` : 'Quick check'}</p>
         <h3>{isLesson ? activity.title : activity.topics.map(t => t.title).join(' · ')}</h3>
         <div className="c4r-tags">
           {isLesson && <span className="c4r-tag">{activity.mode_label}</span>}
@@ -195,12 +234,16 @@ export function Activity({ assessmentId, request, onDone, onClose }) {
       <button type="button" className="button-secondary" onClick={onClose}>Back to my roadmap</button>
     </div>
     {(activity.why_now || activity.reason) && <p className="c4r-caution"><Icon name="spark" size={15} />{activity.why_now || activity.reason}</p>}
+    {isLesson && activity.personalised?.length > 0 && !result && <div className="c4l-arranged">
+      <strong>✨ Arranged for you</strong>
+      <ul>{activity.personalised.map(note => <li key={note}>{note}</li>)}</ul>
+    </div>}
 
     {result ? <Feedback result={result} onContinue={onClose}
       onRetry={isLesson && result.decision.case !== 'advance' ? () => setState(s => ({ ...s, result: null })) : null} />
       : <>
         {isLesson && <div className="c4l-lesson">
-          {activity.sections.map(section => <Section key={section.kind + section.title} section={section} rubric={rubric}
+          {activity.sections.filter(x => x.kind !== 'next').map(section => <Section key={section.kind + section.title} section={section} rubric={rubric}
             onRubric={i => setRubric(r => r.includes(i) ? r.filter(x => x !== i) : [...r, i])} />)}
           <div className="c4r-actions">
             <button type="button" className="button-secondary" disabled={state.busy || rubric.length === 0}
@@ -208,18 +251,20 @@ export function Activity({ assessmentId, request, onDone, onClose }) {
           </div>
           {practicalNote && <p className="c4r-notice" role="status">{practicalNote}</p>}
           {activity.supplementary_resources?.length > 0 && <section className="c4l-part">
-            <h4>Extra resources at this level</h4>
+            <h4><span className="c4l-part-icon" aria-hidden="true">🔗</span>More resources at this level</h4>
             <ul>{activity.supplementary_resources.map(r => <li key={r.url || r.title}>
               {r.url ? <a href={r.url} target="_blank" rel="noreferrer">{r.title}</a> : r.title}
               {r.type && <small className="muted"> · {r.type} · {r.level}</small>}
             </li>)}</ul>
           </section>}
         </div>}
-        <h4 className="c4l-quiz-title">{isLesson ? 'Check your understanding' : `${activity.questions.length} quick questions`}</h4>
+        <h4 className="c4l-quiz-title">{isLesson ? '❓ Practice questions' : `${activity.questions.length} quick questions`}</h4>
+        {isLesson && <p className="muted c4l-quiz-note">Answers and explanations appear after you submit. 80% or more marks this topic as mastered.</p>}
         {state.error && <p className="error-message" role="alert">{state.error}</p>}
         <QuestionForm key={activity.topic_id || activity.scope} questions={isLesson ? activity.quiz : activity.questions}
-          submitLabel={isLesson ? 'Submit quiz' : 'Submit diagnostic'} busy={state.busy}
+          submitLabel={isLesson ? 'Submit quiz' : 'Submit diagnostic'} busy={state.busy} levels={isLesson}
           onSubmit={answers => submit(isLesson ? 'quiz' : 'diagnostic', answers)} />
+        {isLesson && activity.sections.filter(x => x.kind === 'next').map(section => <Section key="next" section={section} rubric={rubric} onRubric={() => {}} />)}
       </>}
   </div>
 }
@@ -280,7 +325,7 @@ export function SkillLessons({ skill, ai, onOpen, onGenerate, busy }) {
   </div>
   return <div className="c4l-lessons">
     <div className="c4l-lessons-head">
-      <h4>Lessons</h4>
+      <h4>📚 Lesson roadmap</h4>
       {skill.progress && <span className="c4l-progress-text">{skill.progress.done}/{skill.progress.total} done</span>}
     </div>
     {skill.placement?.checkpoint && <p className="c4l-note">{skill.placement.reason}
@@ -291,7 +336,8 @@ export function SkillLessons({ skill, ai, onOpen, onGenerate, busy }) {
       {skill.topics.filter(t => t.in_scope).map(t => <li key={t.topic_id}
         className={`${TOPIC_STATE[t.state].className} ${t.locked ? 'is-locked' : ''}`}>
         <span><strong>{t.locked && <span className="c4l-lock" aria-hidden="true">🔒 </span>}{t.title}</strong>
-          <small>{t.stage}{t.best_score != null ? ` · best ${Math.round(t.best_score * 100)}%` : ''}</small></span>
+          <small>{t.stage}{t.best_score != null ? ` · best ${Math.round(t.best_score * 100)}%` : ''}</small>
+          {t.objective && <small className="c4l-objective">{t.objective}</small>}</span>
         <span className="c4l-topic-state">{t.locked ? 'Locked' : TOPIC_STATE[t.state].label}</span>
         <span className="c4l-topic-actions">
           {t.locked ? <small className="c4l-lock-reason">{t.lock_reason}</small> : <>

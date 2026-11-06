@@ -149,6 +149,8 @@ Rejected and pending links add nothing. Each skill has `evidence_status`, `evide
 | "I know this – test me" passed | Topic skipped as mastered |
 | All topics of a stage mastered | Demonstrated level (Beginner 2, Intermediate 3, Advanced 4) capped at 3/5 → merged as provisional evidence "C4 lessons and quizzes" only when higher than the CV/proof level → roadmap and readiness regenerate (existing analysis, weights unchanged) |
 
+**Lesson layout** (lecture-notes style): what you will learn, main idea, explain from zero (everyday analogy and steps), real-life career example, how it works, visual, worked example, key ideas, memory trick, interview and job hack, common mistakes, practice and practical task, mini summary, memory test (answers revealed on click, not graded), practice questions Q1-Q3 (graded), what comes next. The extra parts live in `curriculum/enrichment.py`. Each lesson lists how it was *arranged for* the student: lesson version (profile and last result), video first (prefers video tutorials and the dataset has a video at that level), further reading (prefers reading), practical task first (hands-on), career examples.
+
 Opening a lesson and practical self-checks are recorded but never count as evidence. The learner profile and learning methods choose the lesson mode and order (project-first learners see the practical task first); the career chooses the worked examples (data vs software).
 
 **Tables** (created automatically in the C4 database): `c4_topic_progress`, `c4_skill_learning`, `c4_learning_attempts`, `c4_learning_events`, `c4_generated_curricula`.
