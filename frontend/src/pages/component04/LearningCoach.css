@@ -106,7 +106,13 @@ details.c4l-part[open] > summary { margin-bottom: 6px; }
 .c4l-part-memory_trick { background: var(--color-ai-soft, var(--component-soft)); border-color: transparent; }
 .c4l-part-career_hack { background: var(--color-gold-soft); border-color: transparent; }
 .c4l-part-summary { background: var(--component-soft); border-color: transparent; font-weight: 500; }
-.c4l-part-watch_first,.c4l-part-read_more { border-left: 3px solid var(--component-accent); }
+.c4l-part-watch_first,.c4l-part-read_more,.c4l-part-video { border-left: 3px solid var(--component-accent); }
+.c4l-part-video h4 { overflow-wrap: anywhere; }
+.c4l-video { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; justify-items: start; margin-top: 6px; }
+.c4l-video-frame { width: 100%; max-width: 640px; aspect-ratio: 16 / 9; border-radius: var(--radius-sm); overflow: hidden; background: var(--color-background); }
+.c4l-video-frame iframe { display: block; width: 100%; height: 100%; border: 0; }
+.c4l-video .c4r-tags { margin: 0; }
+.c4l-video .button { min-height: 34px; padding: 6px 12px; font-size: 12px; }
 .c4l-resource-card { display: grid; gap: 6px; justify-items: start; margin-top: 6px; }
 .c4l-resource-card .c4r-tags { margin: 0; }
 .c4l-resource-card .c4r-tag { text-transform: capitalize; }

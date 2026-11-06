@@ -350,6 +350,45 @@ class TutorScenarios(unittest.TestCase):
         career = next(s for s in lesson["sections"] if s["kind"] == "career")
         self.assertEqual(career["text"], topic(PY, "py-b1")["career_examples"]["data"])
 
+    # A student who prefers video gets the curated video first, instead of the dataset video
+    def test_curated_video_first_for_video_learners(self):
+        rec = self.student("vid", [], {PF: 1}, methods=("video_tutorials",))
+        lesson = learning.open_activity(rec, "vid", PF, "pf-b1")
+        kinds = [s["kind"] for s in lesson["sections"]]
+        expected = topic(PF, "pf-b1")["video"]
+        self.assertEqual(kinds[:2], ["objective", "video"])
+        self.assertEqual(kinds.count("video"), 1)
+        self.assertNotIn("watch_first", kinds)
+        self.assertEqual(lesson["sections"][1]["video"], expected)
+        self.assertEqual(lesson["sections"][1]["title"], f"Watch first: {expected['title']}")
+        self.assertIn("Video first: you prefer video tutorials.", lesson["personalised"])
+
+    # A student who does not prefer video still sees it, right after "How it works" (optional)
+    def test_curated_video_after_explanation_for_other_learners(self):
+        rec = self.student("rd", [], {PF: 1}, methods=("reading",))
+        lesson = learning.open_activity(rec, "rd", PF, "pf-b1")
+        kinds = [s["kind"] for s in lesson["sections"]]
+        expected = topic(PF, "pf-b1")["video"]
+        self.assertEqual(kinds.index("video"), kinds.index("explanation") + 1)
+        section = lesson["sections"][kinds.index("video")]
+        self.assertEqual(section["title"], f"Watch: {expected['title']}")
+        self.assertEqual(section["note"], f"Video from YouTube ({expected['channel']}), chosen by the lesson author. Not produced by CareerNova.")
+        self.assertNotIn("watch_first", kinds)
+        self.assertFalse(any("Video first" in n for n in lesson["personalised"]))
+
+    # A topic without a curated video keeps the dataset "Watch first" behaviour
+    def test_dataset_video_only_without_a_curated_video(self):
+        rec = self.student("ds-vid", [], {PF: 1}, methods=("video_tutorials",))
+        no_videos = {skill: [{k: v for k, v in t.items() if k != "video"} for t in topics] for skill, topics in BANK.items()}
+        dataset_video = dict(title="Dataset video", type="video", level="Beginner", url="https://example.com/v")
+        with patch.object(learning, "bank", return_value=no_videos), \
+                patch.object(service.engine(), "recommend_resources", return_value=[dataset_video]):
+            lesson = learning.open_activity(rec, "ds-vid", PF, "pf-b1")
+        kinds = [s["kind"] for s in lesson["sections"]]
+        self.assertEqual(kinds[:2], ["objective", "watch_first"])
+        self.assertNotIn("video", kinds)
+        self.assertIn("Video first: you prefer video tutorials.", lesson["personalised"])
+
 
 class ModelLoading(unittest.TestCase):
     # Page load sends the analysis and the lesson plan at the same time; the second must not see half-loaded models.
@@ -398,6 +437,32 @@ class CurriculumAndRules(unittest.TestCase):
         bad = dict(topic(PF, "pf-b1"), quiz=[dict(topic(PF, "pf-b1")["quiz"][0], answer=99)] * 3)
         with self.assertRaises(curriculum.CurriculumError):
             curriculum.validate_topic(bad)
+
+    def test_curated_videos_pass_validation(self):
+        bank = curriculum.load()                             # the bank still loads with the videos merged in
+        for skill_id, topics in bank.items():
+            for t in topics:
+                if "video" in t:
+                    curriculum.validate_enrichment(t, f"{skill_id}/{t['id']}")
+                    self.assertRegex(t["video"]["checked_on"], r"^\d{4}-\d{2}-\d{2}$")
+
+    def test_malformed_video_is_rejected(self):
+        good = dict(youtube_id="abcDEF12_-x", title="A title", channel="A channel", why="What it covers.")
+        curriculum.validate_enrichment(dict(video=good), "t")
+        for bad_id in ("short", "abcDEF12_-x1", "abcDEF12_-\n", "abc DEF12_x", "abcDEF12/-x", None, 12345678901):
+            with self.assertRaises(curriculum.CurriculumError):
+                curriculum.validate_enrichment(dict(video=dict(good, youtube_id=bad_id)), "t")
+        for key in ("title", "channel", "why"):
+            with self.assertRaises(curriculum.CurriculumError):
+                curriculum.validate_enrichment(dict(video=dict(good, **{key: "  "})), "t")
+        with self.assertRaises(curriculum.CurriculumError):
+            curriculum.validate_enrichment(dict(video="abcDEF12_-x"), "t")
+
+    # AI-generated lessons must not show a video link the lesson author never checked
+    def test_ai_generated_topic_never_shows_a_video(self):
+        video = dict(youtube_id="abcDEF12_-x", title="A title", channel="A channel", why="What it covers.")
+        lesson = tutor.compose_lesson(dict(topic(PF, "pf-b1"), video=video, ai_generated=True), "standard", "software")
+        self.assertNotIn("video", [s["kind"] for s in lesson["sections"]])
 
     def test_short_answer_grading_uses_keywords(self):
         q = next(q for t in BANK.values() for tp in t for q in tp["quiz"] if q["type"] == "short")

@@ -8,6 +8,8 @@ common mistakes, practice, a practical task with a self-check rubric, a link to 
 diagnostic questions. validate_topic() checks the structure, so a broken lesson is rejected at start-up and AI-generated
 lessons can be checked with the same rules.
 """
+import re
+
 from . import dsa, git, oop, programming_fundamentals, python, sql
 from .enrichment import ENRICHMENT
 
@@ -89,17 +91,25 @@ def validate_skill(skill_id, topics):
     return topics
 
 
-ENRICHMENT_KEYS = ("from_zero", "memory_trick", "career_hack", "recall")
+ENRICHMENT_KEYS = ("from_zero", "memory_trick", "career_hack", "recall", "video")
+YOUTUBE_ID = re.compile(r"[A-Za-z0-9_-]{11}")
 
 
 def validate_enrichment(topic, where):
-    """Optional lecture-style parts (from_zero, memory_trick, career_hack, recall). Checked when present."""
+    """Optional lecture-style parts (from_zero, memory_trick, career_hack, recall, video). Checked when present."""
     for key in ("from_zero", "memory_trick", "career_hack"):
         if key in topic and (not isinstance(topic[key], str) or not topic[key].strip()):
             raise CurriculumError(f"{where}: '{key}' must be a non-empty text")
     for item in topic.get("recall") or []:
         if not isinstance(item, dict) or not item.get("q") or not item.get("a"):
             raise CurriculumError(f"{where}: each recall item needs a question 'q' and an answer 'a'")
+    if "video" in topic:
+        video = topic["video"]
+        if not isinstance(video, dict) or not isinstance(video.get("youtube_id"), str) or not YOUTUBE_ID.fullmatch(video["youtube_id"]):
+            raise CurriculumError(f"{where}: the video needs a valid 11-character 'youtube_id'")
+        for key in ("title", "channel", "why"):
+            if not isinstance(video.get(key), str) or not video[key].strip():
+                raise CurriculumError(f"{where}: the video's '{key}' must be a non-empty text")
 
 
 def load():

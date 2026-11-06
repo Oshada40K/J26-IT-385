@@ -46,9 +46,24 @@ function Visual({ visual }) {
 
 // Lecture-notes headings: the same icon always means the same kind of part.
 const PART_ICON = {
-  objective: '🎯', watch_first: '▶️', focus: '🔁', main_idea: '💡', from_zero: '🧠', career: '🌍', explanation: '📖', read_more: '📚',
+  objective: '🎯', watch_first: '▶️', video: '🎬', focus: '🔁', main_idea: '💡', from_zero: '🧠', career: '🌍', explanation: '📖', read_more: '📚',
   visual: '📊', worked_example: '💻', key_ideas: '🔑', memory_trick: '🧩', career_hack: '⚡', mistakes: '⚠️', practice: '✍️',
   practical: '🛠️', challenge: '🚀', summary: '📌', recall: '🧠', next: '➡️',
+}
+
+function VideoPlayer({ video, note }) {
+  return <div className="c4l-video">
+    <div className="c4l-video-frame">
+      <iframe src={`https://www.youtube-nocookie.com/embed/${video.youtube_id}`} title={video.title} loading="lazy"
+        allow="encrypted-media; picture-in-picture" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
+    </div>
+    <div className="c4r-tags"><span className="c4r-tag">{video.channel}</span>
+      {video.minutes ? <span className="c4r-tag">{video.minutes} min</span> : null}</div>
+    <p>{video.why}</p>
+    <small className="muted">{note}</small>
+    <a className="button button-secondary" href={`https://www.youtube.com/watch?v=${video.youtube_id}`} target="_blank" rel="noopener">
+      Open on YouTube <Icon name="arrow" size={13} /></a>
+  </div>
 }
 
 function ResourceCard({ resource, text }) {
@@ -83,6 +98,7 @@ function Section({ section, rubric, onRubric }) {
     {title}
     {section.text && !['watch_first', 'read_more'].includes(section.kind) && <p>{section.text}</p>}
     {['watch_first', 'read_more'].includes(section.kind) && <ResourceCard resource={section.resource} text={section.text} />}
+    {section.kind === 'video' && <VideoPlayer video={section.video} note={section.note} />}
     {section.kind === 'steps' && <ol>{section.items.map(item => <li key={item}>{item}</li>)}</ol>}
     {['focus', 'key_ideas', 'mistakes'].includes(section.kind) && list(section.items)}
     {section.kind === 'visual' && <Visual visual={section.visual} />}

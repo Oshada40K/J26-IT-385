@@ -222,20 +222,29 @@ def _mode_reason(mode, prev, level):
 
 
 def _personalise(lesson, ctx, prev, topics, topic):
-    """Arrange the lesson for this student and say how: lesson version (profile and last result), video first or extra
-    reading (learning methods, using a level-matched resource from the dataset), practical first, career examples."""
+    """Arrange the lesson for this student and say how: lesson version (profile and last result), video first (the
+    topic's curated video, else a level-matched video from the dataset), extra reading (dataset), practical first,
+    career examples."""
     methods = ctx["analysis"]["inputs"].get("learning_methods") or []
     resources = lesson.get("supplementary_resources") or []
     sections = lesson["sections"]
     notes = [_mode_reason(lesson["mode"], prev, ctx["profile"]["level"])]
+    curated = next((x for x in sections if x["kind"] == "video"), None)
     video = next((r for r in resources if r.get("type") == "video"), None)
-    if "video_tutorials" in methods and video:
+    if "video_tutorials" in methods and curated:
+        sections.remove(curated)
+        curated["title"] = f"Watch first: {curated['video']['title']}"
+        sections.insert(1, curated)
+        notes.append("Video first: you prefer video tutorials.")
+    elif "video_tutorials" in methods and video:
         sections.insert(1, dict(kind="watch_first", title="Watch first", resource=video,
                                 text="A short video at this level to watch before you read the lesson."))
         notes.append("Video first: you prefer video tutorials.")
     docs = next((r for r in resources if r.get("type") == "documentation"), None)
     if "reading" in methods and docs:
         at = next((i for i, x in enumerate(sections) if x["kind"] == "explanation"), len(sections) - 1) + 1
+        if at < len(sections) and sections[at]["kind"] == "video":   # the curated video stays right after "How it works"
+            at += 1
         sections.insert(at, dict(kind="read_more", title="Read more", resource=docs,
                                  text="Documentation at this level for a deeper read."))
         notes.append("Further reading added: you prefer reading documentation.")

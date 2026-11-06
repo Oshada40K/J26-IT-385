@@ -357,8 +357,9 @@ MODE_LABELS = {
 
 
 def compose_lesson(topic, mode, family, prev=None, style_types=(), skill_name="", career_name=""):
-    """The lesson the student sees, in a lecture-notes layout (main idea, explain from zero, real-life example, visual,
-    worked example, key ideas, memory trick, interview hack, common mistakes, practice, summary, memory test, next).
+    """The lesson the student sees, in a lecture-notes layout (main idea, explain from zero, real-life example, how it
+    works, curated video, visual, worked example, key ideas, memory trick, interview hack, common mistakes, practice,
+    summary, memory test, next).
     Content changes with the mode (not only the label): foundation opens the step-by-step part and all common mistakes;
     focused puts the missed ideas first; challenge folds the beginner support away and adds a harder task.
     Learning-style changes that need resources (video first, reading) are added by learning.open_activity."""
@@ -375,6 +376,10 @@ def compose_lesson(topic, mode, family, prev=None, style_types=(), skill_name=""
     if example_text:
         sections.append(dict(kind="career", title=f"Real-life example: {career_name or 'your career'}", text=example_text))
     sections.append(dict(kind="explanation", title="How it works", text=topic["explanation"]))
+    if topic.get("video") and not topic.get("ai_generated"):  # only videos the lesson author checked, never AI-suggested links
+        video = topic["video"]
+        sections.append(dict(kind="video", title=f"Watch: {video['title']}", video=dict(video),
+                             note=f"Video from YouTube ({video['channel'].strip()}), chosen by the lesson author. Not produced by CareerNova."))
     if topic.get("visual") and mode != "challenge":
         sections.append(dict(kind="visual", title=topic["visual"]["caption"], visual=topic["visual"]))
     sections.append(dict(kind="worked_example", title=f"Worked example: {topic['example']['title']}", example=topic["example"]))
