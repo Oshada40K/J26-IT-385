@@ -103,7 +103,7 @@ class C4Tests(unittest.TestCase):
 
     def test_missing_models_keep_the_form_working(self):
         with patch.object(service.engine(), "models_dir", Path(self.temp.name) / "missing"), \
-             patch.object(service.engine(), "cfg", {}):
+             patch.object(service.engine(), "cfg", {}), patch.object(service.engine(), "_models_ready", False):
             saved = self.client.post("/api/roadmap/assessment", json=form(self.rate_all(self.questions())))
             self.assertEqual(saved.status_code, 201)
             self.assertIsNone(saved.json()["readiness_score"])
