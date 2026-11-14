@@ -1,253 +1,21 @@
 // Owner: Oshada - Component 03: Explainable Career Recommendation.
 // Loads the three career APIs and presents them as one result view. The backend
 // builds the recommendation from the Component 01 and 02 profiles for the saved candidate.
-// Page sections: best-job hero + score ring, "Why this career?" reasons, SHAP factor
-// chart, matched skills / skills to learn (-> Component 04), what-if actions and
-// alternative paths (counterfactuals), confidence ranges + explanation stability
-// (insights API, loaded after the core three), top 5 jobs, model summary.
-import { useEffect, useState } from 'react'
+// Page sections (c3Sections.jsx): best-match hero + gauge, why + SHAP factors, skills,
+// what-if (single skill changes), other paths, confidence, top 5, method. The data loading
+// below is unchanged; the redesign is presentation only.
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import Icon from '../../components/Icon.jsx'
+import { useInViewport } from '../home/viewport.js'
+import { gainsByTechnology, isTechnicalFactor } from './c3Model.js'
+import { ConfidenceSection, Hero, MethodSection, PathsSection, SkillsSection, TopJobsSection, WhatIfSection, WhySection } from './c3Sections.jsx'
 import { API_BASE_URL } from '../../api/client.js'
 import { savedSession } from '../component01/skillApi.js'
 import { ENDPOINTS, describeCareerError, getCareerInsights, getCareerResult } from './careerApi.js'
 import { PageLoader, ReloadButton, SkeletonCareer, Spinner } from '../../components/loading/index.js'
 import { cached, candidateKey, hasCached, peek, prime } from '../../api/resourceCache.js'
 import './CareerRecommendation.css'
-
-function ScoreRing({ score }) {
-  const radius = 64
-  const circumference = 2 * Math.PI * radius
-  const [shown, setShown] = useState(0)
-  useEffect(() => { const id = requestAnimationFrame(() => setShown(score)); return () => cancelAnimationFrame(id) }, [score])
-  return (
-    <div className="c3-ring" role="img" aria-label={`Match score ${Math.round(score)} out of 100`}>
-      <svg width="100%" height="100%" viewBox="0 0 150 150">
-        <circle className="c3-ring-track" cx="75" cy="75" r={radius} fill="none" strokeWidth="12" />
-        <circle className="c3-ring-fill" cx="75" cy="75" r={radius} fill="none" strokeWidth="12"
-          strokeDasharray={circumference} strokeDashoffset={circumference * (1 - shown / 100)} />
-      </svg>
-      <div className="c3-ring-value">
-        <strong>{Math.round(score)}</strong>
-        <small>MATCH / 100</small>
-      </div>
-    </div>
-  )
-}
-
-function Hero({ title, score, occupations, matchedCount, uncertainty }) {
-  const best = uncertainty?.jobs?.[0]
-  return (
-    <section className="c3-hero">
-      <div>
-        <div className="c3-hero-label">★ YOUR BEST CAREER MATCH</div>
-        <h2>{title}</h2>
-        <p>Ranked first out of {occupations} occupations by comparing your CV skills and soft skills with O*NET job requirements.</p>
-        <div className="c3-hero-meta">
-          {matchedCount > 0 && <span>{matchedCount} of your skills used in this job</span>}
-          <span>Explained with SHAP</span>
-          {best && <span title="5th to 95th percentile across plausible versions of your CV evidence">Likely range {best.low.toFixed(0)}–{best.high.toFixed(0)}</span>}
-          {uncertainty && <span className={`c3-stability ${uncertainty.stability}`}>Ranking stability: {uncertainty.stability}</span>}
-        </div>
-      </div>
-      {score != null && <ScoreRing score={score} />}
-    </section>
-  )
-}
-
-function WhyCard({ reasons }) {
-  return (
-    <div className="c3-card">
-      <h3>Why this career?</h3>
-      <p className="c3-card-sub">The main reasons behind your recommendation</p>
-      <ul className="c3-reasons">
-        {reasons.map((reason) => {
-          const down = reason.startsWith('What lowered')
-          return (
-            <li key={reason}>
-              <span className={`c3-reason-icon ${down ? 'down' : ''}`}>{down ? '−' : '✓'}</span>
-              <span>{reason}</span>
-            </li>
-          )
-        })}
-      </ul>
-    </div>
-  )
-}
-
-function FactorChart({ factors, shapText }) {
-  const max = Math.max(...factors.map((f) => Math.abs(f.points)), 1)
-  return (
-    <div className="c3-card">
-      <h3>What shaped your score</h3>
-      <p className="c3-card-sub">Each factor's effect on the match score, in points</p>
-      {factors.map((f) => (
-        <div className="c3-factor" key={`${f.effect}-${f.label}`}>
-          <span className="c3-factor-label" title={f.label}>{f.label}</span>
-          <div className="c3-factor-track">
-            <div className={`c3-factor-bar ${f.effect}`} style={{ width: `${Math.max((Math.abs(f.points) / max) * 100, 2)}%` }} />
-          </div>
-          <span className={`c3-factor-points ${f.effect}`}>{f.points > 0 ? '+' : ''}{f.points.toFixed(1)}</span>
-        </div>
-      ))}
-      <div className="c3-legend"><span><i />Raised the score</span><span><i className="negative" />Lowered the score</span></div>
-      <details className="c3-details">
-        <summary>Technical details (SHAP)</summary>
-        <ul>{shapText.map((s) => <li key={s}>{s}</li>)}</ul>
-      </details>
-    </div>
-  )
-}
-
-function SkillsCard({ title, subtitle, skills, kind, children }) {
-  return (
-    <div className="c3-card">
-      <h3>{title}</h3>
-      <p className="c3-card-sub">{subtitle}</p>
-      {skills.length ? (
-        <div className="c3-chips">{skills.map((s) => <span key={s} className={`c3-chip ${kind}`}>{s}</span>)}</div>
-      ) : <p className="muted" style={{ margin: 0 }}>None found.</p>}
-      {children}
-    </div>
-  )
-}
-
-// Counterfactuals: single skill changes re-scored by the real model for the best job.
-function WhatIfCard({ cf }) {
-  const helpful = cf.actions.filter((a) => a.score_gain > 0).slice(0, 5)
-  return (
-    <div className="c3-card">
-      <h3>What if you learned…</h3>
-      <p className="c3-card-sub">Single skill changes, re-scored by the model for {cf.target}</p>
-      {helpful.length ? (
-        <ul className="c3-whatif">
-          {helpful.map((a) => (
-            <li key={`${a.action}-${a.technology}`}>
-              <span className={`c3-action ${a.action}`}>{a.action === 'learn' ? 'Learn' : 'Improve'}</span>
-              <span className="c3-action-text">
-                <strong>{a.technology}</strong>
-                <small>{a.action === 'learn' ? `new, to level ${a.to_level}` : `level ${a.from_level} → ${a.to_level}`}</small>
-              </span>
-              <span className="c3-action-gain">+{a.score_gain.toFixed(1)}<small>→ {a.new_score.toFixed(1)}</small></span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="muted" style={{ margin: 0 }}>
-          No single skill change raises this score noticeably. Your profile already covers what the model rewards for {cf.target}; the alternatives below show where one new skill matters more.
-        </p>
-      )}
-      <p className="c3-note">{cf.meaning}</p>
-    </div>
-  )
-}
-
-// Counterfactuals for the alternatives: the single best step for each, and a greedy path for the runner-up.
-function AlternativesCard({ cf }) {
-  const path = cf.path_to_runner_up
-  return (
-    <div className="c3-card">
-      <h3>Prefer a different path?</h3>
-      <p className="c3-card-sub">The one step that moves each alternative closest to the top</p>
-      <ul className="c3-alts">
-        {cf.alternatives.map((alt) => (
-          <li key={alt.ranking}>
-            <div className="c3-alt-head"><strong>{alt.job}</strong><span>{alt.gap_to_best.toFixed(1)} pts behind</span></div>
-            {alt.best_action ? (
-              <p>Learn <b>{alt.best_action.technology}</b>: +{alt.best_action.score_gain.toFixed(1)}{alt.reaches_rank_1 ? ', becomes your best match' : `, rank ${alt.best_action.new_rank}`}</p>
-            ) : <p>No in-demand tool is missing for this job.</p>}
-          </li>
-        ))}
-      </ul>
-      {path?.steps?.length > 0 && (
-        <div className="c3-path">
-          <strong>{path.reaches_rank_1 ? `Path that makes ${path.job} your best match` : `Three steps towards ${path.job}`}</strong>
-          <ol>{path.steps.map((s) => <li key={s.technology}>Learn {s.technology} <span>→ {s.new_score.toFixed(1)}{s.becomes_best ? ' · rank 1' : ''}</span></li>)}</ol>
-          {!path.reaches_rank_1 && <p className="c3-note">These steps narrow the gap but do not overtake {cf.target}.</p>}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// Confidence-aware ranges from Monte Carlo over CV evidence confidence, plus SHAP stability.
-function ConfidenceCard({ unc, stability }) {
-  const pct = (v) => Math.round(v * 100)
-  return (
-    <div className="c3-card c3-full">
-      <h3>How sure is this ranking?</h3>
-      <p className="c3-card-sub">
-        {unc.stability_meaning} Bands show the likely score range across {unc.samples} plausible versions of your CV evidence; wider bands come from lower-confidence skills.
-      </p>
-      <div className="c3-ranges">
-        {unc.jobs.map((j) => (
-          <div className="c3-range" key={j.ranking}>
-            <span className="c3-range-label" title={j.job}>{j.job}</span>
-            <div className="c3-range-track">
-              <div className="c3-range-band" style={{ left: `${j.low}%`, width: `${Math.max(j.high - j.low, 0.8)}%` }} />
-              <i className="c3-range-point" style={{ left: `${j.score}%` }} />
-            </div>
-            <span className="c3-range-value">{j.low.toFixed(0)}–{j.high.toFixed(0)}</span>
-            <span className="c3-range-prob" title="Share of plausible profiles where this job ranked first">{pct(j.top1_probability)}% first</span>
-          </div>
-        ))}
-      </div>
-      <div className="c3-legend">
-        <span><i className="band" />Likely score range</span>
-        <span><i className="point" />Reported score</span>
-        <span>CV evidence confidence: {unc.confidence_counts.high} high · {unc.confidence_counts.medium} medium · {unc.confidence_counts.low} low</span>
-      </div>
-      <div className="c3-stats c3-stability-stats">
-        <div className="c3-stat"><small>Explanation stability</small><strong className={`c3-stability-text ${stability.label}`}>{stability.label}</strong></div>
-        <div className="c3-stat"><small>Same top factor</small><strong>{pct(stability.top_factor_agreement)}%</strong></div>
-        <div className="c3-stat"><small>Top-3 factors kept</small><strong>{pct(stability.mean_top3_overlap)}%</strong></div>
-        <div className="c3-stat"><small>Avg. factor shift</small><strong>{stability.mean_abs_point_change.toFixed(2)} pts</strong></div>
-      </div>
-      <p className="c3-note">{stability.meaning}</p>
-    </div>
-  )
-}
-
-function TopJobs({ jobs }) {
-  return (
-    <div className="c3-card c3-full">
-      <h3>Your top 5 career matches</h3>
-      <p className="c3-card-sub">Alternatives worth exploring, ranked by match score</p>
-      <div className="c3-jobs">
-        {jobs.map((job) => (
-          <div key={job.ranking} className={`c3-job ${job.ranking === 1 ? 'best' : ''}`}>
-            <span className="c3-rank">{job.ranking}</span>
-            <span className="c3-job-title">
-              {job.job}
-              <span className="c3-job-tag">{job.ranking === 1 ? 'Best match' : `Alternative ${job.ranking - 1}`}</span>
-            </span>
-            <div className="c3-bar"><div style={{ width: `${job.score}%` }} /></div>
-            <span className="c3-job-score">{job.score.toFixed(1)}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function ModelCard({ data }) {
-  return (
-    <div className="c3-card c3-full">
-      <h3>How this recommendation works</h3>
-      <p className="c3-card-sub">{data.score_meaning}.</p>
-      <div className="c3-stats">
-        <div className="c3-stat"><small>Model</small><strong>XGBoost + SHAP</strong></div>
-        <div className="c3-stat"><small>Job data</small><strong>O*NET {data.onet_version}</strong></div>
-        <div className="c3-stat"><small>Occupations compared</small><strong>{data.eligible_occupations}</strong></div>
-        <div className="c3-stat"><small>Features per job</small><strong>21</strong></div>
-      </div>
-      <div className="c3-pipeline">
-        <span>CV skills (C01)</span><b>+</b><span>Soft skills (C02)</span><b>→</b>
-        <span>21 match features × {data.eligible_occupations} jobs</span><b>→</b>
-        <span>XGBoost score</span><b>→</b><span>SHAP explanation</span><b>→</b><span>What-if + confidence</span>
-      </div>
-    </div>
-  )
-}
 
 const emptyState = { loading: false, data: null, error: null }
 const cacheKey = (key) => candidateKey(`c03:${key}`)
@@ -311,19 +79,41 @@ export default function CareerRecommendation() {
   // Only show insights that belong to the recommendation on screen.
   const extra = insights.data && (!metadata || insights.data.candidate_id === metadata.candidate_id) ? insights.data : null
 
+  // Interactions: what-if preview on the gauge, factor -> reason highlight, chip -> what-if row.
+  const heroRef = useRef(null)
+  const [hovered, setHovered] = useState(null)
+  const [pinned, setPinned] = useState(null)
+  const [focus, setFocus] = useState(null)
+  const [flash, setFlash] = useState(null)
+  const preview = hovered || pinned
+  const reduced = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  const scrollTo = useCallback(id => document.getElementById(id)?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }), [reduced])
+  function showSkill(skill) {
+    const row = document.querySelector(`#c3-whatif [data-technology="${CSS.escape(skill)}"]`)
+    if (row) { row.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }); setFlash(skill); setTimeout(() => setFlash(null), 1800) }
+    else scrollTo('c3-whatif')
+  }
+  const busy = anyLoading || insights.loading
+
   return (
-    <div className="page accent-career">
+    <div className={`page accent-career c3-page ${busy && metadata ? 'is-refreshing' : ''}`} aria-busy={busy}>
       <div className="c3-header">
         <div>
           <p className="eyebrow">COMPONENT 03 / EXPLAINABLE CAREER INTELLIGENCE</p>
-          <h1>Find your direction. Understand why.</h1>
+          <h1 className="c3-title" aria-label="Find your direction. Understand why.">
+            {'Find your direction. Understand why.'.split(' ').map((word, index) => <span key={index} className="c3-word" aria-hidden="true"><span style={{ '--i': index }}>{word}</span></span>)}
+          </h1>
           <p className="page-description">Your strongest career match, five ranked possibilities, and the evidence behind the recommendation.</p>
-          <span className={`c3-pill ${isSample ? 'sample' : ''}`}>
-            {isSample ? 'Sample profile: upload your CV in Skill assessment to personalise' : '● Based on your CV skills and personality profile'}
-          </span>
+          {!isSample && <span className="c3-pill">● Based on your CV skills and personality profile</span>}
         </div>
-        <ReloadButton className="c3-refresh" onClick={loadAll} loading={anyLoading || insights.loading} loadingLabel="Analysing…" />
+        <ReloadButton className="c3-refresh" onClick={loadAll} loading={busy} loadingLabel="Analysing…" />
       </div>
+
+      {isSample && <div className="c3-sample" role="note">
+        <span className="c3-sample-icon"><Icon name="alert" size={18} /></span>
+        <div><strong>You are looking at a sample profile.</strong><p>Upload your CV in Skill assessment to personalise these recommendations.</p></div>
+        <Link to="/component01" className="c3-sample-button">Upload your CV <Icon name="arrow" size={15} /></Link>
+      </div>}
 
       {errors.map((error) => (
         <div className="c3-error fx-reveal" role="alert" key={error}>
@@ -334,31 +124,29 @@ export default function CareerRecommendation() {
 
       {anyLoading && !metadata && <PageLoader variant="career" label="Finding your best career matches…" skeleton={<SkeletonCareer />} />}
 
+      {metadata && <SectionNav heroRef={heroRef} onGo={scrollTo} hasWhy={Boolean(why)} hasInsights={Boolean(extra)} hasTop={Boolean(top)} />}
+
       <div className={fresh ? 'fx-stagger' : undefined}>
         {(best || top) && (
           <Hero
+            heroRef={heroRef}
             title={best?.best_job || top.jobs[0].job}
             score={why?.match_score ?? top?.jobs[0].score}
             occupations={metadata.eligible_occupations}
             matchedCount={why?.matched_technologies.length || 0}
+            skills={why?.matched_technologies || []}
             uncertainty={extra?.uncertainty}
+            meaning={metadata.score_meaning}
+            preview={preview}
+            onWhy={() => scrollTo('c3-why')}
           />
         )}
 
         {why && (
           <>
-            <div className="c3-grid">
-              <WhyCard reasons={why.key_reasons} />
-              <FactorChart factors={why.factors} shapText={why.explanation.split(/(?<=\.)\s+/).filter(Boolean)} />
-            </div>
-            <div className="c3-grid">
-              <SkillsCard title="Your matching skills" subtitle="Skills from your CV that this job uses" skills={why.matched_technologies} kind="have" />
-              <SkillsCard title="Skills to learn next" subtitle="In-demand tools for this job that your CV doesn't show yet" skills={why.skills_to_learn} kind="learn">
-                {why.skills_to_learn.length > 0 && (
-                  <p className="c3-note">Turn these into a step-by-step plan in your <Link to="/component04">Learning roadmap →</Link></p>
-                )}
-              </SkillsCard>
-            </div>
+            <WhySection reasons={why.key_reasons} factors={why.factors} shapText={why.explanation.split(/(?<=\.)\s+/).filter(Boolean)} focus={focus} onFocus={setFocus} />
+            <SkillsSection matched={why.matched_technologies} toLearn={why.skills_to_learn} gains={gainsByTechnology(extra?.counterfactuals?.actions)}
+              target={extra?.counterfactuals?.target || best?.best_job} highlightMatched={Boolean(focus && isTechnicalFactor(focus))} onLearn={showSkill} />
           </>
         )}
 
@@ -377,23 +165,54 @@ export default function CareerRecommendation() {
         {extra && (
           <>
             <div className="c3-grid">
-              <WhatIfCard cf={extra.counterfactuals} />
-              <AlternativesCard cf={extra.counterfactuals} />
+              <WhatIfSection cf={extra.counterfactuals} preview={preview} pinned={pinned} flash={flash}
+                onHover={setHovered} onPin={action => setPinned(current => current?.technology === action.technology ? null : action)} />
+              <PathsSection cf={extra.counterfactuals} />
             </div>
-            <ConfidenceCard unc={extra.uncertainty} stability={extra.explanation_stability} />
+            <ConfidenceSection unc={extra.uncertainty} stability={extra.explanation_stability} />
           </>
         )}
 
-        {top && <TopJobs jobs={top.jobs} />}
+        {top && <TopJobsSection jobs={top.jobs} />}
 
         {best?.unrecognised_skills?.length > 0 && (
-          <p className="c3-note" style={{ marginTop: -8, marginBottom: 20 }}>
+          <p className="c3-note c3-unrecognised">
             Not used in matching (not in the O*NET skill catalogue): {best.unrecognised_skills.join(', ')}
           </p>
         )}
 
-        {metadata && <ModelCard data={metadata} />}
+        {metadata && <MethodSection data={metadata} />}
       </div>
     </div>
   )
+}
+
+// Sticky section pills, shown once the hero has scrolled away. The active pill follows scroll.
+function SectionNav({ heroRef, onGo, hasWhy, hasInsights, hasTop }) {
+  const heroVisible = useInViewport(heroRef)
+  const items = [
+    ['c3-best', 'Best match', true], ['c3-why', 'Why', hasWhy], ['c3-skills', 'Skills', hasWhy], ['c3-whatif', 'What-if', hasInsights],
+    ['c3-paths', 'Other paths', hasInsights], ['c3-confidence', 'Confidence', hasInsights], ['c3-top5', 'Top 5', hasTop], ['c3-method', 'Method', true],
+  ].filter(([, , shown]) => shown)
+  const ids = items.map(([id]) => id).join()
+  const [active, setActive] = useState(items[0][0])
+  useEffect(() => {
+    let frame = 0
+    const list = ids.split(',')
+    const update = () => {
+      frame = 0
+      let current = list[0]
+      for (const id of list) { const el = document.getElementById(id); if (el && el.getBoundingClientRect().top <= 160) current = id }
+      setActive(current)
+    }
+    const onScroll = () => { if (!frame) frame = requestAnimationFrame(update) }
+    update()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(frame) }
+  }, [ids])
+  const shown = Boolean(heroRef.current) && !heroVisible
+  return <nav className={`c3-section-nav ${shown ? 'is-shown' : ''}`} aria-label="Sections on this page" aria-hidden={!shown}>
+    {items.map(([id, label]) => <button key={id} type="button" tabIndex={shown ? 0 : -1} className={active === id ? 'is-active' : ''}
+      aria-current={active === id ? 'true' : undefined} onClick={() => onGo(id)}>{label}</button>)}
+  </nav>
 }

@@ -9,9 +9,26 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <meta name="color-scheme" content="light" />
-    <!-- Paint the app background before the stylesheet loads to avoid a white flash. -->
-    <style>html, body { background: #F6F7FB; }</style>
+    <meta name="color-scheme" content="light dark" />
+    <!-- Apply the saved theme (Light / Dark / System) before the first paint, so there is no flash.
+         Same rules as src/components/shell/theme.js. -->
+    <script>
+      (function () {
+        try {
+          var mode = localStorage.getItem('careernova-theme')
+          if (mode !== 'light' && mode !== 'dark' && mode !== 'system') mode = localStorage.getItem('careernova-home-theme') === 'dark' ? 'dark' : 'system'
+          var dark = mode === 'dark' || (mode === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          var root = document.documentElement
+          root.setAttribute('data-theme', dark ? 'dark' : 'light')
+          if (dark) root.classList.add('dark')
+          root.style.colorScheme = dark ? 'dark' : 'light'
+          var meta = document.querySelector('meta[name="theme-color"]')
+          if (meta) meta.setAttribute('content', dark ? '#0B1020' : '#F6F7FB')
+        } catch (e) { /* storage blocked: the light theme is used */ }
+      })()
+    </script>
+    <!-- Paint the app background before the stylesheet loads. -->
+    <style>html, body { background: #F6F7FB; } html[data-theme="dark"], html[data-theme="dark"] body { background: #0B1020; }</style>
     <title>CareerNova | AI Career Intelligence</title>
   </head>
   <body>

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext.jsx'
 import { finishGoogleSignIn } from '../../auth/supabaseClient.js'
 import Icon from '../../components/Icon.jsx'
+import './callback.css'
 
 export default function AuthCallback() {
   const [error, setError] = useState('')

@@ -1,0 +1,61 @@
+/* App-wide dark theme. <html data-theme="dark"> is set before first paint (index.html) and kept
+   in sync by src/components/shell/theme.js. Most pages use the shared tokens in index.css, so
+   redefining the tokens here themes them; the rest of this file covers the few hard-coded
+   light colours left in shared and component styles. Selectors start with html[data-theme]
+   so they win over index.css, which loads after the page stylesheets. */
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --color-background: #0B1020; --color-surface: #121833; --color-raised: #18204A;
+  --color-text: #E6E8F2; --color-text-secondary: #9AA3C0; --color-border: rgb(255 255 255 / 8%);
+  --color-primary: #818CF8; --color-primary-hover: #A5B4FC; --color-ai: #A78BFA; --color-cyan: #22D3EE;
+  --color-primary-soft: rgb(129 140 248 / 16%); --color-ai-soft: rgb(167 139 250 / 14%); --color-cyan-soft: rgb(34 211 238 / 12%);
+  --color-success: #34D399; --color-danger: #F87171;
+  --color-success-soft: rgb(16 185 129 / 15%); --color-danger-soft: rgb(239 68 68 / 15%); --color-gold-soft: rgb(251 191 36 / 13%);
+  --color-success-text: #34D399; --color-danger-text: #FCA5A5; --color-cyan-text: #67E8F9; --color-amber-text: #FCD34D;
+  --color-sidebar: #070B18; --color-sidebar-hover: #121833;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 25%);
+  --ai-gradient: linear-gradient(135deg, #6366F1, #8B5CF6, #22D3EE);
+}
+:root { --color-raised: #F8F9FC; --color-amber-text: #92400E; }
+
+/* A 200 ms colour cross-fade while switching themes (theme.js adds the class briefly). */
+html.theme-switching *,html.theme-switching *::before,html.theme-switching *::after {
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease, fill 200ms ease, stroke 200ms ease, box-shadow 200ms ease !important;
+}
+@media (prefers-reduced-motion: reduce) { html.theme-switching *,html.theme-switching *::before,html.theme-switching *::after { transition: none !important; } }
+
+/* Shared controls */
+html[data-theme='dark'] input:not([type=radio]):not([type=checkbox]):not([type=range]),html[data-theme='dark'] textarea,html[data-theme='dark'] select { background: #0E1430; color: var(--color-text); border-color: rgb(255 255 255 / 12%); }
+html[data-theme='dark'] input::placeholder,html[data-theme='dark'] textarea::placeholder { color: #7C86A6; }
+html[data-theme='dark'] button:disabled { opacity: .5; }
+html[data-theme='dark'] table th { color: var(--color-text-secondary); }
+html[data-theme='dark'] code,html[data-theme='dark'] pre { background: #0E1430; color: #C7D2FE; }
+
+/* Skeletons and error states (components/loading/loading.css) */
+html[data-theme='dark'] .sk-bone { background: linear-gradient(90deg, #1B2350, #20285A); }
+html[data-theme='dark'] .sk-card::after { background: linear-gradient(100deg, transparent 25%, rgb(255 255 255 / 6%) 50%, transparent 75%); }
+html[data-theme='dark'] .sk-hero { background: linear-gradient(135deg, #1B1F4A, #141A3A); }
+html[data-theme='dark'] .sk-hero .sk-bone { background: rgb(255 255 255 / 10%); }
+html[data-theme='dark'] .sk-node { border-color: #2A3366; }
+html[data-theme='dark'] .reload-button.button-secondary.is-loading { border-color: rgb(129 140 248 / 40%); }
+html[data-theme='dark'] .error-state { border-color: rgb(248 113 113 / 35%); }
+
+/* Component 01 (Skill assessment) */
+html[data-theme='dark'] .skill-profile-chip { border-color: rgb(255 255 255 / 12%); background: var(--color-raised); color: var(--color-text); }
+html[data-theme='dark'] .skill-profile-chip-linkedin { border-color: rgb(96 165 250 / 30%); background: rgb(59 130 246 / 10%); }
+html[data-theme='dark'] .skill-profile-chip-linkedin svg { color: #60A5FA; }
+html[data-theme='dark'] .skill-level-bars span { background: #232B5C; }
+html[data-theme='dark'] .skill-level-bars .filled { background: #A78BFA; }
+html[data-theme='dark'] .skill-result .skill-confidence { color: #C4B5FD; }
+html[data-theme='dark'] .skill-result blockquote { border-left-color: #6D5BD0; background: var(--color-raised); }
+html[data-theme='dark'] .cv-file-icon { background: rgb(129 140 248 / 16%); }
+
+/* Component 02 (Personality analysis) */
+html[data-theme='dark'] .personality-confirm-reset:hover:not(:disabled) { background: #B91C1C; }
+
+/* Component 04 (Learning roadmap): amber text on the gold-soft background */
+html[data-theme='dark'] .c4r-band.band-developing,html[data-theme='dark'] .c4r-status.is-review,html[data-theme='dark'] .c4r-evidence-status.is-pending { color: var(--color-amber-text); }
+
+/* Text that relies on "surface" meaning white, on backgrounds that stay dark in both themes. */
+html[data-theme='dark'] .brand,html[data-theme='dark'] .sidebar nav a:hover,html[data-theme='dark'] .sidebar nav a.active,
+html[data-theme='dark'] .sidebar-note strong,html[data-theme='dark'] .intelligence-hero { color: #fff; }

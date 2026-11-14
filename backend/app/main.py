@@ -6,6 +6,7 @@ from pathlib import Path
 
 load_dotenv(Path(__file__).resolve().parents[1] / '.env', override=False)
 from app.auth.router import router as auth_router
+from app.auth.profile import router as profile_router  # /profile page
 from app.auth.config import allowed_origins
 
 from app.component01_skill.router import router as skill_router
@@ -44,6 +45,7 @@ app.include_router(personality_router)
 app.include_router(career_router)
 app.include_router(roadmap_router)
 app.include_router(auth_router)
+app.include_router(profile_router)
 app.include_router(market_router)
 
 
