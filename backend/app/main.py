@@ -13,6 +13,7 @@ from app.component02_personality.router import router as personality_router
 from app.component03_career.router import router as career_router
 from app.component03_career.service import career_lifespan
 from app.component04_roadmap.router import router as roadmap_router
+from app.market_pulse.router import router as market_router  # Home page: Career Market Pulse
 
 app = FastAPI(title="AI-Based Smart Career Path Recommendation System API", lifespan=career_lifespan)
 
@@ -43,6 +44,7 @@ app.include_router(personality_router)
 app.include_router(career_router)
 app.include_router(roadmap_router)
 app.include_router(auth_router)
+app.include_router(market_router)
 
 
 @app.middleware('http')

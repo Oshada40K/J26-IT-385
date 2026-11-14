@@ -19,9 +19,10 @@ from fastapi import HTTPException, Request
 from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
 
+from . import insights
 from .job_matching_training_output import inference
 from .schemas import SoftProfile
-from .profile_adapter import adapt_technical_profile
+from .profile_adapter import adapt_technical_profile, assessment_confidence
 
 logger = logging.getLogger(__name__)
 _inference_lock = Lock()
@@ -76,12 +77,31 @@ def _predict(soft_input, technical_input):
     return result
 
 
+def _predict_with_insights(soft_input, technical_input, confidence_by_name):
+    # Same recommendation as the three core APIs, plus the research insights
+    # (counterfactuals, uncertainty, explanation stability) computed by re-running
+    # the same saved model. Held under the lock because the SHAP explainer is shared.
+    result = _predict(soft_input, technical_input)
+    with _inference_lock:
+        extra = insights.compute_insights(soft_input, technical_input, confidence_by_name, result)
+    return {**result, **extra}
+
+
 # Main entry point used by all three career APIs:
 # 1. Pick the profile URLs (real candidate if candidate_id is given, else sample data).
 # 2. Fetch Component 1 and Component 2 profiles IN PARALLEL, forwarding the user's login token.
 # 3. Validate them and make sure both belong to the same candidate.
 # 4. Run the model in a background thread so the server stays responsive.
 async def recommend(request: Request, candidate_id: str | None = None):
+    return await _run(request, candidate_id, lambda soft, tech, _conf: _predict(soft, tech))
+
+
+# The insights API: identical inputs and recommendation, plus what-if, uncertainty and stability.
+async def recommend_with_insights(request: Request, candidate_id: str | None = None):
+    return await _run(request, candidate_id, _predict_with_insights)
+
+
+async def _run(request: Request, candidate_id, predictor):
     technical_path = os.getenv('CAREER_TECHNICAL_PROFILE_PATH',
         '/api/component01/skills/{candidate_id}/details' if candidate_id else '/api/skill/profile')
     soft_path = os.getenv('CAREER_SOFT_PROFILE_PATH', '/api/personality/profile')
@@ -99,6 +119,7 @@ async def recommend(request: Request, candidate_id: str | None = None):
     )
     try:
         is_assessment = isinstance(technical_input, dict) and 'skills' in technical_input
+        confidence_by_name = assessment_confidence(technical_input)
         technical_input = adapt_technical_profile(technical_input)
         soft = SoftProfile.model_validate(soft_input)
         if candidate_id is not None and technical_input['candidate_id'] != candidate_id:
@@ -112,7 +133,7 @@ async def recommend(request: Request, candidate_id: str | None = None):
                 soft_input = {**soft_input, 'candidate_id': technical_input['candidate_id']}
             else:
                 raise ValueError("Upstream profiles must have matching candidate IDs")
-        return await run_in_threadpool(_predict, soft_input, technical_input)
+        return await run_in_threadpool(predictor, soft_input, technical_input, confidence_by_name)
     except ValidationError as exc:
         raise HTTPException(502, "Invalid upstream profile: expected a completed cv_evidence_rubric_v1 assessment (levels 1 to 5) or schema_version 1.0 profiles (levels 0 to 5), with nonempty candidate IDs and skill names") from exc
     except ValueError as exc:

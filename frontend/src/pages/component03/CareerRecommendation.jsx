@@ -2,13 +2,15 @@
 // Loads the three career APIs and presents them as one result view. The backend
 // builds the recommendation from the Component 01 and 02 profiles for the saved candidate.
 // Page sections: best-job hero + score ring, "Why this career?" reasons, SHAP factor
-// chart, matched skills / skills to learn (-> Component 04), top 5 jobs, model summary.
+// chart, matched skills / skills to learn (-> Component 04), what-if actions and
+// alternative paths (counterfactuals), confidence ranges + explanation stability
+// (insights API, loaded after the core three), top 5 jobs, model summary.
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { API_BASE_URL } from '../../api/client.js'
 import { savedSession } from '../component01/skillApi.js'
-import { ENDPOINTS, describeCareerError, getCareerResult } from './careerApi.js'
-import { PageLoader, ReloadButton, SkeletonCareer } from '../../components/loading/index.js'
+import { ENDPOINTS, describeCareerError, getCareerInsights, getCareerResult } from './careerApi.js'
+import { PageLoader, ReloadButton, SkeletonCareer, Spinner } from '../../components/loading/index.js'
 import { cached, candidateKey, hasCached, peek, prime } from '../../api/resourceCache.js'
 import './CareerRecommendation.css'
 
@@ -32,7 +34,8 @@ function ScoreRing({ score }) {
   )
 }
 
-function Hero({ title, score, occupations, matchedCount }) {
+function Hero({ title, score, occupations, matchedCount, uncertainty }) {
+  const best = uncertainty?.jobs?.[0]
   return (
     <section className="c3-hero">
       <div>
@@ -42,6 +45,8 @@ function Hero({ title, score, occupations, matchedCount }) {
         <div className="c3-hero-meta">
           {matchedCount > 0 && <span>{matchedCount} of your skills used in this job</span>}
           <span>Explained with SHAP</span>
+          {best && <span title="5th to 95th percentile across plausible versions of your CV evidence">Likely range {best.low.toFixed(0)}–{best.high.toFixed(0)}</span>}
+          {uncertainty && <span className={`c3-stability ${uncertainty.stability}`}>Ranking stability: {uncertainty.stability}</span>}
         </div>
       </div>
       {score != null && <ScoreRing score={score} />}
@@ -106,6 +111,102 @@ function SkillsCard({ title, subtitle, skills, kind, children }) {
   )
 }
 
+// Counterfactuals: single skill changes re-scored by the real model for the best job.
+function WhatIfCard({ cf }) {
+  const helpful = cf.actions.filter((a) => a.score_gain > 0).slice(0, 5)
+  return (
+    <div className="c3-card">
+      <h3>What if you learned…</h3>
+      <p className="c3-card-sub">Single skill changes, re-scored by the model for {cf.target}</p>
+      {helpful.length ? (
+        <ul className="c3-whatif">
+          {helpful.map((a) => (
+            <li key={`${a.action}-${a.technology}`}>
+              <span className={`c3-action ${a.action}`}>{a.action === 'learn' ? 'Learn' : 'Improve'}</span>
+              <span className="c3-action-text">
+                <strong>{a.technology}</strong>
+                <small>{a.action === 'learn' ? `new, to level ${a.to_level}` : `level ${a.from_level} → ${a.to_level}`}</small>
+              </span>
+              <span className="c3-action-gain">+{a.score_gain.toFixed(1)}<small>→ {a.new_score.toFixed(1)}</small></span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="muted" style={{ margin: 0 }}>
+          No single skill change raises this score noticeably. Your profile already covers what the model rewards for {cf.target}; the alternatives below show where one new skill matters more.
+        </p>
+      )}
+      <p className="c3-note">{cf.meaning}</p>
+    </div>
+  )
+}
+
+// Counterfactuals for the alternatives: the single best step for each, and a greedy path for the runner-up.
+function AlternativesCard({ cf }) {
+  const path = cf.path_to_runner_up
+  return (
+    <div className="c3-card">
+      <h3>Prefer a different path?</h3>
+      <p className="c3-card-sub">The one step that moves each alternative closest to the top</p>
+      <ul className="c3-alts">
+        {cf.alternatives.map((alt) => (
+          <li key={alt.ranking}>
+            <div className="c3-alt-head"><strong>{alt.job}</strong><span>{alt.gap_to_best.toFixed(1)} pts behind</span></div>
+            {alt.best_action ? (
+              <p>Learn <b>{alt.best_action.technology}</b>: +{alt.best_action.score_gain.toFixed(1)}{alt.reaches_rank_1 ? ', becomes your best match' : `, rank ${alt.best_action.new_rank}`}</p>
+            ) : <p>No in-demand tool is missing for this job.</p>}
+          </li>
+        ))}
+      </ul>
+      {path?.steps?.length > 0 && (
+        <div className="c3-path">
+          <strong>{path.reaches_rank_1 ? `Path that makes ${path.job} your best match` : `Three steps towards ${path.job}`}</strong>
+          <ol>{path.steps.map((s) => <li key={s.technology}>Learn {s.technology} <span>→ {s.new_score.toFixed(1)}{s.becomes_best ? ' · rank 1' : ''}</span></li>)}</ol>
+          {!path.reaches_rank_1 && <p className="c3-note">These steps narrow the gap but do not overtake {cf.target}.</p>}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Confidence-aware ranges from Monte Carlo over CV evidence confidence, plus SHAP stability.
+function ConfidenceCard({ unc, stability }) {
+  const pct = (v) => Math.round(v * 100)
+  return (
+    <div className="c3-card c3-full">
+      <h3>How sure is this ranking?</h3>
+      <p className="c3-card-sub">
+        {unc.stability_meaning} Bands show the likely score range across {unc.samples} plausible versions of your CV evidence; wider bands come from lower-confidence skills.
+      </p>
+      <div className="c3-ranges">
+        {unc.jobs.map((j) => (
+          <div className="c3-range" key={j.ranking}>
+            <span className="c3-range-label" title={j.job}>{j.job}</span>
+            <div className="c3-range-track">
+              <div className="c3-range-band" style={{ left: `${j.low}%`, width: `${Math.max(j.high - j.low, 0.8)}%` }} />
+              <i className="c3-range-point" style={{ left: `${j.score}%` }} />
+            </div>
+            <span className="c3-range-value">{j.low.toFixed(0)}–{j.high.toFixed(0)}</span>
+            <span className="c3-range-prob" title="Share of plausible profiles where this job ranked first">{pct(j.top1_probability)}% first</span>
+          </div>
+        ))}
+      </div>
+      <div className="c3-legend">
+        <span><i className="band" />Likely score range</span>
+        <span><i className="point" />Reported score</span>
+        <span>CV evidence confidence: {unc.confidence_counts.high} high · {unc.confidence_counts.medium} medium · {unc.confidence_counts.low} low</span>
+      </div>
+      <div className="c3-stats c3-stability-stats">
+        <div className="c3-stat"><small>Explanation stability</small><strong className={`c3-stability-text ${stability.label}`}>{stability.label}</strong></div>
+        <div className="c3-stat"><small>Same top factor</small><strong>{pct(stability.top_factor_agreement)}%</strong></div>
+        <div className="c3-stat"><small>Top-3 factors kept</small><strong>{pct(stability.mean_top3_overlap)}%</strong></div>
+        <div className="c3-stat"><small>Avg. factor shift</small><strong>{stability.mean_abs_point_change.toFixed(2)} pts</strong></div>
+      </div>
+      <p className="c3-note">{stability.meaning}</p>
+    </div>
+  )
+}
+
 function TopJobs({ jobs }) {
   return (
     <div className="c3-card c3-full">
@@ -142,7 +243,7 @@ function ModelCard({ data }) {
       <div className="c3-pipeline">
         <span>CV skills (C01)</span><b>+</b><span>Soft skills (C02)</span><b>→</b>
         <span>21 match features × {data.eligible_occupations} jobs</span><b>→</b>
-        <span>XGBoost score</span><b>→</b><span>SHAP explanation</span>
+        <span>XGBoost score</span><b>→</b><span>SHAP explanation</span><b>→</b><span>What-if + confidence</span>
       </div>
     </div>
   )
@@ -150,6 +251,7 @@ function ModelCard({ data }) {
 
 const emptyState = { loading: false, data: null, error: null }
 const cacheKey = (key) => candidateKey(`c03:${key}`)
+const INSIGHTS_KEY = 'insights'
 
 export default function CareerRecommendation() {
   const location = useLocation()
@@ -161,6 +263,8 @@ export default function CareerRecommendation() {
   // Results passed from the CV upload, else the last results seen on this page, else nothing yet.
   const [results, setResults] = useState(() => prediction || Object.fromEntries(Object.keys(ENDPOINTS).map((key) =>
     [key, hasCached(cacheKey(key)) ? { ...emptyState, data: peek(cacheKey(key)) } : emptyState])))
+  const [insights, setInsights] = useState(() =>
+    hasCached(cacheKey(INSIGHTS_KEY)) ? { ...emptyState, data: peek(cacheKey(INSIGHTS_KEY)) } : emptyState)
 
   async function load(key) {
     setResults((prev) => ({ ...prev, [key]: { ...prev[key], loading: true, error: null } }))
@@ -173,7 +277,19 @@ export default function CareerRecommendation() {
     }
   }
 
-  const loadAll = () => Promise.all(Object.keys(ENDPOINTS).map(load))
+  // The insights API is slower (about 60 extra model passes), so it has its own state and
+  // never blocks the core result view. Failures here only hide the insight cards.
+  async function loadInsights() {
+    setInsights((prev) => ({ ...prev, loading: true, error: null }))
+    try {
+      const data = await cached(cacheKey(INSIGHTS_KEY), () => getCareerInsights(API_BASE_URL, savedSession()))
+      setInsights({ loading: false, data, error: null })
+    } catch (err) {
+      setInsights((prev) => ({ loading: false, data: prev.data, error: describeCareerError(err, API_BASE_URL) }))
+    }
+  }
+
+  const loadAll = () => Promise.all([...Object.keys(ENDPOINTS).map(load), loadInsights()])
   const states = Object.values(results)
   const anyLoading = states.some((r) => r.loading)
   const errors = [...new Set(states.map((r) => r.error).filter(Boolean))]
@@ -181,8 +297,10 @@ export default function CareerRecommendation() {
   // Load automatically unless results were passed from the CV upload (those are cached for later
   // visits). Cached results stay on screen while they are refreshed in the background.
   useEffect(() => {
-    if (prediction) Object.entries(prediction).forEach(([key, r]) => { if (r.data) prime(cacheKey(key), r.data) })
-    else loadAll()
+    if (prediction) {
+      Object.entries(prediction).forEach(([key, r]) => { if (r.data) prime(cacheKey(key), r.data) })
+      loadInsights()
+    } else loadAll()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const best = results.bestJob.data
@@ -190,6 +308,8 @@ export default function CareerRecommendation() {
   const why = results.explanation.data
   const metadata = best || top || why
   const isSample = !savedSession()?.candidate_id
+  // Only show insights that belong to the recommendation on screen.
+  const extra = insights.data && (!metadata || insights.data.candidate_id === metadata.candidate_id) ? insights.data : null
 
   return (
     <div className="page accent-career">
@@ -202,7 +322,7 @@ export default function CareerRecommendation() {
             {isSample ? 'Sample profile: upload your CV in Skill assessment to personalise' : '● Based on your CV skills and personality profile'}
           </span>
         </div>
-        <ReloadButton className="c3-refresh" onClick={loadAll} loading={anyLoading} loadingLabel="Analysing…" />
+        <ReloadButton className="c3-refresh" onClick={loadAll} loading={anyLoading || insights.loading} loadingLabel="Analysing…" />
       </div>
 
       {errors.map((error) => (
@@ -221,6 +341,7 @@ export default function CareerRecommendation() {
             score={why?.match_score ?? top?.jobs[0].score}
             occupations={metadata.eligible_occupations}
             matchedCount={why?.matched_technologies.length || 0}
+            uncertainty={extra?.uncertainty}
           />
         )}
 
@@ -238,6 +359,28 @@ export default function CareerRecommendation() {
                 )}
               </SkillsCard>
             </div>
+          </>
+        )}
+
+        {metadata && !extra && insights.loading && (
+          <div className="c3-card c3-full c3-insights-pending" role="status">
+            <Spinner /> <span>Computing what-if scenarios and confidence ranges…</span>
+          </div>
+        )}
+        {metadata && !extra && insights.error && !insights.loading && (
+          <div className="c3-error fx-reveal" role="alert">
+            <span>Insights unavailable: {insights.error}</span>
+            <ReloadButton onClick={loadInsights} loading={insights.loading} label="Retry insights" loadingLabel="Retrying…" />
+          </div>
+        )}
+
+        {extra && (
+          <>
+            <div className="c3-grid">
+              <WhatIfCard cf={extra.counterfactuals} />
+              <AlternativesCard cf={extra.counterfactuals} />
+            </div>
+            <ConfidenceCard unc={extra.uncertainty} stability={extra.explanation_stability} />
           </>
         )}
 
