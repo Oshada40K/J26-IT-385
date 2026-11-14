@@ -3,6 +3,9 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ShellIcon from './ShellIcons.jsx'
 import { useProfilePhoto } from './profilePhoto.js'
+import { THEME_MODES, setThemeMode, useThemeState } from './theme.js'
+
+const MODE_LABELS = { light: 'Light', dark: 'Dark', system: 'System' }
 
 const initials = name => name?.split(/\s+/).filter(Boolean).map(part => part[0]).slice(0, 2).join('').toUpperCase() || 'CN'
 
@@ -15,6 +18,7 @@ export default function AccountMenu({ user, onSearch }) {
   const uploaded = useProfilePhoto(user)
   const photo = uploaded || user?.avatar_url || null
   const [broken, setBroken] = useState(null)
+  const { mode } = useThemeState()
 
   useEffect(() => {
     if (!open) return undefined
@@ -39,6 +43,11 @@ export default function AccountMenu({ user, onSearch }) {
       <Link to="/component01" onClick={() => setOpen(false)}>Your skill profile <small>01</small></Link>
       <Link to="/component04" onClick={() => setOpen(false)}>Your learning roadmap <small>04</small></Link>
       <button type="button" onClick={() => { setOpen(false); onSearch() }}>Search modules and sections</button>
+      <div className="account-theme">
+        <span id={`${menuId}-theme`}>Theme</span>
+        <div role="radiogroup" aria-labelledby={`${menuId}-theme`}>{THEME_MODES.map(value => <button key={value} type="button" role="radio"
+          aria-checked={mode === value} className={mode === value ? 'is-active' : ''} onClick={() => setThemeMode(value)}>{MODE_LABELS[value]}</button>)}</div>
+      </div>
     </div>}
   </div>
 }

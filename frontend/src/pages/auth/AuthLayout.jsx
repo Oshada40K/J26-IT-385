@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useOutlet } from 'react-router-dom'
 import { AnimatePresence, LazyMotion, MotionConfig, domAnimation, m } from 'motion/react'
 import Icon from '../../components/Icon.jsx'
+import ThemeToggle from '../../components/shell/ThemeToggle.jsx'
 import { EASE } from '../home/motion.js'
 import BrandPanel from './BrandPanel.jsx'
 import './auth.css'
@@ -37,7 +38,8 @@ export default function AuthLayout() {
       <section className="af-side">
         <div className="af-top">{onLogin
           ? <>New to CareerNova? <Link to="/register" className="af-nudge">Create an account <Icon name="arrow" size={15} /></Link></>
-          : <>Already a member? <Link to="/login" className="af-nudge">Log in <Icon name="arrow" size={15} /></Link></>}</div>
+          : <>Already a member? <Link to="/login" className="af-nudge">Log in <Icon name="arrow" size={15} /></Link></>}
+          <ThemeToggle className="af-theme" /></div>
         <div className="af-stage">
           <AnimatePresence mode="wait" initial={false}>
             <m.div key={location.pathname} className="af-route" variants={slide} initial="initial" animate="animate" exit="exit">{outlet}</m.div>

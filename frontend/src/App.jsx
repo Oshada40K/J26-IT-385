@@ -11,6 +11,7 @@ import CareerRecommendation from './pages/component03/CareerRecommendation.jsx'
 import LearningRoadmap from './pages/component04/LearningRoadmap.jsx'
 import ApiTest from './pages/ApiTest.jsx'
 import { AuthProvider, RequireAuth } from './auth/AuthContext.jsx'
+import { ThemeProvider } from './components/shell/theme.js'
 // Auth pages load as their own chunk (with Motion's animation features), so the workspace bundle is unchanged.
 const AuthLayout = lazy(() => import('./pages/auth/AuthLayout.jsx'))
 const AuthPage = lazy(() => import('./pages/auth/AuthPage.jsx'))
@@ -19,7 +20,7 @@ import AuthCallback from './pages/auth/AuthCallback.jsx'
 import { SkeletonDashboard } from './components/loading/index.js'
 const Profile = lazy(() => import('./pages/profile/Profile.jsx')) // loaded only when /profile opens
 export default function App() {
-  return <AuthProvider><Routes>
+  return <ThemeProvider><AuthProvider><Routes>
     <Route path="/auth/callback" element={<AuthCallback />} />
     {/* One layout keeps the animated brand panel in place while the form slides between pages. */}
     <Route element={<Suspense fallback={authFallback}><AuthLayout /></Suspense>}>
@@ -29,7 +30,7 @@ export default function App() {
       <Route path="/reset-password" element={<AuthPage key="reset" mode="reset" />} />
     </Route>
     <Route path="/*" element={<RequireAuth><Dashboard /></RequireAuth>} />
-  </Routes></AuthProvider>
+  </Routes></AuthProvider></ThemeProvider>
 }
 function Dashboard() {
   const [menuOpen, setMenuOpen] = useState(false)

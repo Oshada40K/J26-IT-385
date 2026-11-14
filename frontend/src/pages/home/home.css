@@ -16,10 +16,10 @@
   position: relative; isolation: isolate; max-width: 1240px; color: var(--c-text);
 }
 .cn-home[data-theme='dark'] {
-  --c-canvas: #0B1220; --c-surface: #111A2E; --c-surface-2: #16213A; --c-text: #E6EAF2; --c-text-2: #9AA6BD; --c-line: rgb(255 255 255 / 9%);
+  --c-canvas: #0B1020; --c-surface: #121833; --c-surface-2: #18204A; --c-text: #E6E8F2; --c-text-2: #9AA3C0; --c-line: rgb(255 255 255 / 8%);
   --c-primary: #818CF8; --c-violet: #A78BFA; --c-cyan-text: #67E8F9; --c-primary-soft: rgb(129 140 248 / 15%);
   --c-up: #34D399; --c-up-soft: rgb(16 185 129 / 14%); --c-down: #F87171; --c-down-soft: rgb(239 68 68 / 14%);
-  --c-glass: rgb(17 26 46 / 88%); --c-glass-line: rgb(255 255 255 / 8%);
+  --c-glass: rgb(18 24 51 / 90%); --c-glass-line: rgb(255 255 255 / 8%);
   --shadow-1: 0 1px 2px rgb(0 0 0 / 30%), 0 6px 18px rgb(0 0 0 / 22%);
   --shadow-2: 0 2px 6px rgb(0 0 0 / 30%), 0 18px 40px rgb(0 0 0 / 30%);
   --color-primary-hover: #A5B4FC;

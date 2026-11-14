@@ -224,18 +224,17 @@ test.describe('Home - redesign', () => {
     await expect(dialog).toHaveCount(0)
   })
 
-  test('dark mode applies to Home only and is remembered', async ({ page }) => {
+  test('dark mode applies to every page and is remembered', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('button', { name: 'Switch Home to dark mode' }).click()
+    await page.getByRole('button', { name: 'Switch to dark mode' }).click()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
     await expect(page.locator('.cn-home')).toHaveAttribute('data-theme', 'dark')
     await page.reload()
-    await expect(page.locator('.cn-home')).toHaveAttribute('data-theme', 'dark')
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
     await page.goto('/component01')
-    await expect(page.locator('html')).not.toHaveAttribute('data-home-theme', /.*/)
-    await expect(page.getByRole('button', { name: /Switch Home/ })).toHaveCount(0)
-    await page.goto('/')
-    await page.getByRole('button', { name: 'Switch Home to light mode' }).click()
-    await expect(page.locator('.cn-home')).toHaveAttribute('data-theme', 'light')
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+    await page.getByRole('button', { name: 'Switch to light mode' }).click()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
   })
 
   test('the upload card keeps its keyboard path and messages', async ({ page }) => {

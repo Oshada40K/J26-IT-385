@@ -105,17 +105,17 @@
   .app .navbar button.account-trigger { padding: 2px; }
 }
 
-/* ---------- Home dark mode (only while the Home page is on screen) ---------- */
-html[data-home-theme='dark'],html[data-home-theme='dark'] body { background: #0B1220; color-scheme: dark; }
-html[data-home-theme='dark'] .app .navbar { background: #0E1628; border-bottom-color: rgb(255 255 255 / 8%); color: #E2E8F0; }
-html[data-home-theme='dark'] .app .navbar.is-scrolled { background: rgb(14 22 40 / 84%); }
-html[data-home-theme='dark'] .navbar-breadcrumb strong { color: #F1F5F9; }
-html[data-home-theme='dark'] .app .navbar button.nav-search,html[data-home-theme='dark'] .app .navbar button.theme-toggle,html[data-home-theme='dark'] .app .navbar button.research-badge,html[data-home-theme='dark'] .app .navbar button.account-trigger,html[data-home-theme='dark'] .app .navbar .button-secondary { background: #131D33; color: #CBD5E1; border-color: rgb(255 255 255 / 10%); }
-html[data-home-theme='dark'] .app .navbar .nav-search kbd { background: #0B1220; border-color: rgb(255 255 255 / 12%); color: #94A3B8; }
-html[data-home-theme='dark'] .auth-account-profile small { color: #94A3B8; }
-html[data-home-theme='dark'] .app .app-footer { color: #CBD5E1; border-top-color: rgb(255 255 255 / 8%); }
-html[data-home-theme='dark'] .app .app-footer .muted,html[data-home-theme='dark'] .app .app-footer > span:last-child { color: #94A3B8; }
-html[data-home-theme='dark'] .account-popover,html[data-home-theme='dark'] .cmdk { background: #111A2E; border-color: rgb(255 255 255 / 10%); color: #E2E8F0; --color-text: #E2E8F0; --color-text-secondary: #94A3B8; --color-border: rgb(255 255 255 / 10%); --color-background: #0B1220; --color-primary-soft: rgb(129 140 248 / 16%); --color-primary: #A5B4FC; }
+/* ---------- Dark theme (app-wide; tokens in src/theme-dark.css) ---------- */
+html[data-theme='dark'],html[data-theme='dark'] body { background: #0B1020; color-scheme: dark; }
+html[data-theme='dark'] .app .navbar { background: #0F1530; border-bottom-color: rgb(255 255 255 / 8%); color: #E6E8F2; }
+html[data-theme='dark'] .app .navbar.is-scrolled { background: rgb(15 21 48 / 86%); }
+html[data-theme='dark'] .navbar-breadcrumb strong { color: #F1F5F9; }
+html[data-theme='dark'] .app .navbar button.nav-search,html[data-theme='dark'] .app .navbar button.theme-toggle,html[data-theme='dark'] .app .navbar button.research-badge,html[data-theme='dark'] .app .navbar button.account-trigger,html[data-theme='dark'] .app .navbar .button-secondary { background: #18204A; color: #CBD5E1; border-color: rgb(255 255 255 / 10%); }
+html[data-theme='dark'] .app .navbar .nav-search kbd { background: #0B1020; border-color: rgb(255 255 255 / 12%); color: #9AA3C0; }
+html[data-theme='dark'] .auth-account-profile small { color: #9AA3C0; }
+html[data-theme='dark'] .app .app-footer { color: #CBD5E1; border-top-color: rgb(255 255 255 / 8%); }
+html[data-theme='dark'] .app .app-footer .muted,html[data-theme='dark'] .app .app-footer > span:last-child { color: #9AA3C0; }
+html[data-theme='dark'] .account-popover,html[data-theme='dark'] .cmdk { background: #121833; border-color: rgb(255 255 255 / 10%); color: #E6E8F2; --color-text: #E6E8F2; --color-text-secondary: #9AA3C0; --color-border: rgb(255 255 255 / 10%); --color-background: #0B1020; --color-primary-soft: rgb(129 140 248 / 16%); --color-primary: #A5B4FC; }
 
 @keyframes shell-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes shell-pop { from { opacity: 0; transform: translateY(-6px) scale(.98); } to { opacity: 1; transform: none; } }
@@ -130,3 +130,10 @@ html[data-home-theme='dark'] .account-popover,html[data-home-theme='dark'] .cmdk
 /* The shimmer rotates on its own compositor layer, and stops while the phone drawer is closed. */
 .app .sidebar-note::before { will-change: transform; }
 @media (max-width: 900px) { .app .sidebar:not(.is-open) .sidebar-note::before { animation-play-state: paused; } }
+
+/* Theme choice in the account menu: Light / Dark / System */
+.account-theme { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 4px; padding: 10px 8px 4px; border-top: 1px solid var(--color-border); font-size: 12.5px; color: var(--color-text-secondary); }
+.account-theme [role=radiogroup] { display: flex; gap: 2px; padding: 2px; border-radius: 8px; background: var(--color-background); }
+.app .account-popover .account-theme button { min-height: 26px; padding: 3px 9px; justify-content: center; border-radius: 6px; font-size: 11.5px; color: var(--color-text-secondary); background: none; }
+.app .account-popover .account-theme button:hover { background: var(--color-primary-soft); color: var(--color-primary); }
+.app .account-popover .account-theme button.is-active { color: var(--color-primary); background: var(--color-surface); box-shadow: 0 1px 3px rgb(15 23 42 / 12%); }
