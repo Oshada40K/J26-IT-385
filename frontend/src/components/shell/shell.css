@@ -1,0 +1,132 @@
+/* App shell polish: sticky top bar, command palette, account menu, sidebar indicator and
+   tablet icon rail. Selectors start with .app so they win over index.css (loaded later).
+   Motion uses transform and opacity only; index.css turns it off for reduced motion. */
+/* Account area in the top bar (avatar, name, Log out). These rules used to live in the login
+   page's auth.css, which the main app also loaded; they belong to the shell. */
+.auth-account-actions { display: flex; gap: 10px; align-items: center; }
+.auth-account-actions button { min-height: 34px; padding: 6px 10px; font-size: 11px; }
+.auth-account-actions .avatar { overflow: hidden; flex-shrink: 0; }
+.auth-account-actions .avatar img { width: 100%; height: 100%; object-fit: cover; }
+.auth-account-profile { display: grid; line-height: 1.5; max-width: 180px; }
+.auth-account-profile strong { font-size: 11px; }
+.auth-account-profile small { font-size: 10px; color: var(--color-text-secondary); }
+.auth-account-profile > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.auth-logout-error { color: var(--color-danger-text); font-size: 11px; max-width: 220px; }
+@media (max-width: 680px) { .auth-account-profile { max-width: 115px; } .auth-account-profile small { font-size: 9px; } .auth-logout-error { max-width: 120px; } }
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* ---------- Top bar ---------- */
+.app .navbar { position: sticky; top: 0; z-index: 25; }
+.app .navbar::after { content: ''; position: absolute; left: 0; right: 0; bottom: -12px; height: 12px; pointer-events: none; background: linear-gradient(rgb(8 18 37 / 7%), transparent); opacity: 0; transition: opacity 300ms cubic-bezier(.22, 1, .36, 1); }
+.app .navbar.is-scrolled { background: rgb(255 255 255 / 84%); -webkit-backdrop-filter: saturate(160%) blur(12px); backdrop-filter: saturate(160%) blur(12px); }
+.app .navbar.is-scrolled::after { opacity: 1; }
+.app .navbar-right { gap: 10px; }
+.app .navbar button.nav-search,.app .navbar button.theme-toggle,.app .navbar button.research-badge,.app .navbar button.account-trigger { min-height: 38px; background: var(--color-surface); color: var(--color-text-secondary); border: 1px solid var(--color-border); font-weight: 500; box-shadow: none; }
+.app .navbar button.nav-search:hover,.app .navbar button.theme-toggle:hover,.app .navbar button.research-badge:hover,.app .navbar button.account-trigger:hover { background: var(--color-primary-soft); color: var(--color-primary); transform: none; }
+.app .navbar button.nav-search { gap: 8px; padding: 6px 8px 6px 12px; font-size: 12px; }
+.app .navbar .nav-search kbd { font: 500 10px var(--font-mono); padding: 2px 6px; border-radius: 5px; border: 1px solid var(--color-border); background: var(--color-background); color: var(--color-text-secondary); }
+.app .navbar button.theme-toggle { position: relative; width: 38px; padding: 0; overflow: hidden; }
+.theme-toggle > span { position: absolute; inset: 0; display: grid; place-items: center; transition: transform 300ms cubic-bezier(.22, 1, .36, 1), opacity 300ms; }
+.theme-toggle.is-light .theme-sun,.theme-toggle.is-dark .theme-moon { opacity: 0; transform: rotate(-90deg) scale(.5); }
+.app .navbar button.research-badge { padding: 6px 12px; font-size: 11px; border-radius: 6px; }
+.account-menu { position: relative; }
+.app .navbar button.account-trigger { gap: 10px; padding: 3px 8px 3px 3px; border-radius: 999px; text-align: left; }
+.account-trigger .avatar { pointer-events: none; }
+.account-chevron { display: grid; color: var(--color-text-secondary); transition: transform 150ms; }
+.account-trigger[aria-expanded='true'] .account-chevron { transform: rotate(180deg); }
+.account-popover { position: absolute; right: 0; top: calc(100% + 8px); z-index: 30; width: 260px; padding: 8px; display: grid; gap: 2px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 14px; box-shadow: 0 16px 40px rgb(8 18 37 / 14%); animation: shell-pop 150ms cubic-bezier(.22, 1, .36, 1); transform-origin: top right; }
+.account-popover-head { display: flex; gap: 10px; align-items: center; padding: 8px 8px 12px; margin-bottom: 4px; border-bottom: 1px solid var(--color-border); }
+.account-popover-head > span:last-child { display: grid; min-width: 0; }
+.account-popover-head strong { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-popover-head small { font-size: 11px; color: var(--color-text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-popover-icon { display: grid; place-items: center; width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%; background: var(--color-primary-soft); color: var(--color-primary); }
+.account-popover a,.app .account-popover button { display: flex; justify-content: space-between; align-items: center; min-height: 38px; padding: 8px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 500; color: var(--color-text); text-decoration: none; background: transparent; border: 0; box-shadow: none; }
+.account-popover a:hover,.app .account-popover button:hover { background: var(--color-primary-soft); color: var(--color-primary); transform: none; }
+.account-popover a.account-popover-head { justify-content: flex-start; padding: 8px 8px 12px; border-radius: 8px 8px 0 0; font-weight: 400; } /* links to /profile */
+.account-popover small { font: 10px var(--font-mono); color: var(--color-text-secondary); }
+
+/* ---------- Command palette ---------- */
+.cmdk-backdrop { position: fixed; inset: 0; z-index: 70; display: flex; justify-content: center; align-items: flex-start; padding: 12vh 16px 16px; background: rgb(8 18 37 / 45%); animation: shell-fade 150ms ease-out; }
+.cmdk { width: min(560px, 100%); overflow: hidden; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 16px; box-shadow: 0 24px 60px rgb(8 18 37 / 28%); animation: shell-pop 300ms cubic-bezier(.22, 1, .36, 1); }
+.cmdk-input { display: flex; align-items: center; gap: 10px; padding: 0 14px; border-bottom: 1px solid var(--color-border); color: var(--color-text-secondary); }
+.cmdk .cmdk-input input:not([type=radio]):not([type=checkbox]):not([type=range]) { flex: 1; min-height: 54px; border: 0; padding: 0; background: transparent; color: inherit; font-size: 15px; box-shadow: none; outline: none; }
+.cmdk-input:focus-within { box-shadow: inset 0 -2px 0 var(--color-primary); }
+.cmdk-input kbd { font: 500 10px var(--font-mono); padding: 2px 6px; border-radius: 5px; border: 1px solid var(--color-border); }
+.cmdk-list { list-style: none; margin: 0; padding: 6px; max-height: min(420px, 60vh); overflow-y: auto; }
+.cmdk-group { padding: 10px 10px 4px; font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--color-text-secondary); }
+.cmdk-list [role='option'] { display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 10px; cursor: pointer; }
+.cmdk-list [role='option'].is-active { background: var(--color-primary-soft); }
+.cmdk-icon { display: grid; place-items: center; width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: var(--color-background); color: var(--color-primary); }
+.cmdk-text { display: grid; flex: 1; min-width: 0; }
+.cmdk-text strong { font-size: 13px; font-weight: 600; }
+.cmdk-text small { font-size: 11px; color: var(--color-text-secondary); }
+.cmdk-enter { color: var(--color-primary); }
+.cmdk-empty { padding: 18px 12px; font-size: 13px; color: var(--color-text-secondary); }
+
+/* ---------- Sidebar ---------- */
+.app .sidebar nav { position: relative; }
+.nav-indicator { position: absolute; left: 0; right: 0; top: 0; z-index: 0; border-radius: var(--radius-sm); background: rgb(124 58 237 / 18%); pointer-events: none; transition: transform 300ms cubic-bezier(.22, 1, .36, 1); }
+.nav-indicator::before { content: ''; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px; border-radius: 3px; background: var(--color-cyan); }
+.app .sidebar nav a { z-index: 1; }
+.app .sidebar nav a.active { background: transparent; }
+.app .sidebar nav a.active::before { content: none; }
+.app .sidebar nav a:hover > svg { animation: nav-bounce 360ms cubic-bezier(.22, 1, .36, 1); }
+.app .sidebar nav a small.is-done { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; opacity: 1; color: var(--color-sidebar); background: var(--color-cyan); }
+.app .sidebar-note { position: relative; overflow: hidden; isolation: isolate; border-color: transparent; }
+.app .sidebar-note::before { content: ''; position: absolute; inset: -80%; z-index: -2; background: conic-gradient(from 0deg, transparent 0 68%, rgb(34 211 238 / 60%) 78%, rgb(124 58 237 / 60%) 86%, transparent 94%); animation: note-spin 9s linear infinite; }
+.app .sidebar-note::after { content: ''; position: absolute; inset: 1px; z-index: -1; border-radius: calc(var(--radius-md) - 1px); background: var(--color-sidebar-hover); }
+
+/* Tablet: the sidebar becomes an icon rail with hover/focus labels. */
+@media (min-width: 901px) and (max-width: 1180px) {
+  .app .sidebar { width: 76px; padding: 24px 12px 16px; overflow: visible; }
+  .app .main-shell { margin-left: 76px; }
+  .app .sidebar .brand { justify-content: center; padding: 0 0 28px; }
+  .app .sidebar .brand > span:last-child,.app .sidebar .nav-label,.app .sidebar .sidebar-bottom { display: none; }
+  .app .sidebar nav a { justify-content: center; padding: 11px 0; }
+  .app .sidebar nav a > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .app .sidebar nav a > small { position: absolute; top: 4px; right: 4px; }
+  .app .sidebar nav a > small:not(.is-done) { display: none; }
+  .app .sidebar nav a small.is-done { width: 15px; height: 15px; }
+  .app .sidebar nav a::after { content: attr(data-label); position: absolute; left: calc(100% + 12px); top: 50%; z-index: 5; padding: 6px 10px; border-radius: 8px; white-space: nowrap; font-size: 12px; color: #fff; background: var(--color-sidebar); box-shadow: 0 8px 20px rgb(8 18 37 / 25%); pointer-events: none; opacity: 0; transform: translate(-4px, -50%); transition: opacity 150ms, transform 150ms; }
+  .app .sidebar nav a:hover::after,.app .sidebar nav a:focus-visible::after { opacity: 1; transform: translate(0, -50%); }
+}
+
+/* Phones: compact top bar so everything fits at 360px. */
+@media (max-width: 600px) {
+  .app .navbar-right { gap: 6px; }
+  .app .navbar .navbar-breadcrumb { font-size: 0; }
+  .app .navbar .navbar-breadcrumb > span { display: none; }
+  .app .navbar .navbar-breadcrumb strong { font-size: 12px; }
+  .app .navbar button.nav-search { width: 38px; padding: 0; justify-content: center; }
+  /* Visually hidden, not display:none, so the button keeps its accessible name. */
+  .app .navbar .nav-search .nav-search-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .app .navbar .nav-search kbd,.app .account-trigger .auth-account-profile,.app .account-chevron { display: none; }
+  .app .navbar button.account-trigger { padding: 2px; }
+}
+
+/* ---------- Home dark mode (only while the Home page is on screen) ---------- */
+html[data-home-theme='dark'],html[data-home-theme='dark'] body { background: #0B1220; color-scheme: dark; }
+html[data-home-theme='dark'] .app .navbar { background: #0E1628; border-bottom-color: rgb(255 255 255 / 8%); color: #E2E8F0; }
+html[data-home-theme='dark'] .app .navbar.is-scrolled { background: rgb(14 22 40 / 84%); }
+html[data-home-theme='dark'] .navbar-breadcrumb strong { color: #F1F5F9; }
+html[data-home-theme='dark'] .app .navbar button.nav-search,html[data-home-theme='dark'] .app .navbar button.theme-toggle,html[data-home-theme='dark'] .app .navbar button.research-badge,html[data-home-theme='dark'] .app .navbar button.account-trigger,html[data-home-theme='dark'] .app .navbar .button-secondary { background: #131D33; color: #CBD5E1; border-color: rgb(255 255 255 / 10%); }
+html[data-home-theme='dark'] .app .navbar .nav-search kbd { background: #0B1220; border-color: rgb(255 255 255 / 12%); color: #94A3B8; }
+html[data-home-theme='dark'] .auth-account-profile small { color: #94A3B8; }
+html[data-home-theme='dark'] .app .app-footer { color: #CBD5E1; border-top-color: rgb(255 255 255 / 8%); }
+html[data-home-theme='dark'] .app .app-footer .muted,html[data-home-theme='dark'] .app .app-footer > span:last-child { color: #94A3B8; }
+html[data-home-theme='dark'] .account-popover,html[data-home-theme='dark'] .cmdk { background: #111A2E; border-color: rgb(255 255 255 / 10%); color: #E2E8F0; --color-text: #E2E8F0; --color-text-secondary: #94A3B8; --color-border: rgb(255 255 255 / 10%); --color-background: #0B1220; --color-primary-soft: rgb(129 140 248 / 16%); --color-primary: #A5B4FC; }
+
+@keyframes shell-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes shell-pop { from { opacity: 0; transform: translateY(-6px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes nav-bounce { 0%,100% { transform: none; } 40% { transform: translateY(-3px); } 70% { transform: translateY(1px); } }
+@keyframes note-spin { to { transform: rotate(360deg); } }
+
+/* AA contrast for small shared text: the sidebar step numbers (index.css dims them to 60%,
+   3.96:1) and the light footer (4.44:1). Both now pass 4.5:1. */
+.app .sidebar nav a small:not(.is-done) { opacity: .85; }
+.app .app-footer .muted,.app .app-footer > span:last-child { color: #556274; }
+
+/* The shimmer rotates on its own compositor layer, and stops while the phone drawer is closed. */
+.app .sidebar-note::before { will-change: transform; }
+@media (max-width: 900px) { .app .sidebar:not(.is-open) .sidebar-note::before { animation-play-state: paused; } }

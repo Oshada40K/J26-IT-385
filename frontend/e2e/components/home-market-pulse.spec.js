@@ -69,98 +69,183 @@ async function mockMarket(page, options = {}) {
   return requested
 }
 
-const pulse = page => page.getByRole('region', { name: 'The job market, as it stands today.' })
-const card = (page, title) => pulse(page).locator('.mp-card').filter({ has: page.getByRole('heading', { name: title, exact: true }) })
+// The market sections load when they come near the viewport, and figures count up once seen.
+async function openPulse(page) {
+  await page.goto('/')
+  await page.locator('#market-area').scrollIntoViewIfNeeded()
+  await expect(page.locator('#market-pulse')).toBeVisible()
+}
+const section = (page, id) => page.locator(`#${id}`)
+const titled = (page, title) => page.locator('.market-pulse section').filter({ has: page.getByRole('heading', { name: title, exact: true }) })
 
 test.describe('Home - Career Market Pulse', () => {
   test('sits under the CV upload and shows every market panel', async ({ page }) => {
     await mockMarket(page)
-    await page.goto('/')
-    await expect(pulse(page)).toBeVisible()
+    await openPulse(page)
     // The CV upload is unchanged and stays above the new section.
-    const upload = await page.locator('.cv-panel').boundingBox()
-    const section = await pulse(page).boundingBox()
-    expect(section.y).toBeGreaterThan(upload.y + upload.height)
+    const upload = await page.locator('#cv-upload').boundingBox()
+    const area = await page.locator('#market-area').boundingBox()
+    expect(area.y).toBeGreaterThan(upload.y + upload.height)
     await expect(page.getByLabel('Choose your CV')).toBeAttached()
 
-    await expect(pulse(page).locator('.mp-tile').first()).toContainText('5,217')
-    await expect(pulse(page).getByText(/^Updated /)).toBeVisible()
-    const rows = card(page, 'Trending careers').locator('tbody tr')
+    await expect(page.locator('.mp-kpis .kpi').first()).toContainText('5,217')
+    await expect(page.getByText(/^Updated /)).toBeVisible()
+    const trending = section(page, 'trending-careers')
+    await trending.scrollIntoViewIfNeeded()
+    const rows = trending.locator('.trend-row')
     await expect(rows).toHaveCount(10)
     await expect(rows.first()).toContainText('01')
     await expect(rows.first()).toContainText('Software Engineer')
-    await expect(rows.first().locator('.mp-delta.is-up')).toHaveText(/Up\s*\+50\.0%/)
-    await expect(rows.nth(1).locator('.mp-delta.is-down')).toHaveText(/Down\s*−25\.0%/)
-    await expect(rows.nth(4).locator('.mp-delta.is-none')).toBeVisible()   // too few postings: no percentage
+    await expect(rows.first().locator('.delta.is-up')).toHaveText(/Up\s*\+50\.0%/)
+    await expect(rows.nth(1).locator('.delta.is-down')).toHaveText(/Down\s*−25\.0%/)
+    await expect(rows.nth(4)).toContainText('Too few postings') // no percentage from a tiny base
 
-    const growth = card(page, 'Career growth')
-    await expect(growth.getByRole('heading', { name: 'Rising' })).toBeVisible()
-    await expect(growth.locator('.mp-movers').first().locator('li').first()).toContainText('Software Engineer')
-    await expect(growth.locator('.mp-movers').nth(1).locator('li').first()).toContainText('Full Stack Developer')   // -60% is the steepest fall
-    await expect(card(page, 'Skill demand').locator('li').first()).toContainText('Python')
-    await expect(card(page, 'Salary insights').locator('tbody tr').first()).toContainText('$130K')
-    await expect(card(page, 'Market trends').locator('svg[role=img]')).toBeVisible()
+    const growth = titled(page, 'Career growth')
+    await growth.scrollIntoViewIfNeeded()
+    await expect(growth.locator('.diverging li').first()).toContainText('Software Engineer')
+    await expect(growth.locator('.diverging li').last()).toContainText('Full Stack Developer') // -60% is the steepest fall
+    await expect(section(page, 'skill-demand').locator('.skill-bars li').first()).toContainText('Python')
+    const salary = section(page, 'salary-insights')
+    await salary.scrollIntoViewIfNeeded()
+    await expect(salary.locator('tbody tr').first()).toContainText('$130K')
+    await expect(titled(page, 'Market trends').locator('svg[role=img]')).toBeVisible()
 
-    const sources = pulse(page).locator('.mp-sources')
+    const sources = section(page, 'data-sources')
+    await sources.scrollIntoViewIfNeeded()
     await expect(sources.getByRole('link', { name: 'Arbeitnow' })).toHaveAttribute('href', 'https://www.arbeitnow.com')
-    await expect(sources.locator('li').filter({ hasText: 'Jobicy' })).toContainText('Failed')
-    await expect(sources.getByRole('link', { name: 'Jobicy' })).toHaveAttribute('href', 'https://jobicy.com')
     await expect(sources.locator('li').filter({ hasText: 'Himalayas' })).toContainText('Partial')
-    await expect(page.locator('#main-navigation a')).toHaveCount(6)   // no new sidebar item
+    await expect(sources.locator('li').filter({ hasText: 'Jobicy' })).toContainText('Failed')
+    await expect(page.locator('#main-navigation a')).toHaveCount(6) // no new sidebar item
   })
 
   test('keeps the three markets separate', async ({ page }) => {
     const requested = await mockMarket(page)
-    await page.goto('/')
-    await expect(pulse(page).locator('.mp-tile').first()).toContainText('5,217')
-    await pulse(page).getByRole('button', { name: /^Sri Lanka/ }).click()
-    await expect(pulse(page).locator('.mp-tile').first()).toContainText('407')
-    await expect(pulse(page).getByText('Fixture description for sri_lanka.')).toBeVisible()
-    await expect(card(page, 'Salary insights')).toContainText('A median by career is not available yet')
+    await openPulse(page)
+    const firstTile = page.locator('.mp-kpis .kpi').first()
+    await expect(firstTile).toContainText('5,217')
+    await page.locator('.mp-markets').getByRole('button', { name: /^Sri Lanka/ }).click()
+    await expect(firstTile).toContainText('407')
+    await expect(page.getByRole('tooltip').filter({ hasText: 'Fixture description for sri_lanka.' })).toBeAttached()
+    await expect(section(page, 'salary-insights')).toContainText('A median by career is not available yet')
     expect(requested.filter(url => url.endsWith('market=sri_lanka')).length).toBeGreaterThanOrEqual(6)
-    await pulse(page).getByRole('button', { name: /^Remote/ }).click()
-    await expect(pulse(page).locator('.mp-tile').first()).toContainText('832')
+    await page.locator('.mp-markets').getByRole('button', { name: /^Remote/ }).click()
+    await expect(firstTile).toContainText('832')
+  })
+
+  test('filters, sorts, expands and shows details for careers', async ({ page }) => {
+    await mockMarket(page)
+    await openPulse(page)
+    const trending = section(page, 'trending-careers')
+    await trending.scrollIntoViewIfNeeded()
+    await trending.getByRole('button', { name: /^Data & AI/ }).click()
+    await expect(trending.locator('.trend-row .career-name')).toHaveText(['Machine Learning / AI Engineer', 'Data Engineer', 'Data Analyst'])
+    await trending.getByRole('button', { name: /^All/ }).click()
+    await trending.getByRole('button', { name: 'Show all 12 careers' }).click()
+    await expect(trending.locator('.trend-row')).toHaveCount(12)
+    await trending.getByRole('button', { name: 'Growth' }).click()
+    await expect(trending.locator('.trend-row .career-name').first()).toHaveText('Software Engineer') // +50% is the largest rise
+    const view = trending.getByRole('button', { name: /^(View|Hide) Software Engineer$/ })
+    await view.click()
+    await expect(view).toHaveAttribute('aria-expanded', 'true')
+    await expect(trending.locator('.career-detail')).toContainText('Median disclosed salary $130K')
   })
 
   test('switches between daily and weekly history and offers a table', async ({ page }) => {
     await mockMarket(page)
-    await page.goto('/')
-    const trends = card(page, 'Market trends')
-    await expect(trends.locator('.mp-legend').getByText('From posting dates, before collection began')).toBeVisible()
+    await openPulse(page)
+    const trends = titled(page, 'Market trends')
+    await trends.scrollIntoViewIfNeeded()
+    await expect(trends.locator('.chart-legend').getByText('From posting dates, before collection began')).toBeVisible()
     await trends.locator('svg[role=img]').hover()
-    await expect(trends.locator('.mp-tooltip')).toContainText('new postings')
+    await expect(trends.locator('.chart-tooltip')).toContainText('new postings')
     await trends.getByRole('button', { name: 'Weekly' }).click()
-    await expect(trends.locator('.mp-chart-bar')).toHaveCount(4)
-    await expect(trends.getByText('Partial week', { exact: true })).toBeVisible()
-    await trends.getByText('Show these figures as a table').click()
-    await expect(trends.locator('details tbody tr')).toHaveCount(4)
-    await expect(trends.locator('details tbody tr').nth(2)).toContainText('5,005')
+    await expect(trends.locator('.chart-bar')).toHaveCount(4)
+    await expect(trends.locator('.chart-legend').getByText('Partial week', { exact: true })).toBeVisible()
+    await trends.getByRole('button', { name: 'Show these figures as a table' }).click()
+    await expect(trends.locator('.disclosure-body tbody tr')).toHaveCount(4)
+    await expect(trends.locator('.disclosure-body tbody tr').nth(2)).toContainText('5,005')
   })
 
   test('shows no growth percentage before two weeks are collected', async ({ page }) => {
     await mockMarket(page, { growthReady: false })
-    await page.goto('/')
-    const growth = card(page, 'Career growth')
+    await openPulse(page)
+    const growth = titled(page, 'Career growth')
+    await growth.scrollIntoViewIfNeeded()
     await expect(growth).toContainText('Growth percentages are not available yet')
     await expect(growth).toContainText('3 of 14 days collected, 11 to go')
     await expect(growth.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '3')
-    await expect(pulse(page).locator('.mp-delta.is-up, .mp-delta.is-down')).toHaveCount(0)
-    await expect(card(page, 'Trending careers').locator('tbody tr')).toHaveCount(10)
+    await expect(page.locator('.market-pulse .delta.is-up, .market-pulse .delta.is-down')).toHaveCount(0)
+    await expect(section(page, 'trending-careers').locator('.trend-row')).toHaveCount(10)
+    await expect(section(page, 'trending-careers').getByRole('button', { name: 'Growth' })).toBeDisabled()
   })
 
   test('reports an older backend instead of showing numbers', async ({ page }) => {
     await mockMarket(page, { respond: route => route.fulfill({ status: 404, json: { detail: 'Not Found' } }) })
-    await page.goto('/')
-    await expect(pulse(page).getByText('Market data is unavailable')).toBeVisible()
-    await expect(pulse(page).getByRole('alert')).toContainText('does not provide market data yet')
-    await expect(pulse(page).locator('.mp-tile')).toHaveCount(0)
-    await expect(page.getByLabel('Choose your CV')).toBeAttached()   // the rest of Home still works
+    await openPulse(page).catch(() => {}) // the band itself still renders its heading
+    await page.locator('#market-area').scrollIntoViewIfNeeded()
+    await expect(page.getByText('Market data is unavailable')).toBeVisible()
+    await expect(page.locator('.market-pulse').getByRole('alert')).toContainText('does not provide market data yet')
+    await expect(page.locator('.mp-kpis .kpi')).toHaveCount(0)
+    await expect(page.getByLabel('Choose your CV')).toBeAttached() // the rest of Home still works
   })
 
   test('real backend with nothing collected says so', async ({ page }) => {
+    await openPulse(page)
+    await expect(page.getByText('Market data is not available yet')).toBeVisible()
+    await expect(page.getByText('No market data has been collected yet.')).toBeVisible()
+    await expect(page.locator('.mp-kpis .kpi')).toHaveCount(0)
+  })
+})
+
+test.describe('Home - redesign', () => {
+  test('keeps the headline, greets the student and shows the real journey', async ({ page }) => {
     await page.goto('/')
-    await expect(pulse(page).getByText('Market data is not available yet')).toBeVisible()
-    await expect(pulse(page).getByText('No market data has been collected yet.')).toBeVisible()
-    await expect(pulse(page).locator('.mp-tile')).toHaveCount(0)
+    await expect(page.getByRole('heading', { level: 1, name: 'Big possibilities. Start with your CV.' })).toBeVisible()
+    await expect(page.locator('.hero-greeting')).toHaveText(/^Good (morning|afternoon|evening), Component/)
+    const journey = page.locator('.journey')
+    await expect(journey.getByRole('link')).toHaveCount(4)
+    await expect(journey).not.toContainText('Checking')
+    // The shared test account has not finished every step, so the journey cannot read 4 of 4.
+    await expect(journey.locator('.journey-count')).toHaveText(/^[0-3] of 4 complete$/)
+    await journey.getByRole('link', { name: /Learning roadmap/ }).click()
+    await expect(page).toHaveURL('/component04')
+  })
+
+  test('command palette opens with Ctrl+K and jumps to a module', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByRole('button', { name: 'Search modules and sections' })).toBeVisible() // the shortcut listens once the app shell is up
+    await page.keyboard.press('Control+K')
+    const dialog = page.getByRole('dialog', { name: 'Search CareerNova' })
+    await expect(dialog).toBeVisible()
+    await page.keyboard.type('road')
+    await expect(dialog.getByRole('option')).toHaveCount(1)
+    await page.keyboard.press('Enter')
+    await expect(page).toHaveURL('/component04')
+    await expect(dialog).toHaveCount(0)
+  })
+
+  test('dark mode applies to Home only and is remembered', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Switch Home to dark mode' }).click()
+    await expect(page.locator('.cn-home')).toHaveAttribute('data-theme', 'dark')
+    await page.reload()
+    await expect(page.locator('.cn-home')).toHaveAttribute('data-theme', 'dark')
+    await page.goto('/component01')
+    await expect(page.locator('html')).not.toHaveAttribute('data-home-theme', /.*/)
+    await expect(page.getByRole('button', { name: /Switch Home/ })).toHaveCount(0)
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Switch Home to light mode' }).click()
+    await expect(page.locator('.cn-home')).toHaveAttribute('data-theme', 'light')
+  })
+
+  test('the upload card keeps its keyboard path and messages', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByRole('button', { name: 'Analyze my CV' })).toHaveCount(0)
+    await page.getByLabel('Choose your CV').setInputFiles({ name: 'big.pdf', mimeType: 'application/pdf', buffer: Buffer.alloc(0) })
+    await expect(page.getByRole('alert')).toHaveText('Choose a file between 1 byte and 10 MB.')
+    await page.getByLabel('Choose your CV').setInputFiles({ name: 'cv.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4') })
+    await expect(page.getByRole('alert')).toHaveCount(0)
+    await expect(page.getByText('cv.pdf')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Analyze my CV' })).toBeEnabled()
   })
 })

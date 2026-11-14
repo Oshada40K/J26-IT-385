@@ -1,0 +1,5 @@
+/* Google sign-in callback page (kept from the previous auth.css, which the redesign replaced). */
+.auth-status { min-height: 100svh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 24px; color: var(--color-text-secondary); }
+.auth-callback-card { background: white; border: 1px solid var(--color-border); border-radius: 18px; padding: 36px; width: 100%; max-width: 480px; }
+.auth-form-symbol { width: 47px; height: 47px; display: grid; place-items: center; background: #f0edff; color: #6b47dd; border: 1px solid #e9e2ff; border-radius: 14px; margin-bottom: 24px; }
+.auth-error { padding: 12px 14px; border-radius: 10px; margin-bottom: 20px; font-size: 12px; overflow-wrap: anywhere; background: #fff1f2; color: #b4233b; border: 1px solid #ffe0e5; }

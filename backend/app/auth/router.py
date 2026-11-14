@@ -6,7 +6,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
-from . import config, mailer, repository, security
+from . import config, mailer, profile, repository, security
 from .schemas import EmailInput, LoginInput, RegisterInput, ResetInput, Session, User
 
 router = APIRouter(prefix='/api/auth', tags=['Authentication'])
@@ -23,6 +23,11 @@ def register(body: RegisterInput, request: Request):
             db.execute('INSERT INTO auth_users VALUES (?,?,?,?)', (user_id, body.full_name, body.email, hashed))
     except sqlite3.IntegrityError as exc:
         raise HTTPException(409, 'An account with this email already exists. Please log in.') from exc
+    try:  # Profile page: remember the sign-up date. Never blocks registration.
+        with repository.connection() as db:
+            profile.record_signup(db, user_id)
+    except sqlite3.Error:
+        pass
     return {'id': user_id, 'full_name': body.full_name, 'email': body.email}
 
 

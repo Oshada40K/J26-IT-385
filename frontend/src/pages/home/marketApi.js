@@ -15,7 +15,7 @@ export const MARKET_ENDPOINTS = {
   daily: '/api/market/history',
   weekly: '/api/market/history',
 }
-const PARAMS = { trending: { limit: 50 }, skills: { limit: 12 }, daily: { interval: 'daily', days: 30 }, weekly: { interval: 'weekly', days: 84 } }
+const PARAMS = { trending: { limit: 50 }, skills: { limit: 60 }, daily: { interval: 'daily', days: 30 }, weekly: { interval: 'weekly', days: 84 } }
 
 async function getJson(url) {
   let response
