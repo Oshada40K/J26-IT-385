@@ -105,8 +105,8 @@ export function WhySection({ reasons, factors, shapText, focus, onFocus }) {
   const linked = focus ? reasonMatches(focus, reasons) : []
   const max = Math.max(...factors.map(f => Math.abs(f.points)), 1)
   const [ref, seen] = useSeen(0.2)
-  return <Section id="c3-why" className="c3-grid">
-    <div className="c3-card">
+  return <Section id="c3-why" className="c3-grid c3-grid-stretch">
+    <div className="c3-card c3-why-card">
       <h3>Why this career?</h3>
       <p className="c3-card-sub">The main reasons behind your recommendation</p>
       <ul className="c3-reasons">{reasons.map((reason, index) => {
@@ -115,6 +115,7 @@ export function WhySection({ reasons, factors, shapText, focus, onFocus }) {
           <span className={`c3-reason-icon ${down ? 'down' : ''}`}><Mark down={down} /></span><span>{reason}</span>
         </li>
       })}</ul>
+      <ScoreGlance factors={factors} />
     </div>
     <div ref={ref} className={`c3-card ${seen ? 'is-in' : ''}`}>
       <h3>What shaped your score</h3>
@@ -141,6 +142,37 @@ export function WhySection({ reasons, factors, shapText, focus, onFocus }) {
       <Accordion title="Technical details (SHAP)"><ul className="c3-shap-text">{shapText.map(line => <li key={line}>{line}</li>)}</ul></Accordion>
     </div>
   </Section>
+}
+
+// "Your score at a glance": totals, biggest boost and drag, and how the boost is made up,
+// computed only from the factors the explanation API returned.
+const SEGMENT_COLORS = ['#10B981', '#22D3EE', '#818CF8', '#A78BFA', '#F59E0B', '#F472B6']
+function ScoreGlance({ factors }) {
+  const [ref, seen] = useSeen(0.3)
+  const ups = factors.filter(f => f.points > 0).sort((a, b) => b.points - a.points)
+  const downs = factors.filter(f => f.points < 0).sort((a, b) => a.points - b.points)
+  const raised = ups.reduce((sum, f) => sum + f.points, 0)
+  const lowered = downs.reduce((sum, f) => sum + f.points, 0)
+  if (!factors.length) return null
+  return <div ref={ref} className={`c3-glance ${seen ? 'is-in' : ''}`}>
+    <p className="c3-glance-title">Your score at a glance <span>from the factors shown</span></p>
+    <div className="c3-glance-totals">
+      <div className="up"><small>Raised by</small><strong>+<Count value={raised} active={seen} decimals={1} /></strong><span>pts</span></div>
+      <div className="down"><small>Lowered by</small><strong>−<Count value={Math.abs(lowered)} active={seen} decimals={1} /></strong><span>pts</span></div>
+    </div>
+    <dl className="c3-glance-facts">
+      {ups[0] && <div><dt><Icon name="arrow" size={13} /> Biggest boost</dt><dd>{ups[0].label} <b className="up">+{ups[0].points.toFixed(1)}</b></dd></div>}
+      {downs[0] && <div><dt><Icon name="arrow" size={13} /> Biggest drag</dt><dd>{downs[0].label} <b className="down">−{Math.abs(downs[0].points).toFixed(1)}</b></dd></div>}
+    </dl>
+    {ups.length > 0 && <div className="c3-glance-mix">
+      <small>What makes up the boost</small>
+      <div className="c3-glance-bar" role="img" aria-label={ups.map(f => `${f.label} ${Math.round((f.points / raised) * 100)}%`).join(', ')}>
+        {ups.map((f, index) => <i key={f.label} style={{ flexGrow: f.points / raised, '--c': SEGMENT_COLORS[index % SEGMENT_COLORS.length], '--i': index }} />)}
+      </div>
+      <ul className="c3-glance-legend" aria-hidden="true">{ups.slice(0, 4).map((f, index) => <li key={f.label}><i style={{ '--c': SEGMENT_COLORS[index] }} />{f.label} <b>{Math.round((f.points / raised) * 100)}%</b></li>)}</ul>
+    </div>}
+    <p className="c3-glance-hint"><Icon name="spark" size={13} /> Select a factor on the right to see which reason it belongs to.</p>
+  </div>
 }
 
 // ---------- 3. Skills ----------

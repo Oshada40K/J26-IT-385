@@ -201,6 +201,42 @@ html[data-theme='dark'] .c3-factor-tip { color: #0B1020; background: #E6E8F2; }
 .c3-accordion-body:not([hidden]) { animation: c3-rise 350ms var(--c3-ease) both; }
 .c3-shap-text { margin: 4px 0 0; padding-left: 18px; font-size: 12.5px; color: var(--color-text-secondary); }
 
+/* Score at a glance (fills the Why card down to the height of the factor chart) */
+.c3-grid.c3-grid-stretch { align-items: stretch; }
+.c3-why-card { display: flex; flex-direction: column; }
+.c3-glance { display: grid; gap: 14px; margin-top: auto; padding-top: 20px; }
+.c3-glance-title { margin: 0; padding-top: 16px; border-top: 1px solid var(--color-border); font-size: 13.5px; font-weight: 600; }
+.c3-glance-title span { margin-left: 6px; font-size: 11.5px; font-weight: 400; color: var(--color-text-secondary); }
+.c3-glance-totals { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.c3-glance-totals > div { display: grid; grid-template-columns: auto 1fr; align-items: baseline; column-gap: 4px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--color-border); }
+.c3-glance-totals small { grid-column: 1 / -1; font-size: 11.5px; color: var(--color-text-secondary); }
+.c3-glance-totals strong { font: 600 24px/1.2 var(--font-heading); }
+.c3-glance-totals span { font-size: 12px; color: var(--color-text-secondary); }
+.c3-glance-totals .up { background: var(--c3-up-soft); } .c3-glance-totals .up strong { color: var(--c3-up-text); }
+.c3-glance-totals .down { background: var(--c3-down-soft); } .c3-glance-totals .down strong { color: var(--c3-down-text); }
+.c3-glance-facts { display: grid; gap: 8px; margin: 0; }
+.c3-glance-facts > div { display: grid; grid-template-columns: 110px minmax(0, 1fr); align-items: center; gap: 10px; font-size: 12.5px; }
+.c3-glance-facts dt { display: inline-flex; align-items: center; gap: 5px; color: var(--color-text-secondary); }
+.c3-glance-facts > div:first-child dt svg { color: var(--c3-up); transform: rotate(-45deg); }
+.c3-glance-facts > div:last-child dt svg { color: var(--c3-down); transform: rotate(45deg); }
+.c3-glance-facts dd { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.c3-glance-facts b { margin-left: 4px; font: 600 12px var(--font-mono); }
+.c3-glance-facts b.up { color: var(--c3-up-text); } .c3-glance-facts b.down { color: var(--c3-down-text); }
+.c3-glance-mix > small { display: block; margin-bottom: 6px; font-size: 11.5px; color: var(--color-text-secondary); }
+.c3-glance-bar { display: flex; gap: 2px; height: 12px; overflow: hidden; border-radius: 6px; background: var(--color-primary-soft); }
+.c3-glance-bar i { min-width: 3px; background: var(--c); transform-origin: left; transform: scaleX(0); transition: transform 600ms var(--c3-ease); transition-delay: calc(200ms + var(--i) * 120ms); }
+.c3-glance.is-in .c3-glance-bar i { transform: scaleX(1); }
+.c3-glance-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 8px 0 0; padding: 0; list-style: none; font-size: 11.5px; color: var(--color-text-secondary); }
+.c3-glance-legend i { display: inline-block; width: 8px; height: 8px; margin-right: 5px; border-radius: 2px; background: var(--c); }
+.c3-glance-legend b { margin-left: 3px; font: 600 11px var(--font-mono); color: var(--color-text); }
+.c3-glance-hint { display: flex; align-items: center; gap: 6px; margin: 0; padding: 9px 12px; border-radius: 10px; font-size: 12px; color: var(--color-primary); background: var(--color-primary-soft); }
+.c3-glance-facts > div,.c3-glance-totals > div,.c3-glance-mix,.c3-glance-hint { opacity: 0; transform: translateY(10px); transition: opacity 450ms, transform 450ms var(--c3-ease); }
+.c3-glance.is-in .c3-glance-totals > div,.c3-glance.is-in .c3-glance-facts > div,.c3-glance.is-in .c3-glance-mix,.c3-glance.is-in .c3-glance-hint { opacity: 1; transform: none; }
+.c3-glance.is-in .c3-glance-totals > div:nth-child(2) { transition-delay: 80ms; }
+.c3-glance.is-in .c3-glance-facts > div { transition-delay: 160ms; }
+.c3-glance.is-in .c3-glance-mix { transition-delay: 240ms; }
+.c3-glance.is-in .c3-glance-hint { transition-delay: 320ms; }
+
 /* ---------- Skills ---------- */
 .c3-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .c3-chips > li { animation: c3-pop 380ms var(--c3-ease) backwards; animation-delay: calc(var(--i) * 45ms); }
