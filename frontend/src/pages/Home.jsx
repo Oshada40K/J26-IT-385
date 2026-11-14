@@ -6,6 +6,7 @@ import { uploadAndPredictCV } from './component03/careerApi.js'
 import Icon from '../components/Icon.jsx'
 import { AILoader } from '../components/loading/index.js'
 import { invalidate } from '../api/resourceCache.js'
+import MarketPulse from './home/MarketPulse.jsx'
 
 const CV_STEPS = [
   { label: 'Analyzing Your Skills…', messages: ['Extracting skills from your CV…', 'Reviewing the evidence behind each skill…', 'Estimating your skill levels…'] },
@@ -79,5 +80,6 @@ export default function Home() {
       <p className="cv-local-note">Your CV is processed for skill evidence. The original file is not retained.</p>
     </section>
     <div className="home-next"><div><Link to="/component01"><Icon name="skill" size={17} />Your strengths</Link><i /><Link to="/component03"><Icon name="career" size={17} />Career possibilities</Link><i /><Link to="/component04"><Icon name="roadmap" size={17} />Your next steps</Link></div></div>
+    <MarketPulse />
   </div>
 }

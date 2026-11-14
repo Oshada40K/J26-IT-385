@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { afterEach, test } from 'node:test'
-import { ENDPOINTS, getAllCareerResults, uploadAndPredictCV } from './careerApi.js'
+import { ENDPOINTS, INSIGHTS_ENDPOINT, getAllCareerResults, getCareerInsights, uploadAndPredictCV } from './careerApi.js'
 
 const originalFetch = globalThis.fetch
 afterEach(() => { globalThis.fetch = originalFetch })
@@ -88,4 +88,22 @@ test('network failures settle all result states without leaving loading flags', 
     assert.equal(value.loading, false)
     assert.equal(value.error, `Unable to connect to backend at ${baseUrl}.`)
   }
+})
+
+test('insights endpoint is separate from the core three and carries the candidate identity check', async () => {
+  const calls = []
+  globalThis.fetch = async (url, options) => { calls.push({ url, options }); return response() }
+  const data = await getCareerInsights(baseUrl, session)
+  assert.equal(data.candidate_id, session.candidate_id)
+  assert.deepEqual(calls.map(call => call.url), [`${baseUrl}${INSIGHTS_ENDPOINT}?candidate_id=candidate_test`])
+  assert.equal(calls[0].options.headers.Authorization, 'Bearer test-token')
+  assert.equal(Object.values(ENDPOINTS).includes(INSIGHTS_ENDPOINT), false)
+
+  globalThis.fetch = async () => Response.json({ candidate_id: 'another-candidate' })
+  await assert.rejects(getCareerInsights(baseUrl, session), /another candidate/)
+
+  globalThis.fetch = async url => { calls.push({ url }); return Response.json({ candidate_id: 'sample_candidate_001' }) }
+  const sample = await getCareerInsights(baseUrl, null)
+  assert.equal(sample.candidate_id, 'sample_candidate_001')
+  assert.equal(calls.at(-1).url, `${baseUrl}${INSIGHTS_ENDPOINT}`)
 })

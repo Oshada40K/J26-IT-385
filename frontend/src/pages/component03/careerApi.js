@@ -16,11 +16,24 @@ export function describeCareerError(error, baseUrl) {
   return error?.message || 'Unknown error'
 }
 
-export async function getCareerResult(key, baseUrl, session) {
+// Research insights (what-if actions, confidence-aware ranges, explanation stability).
+// Kept out of ENDPOINTS: it is slower than the core three and is loaded after them, so the
+// CV upload flow and Component 04's reuse of top-jobs are unaffected.
+export const INSIGHTS_ENDPOINT = '/api/career/insights'
+
+export function getCareerInsights(baseUrl, session) {
+  return fetchCareer(INSIGHTS_ENDPOINT, baseUrl, session)
+}
+
+export function getCareerResult(key, baseUrl, session) {
+  return fetchCareer(ENDPOINTS[key], baseUrl, session)
+}
+
+async function fetchCareer(path, baseUrl, session) {
   const query = session?.candidate_id && session?.access_token
     ? `?${new URLSearchParams({ candidate_id: session.candidate_id })}` : ''
   const headers = query ? { Authorization: `Bearer ${session.access_token}` } : {}
-  const response = await fetch(`${baseUrl}${ENDPOINTS[key]}${query}`, { headers })
+  const response = await fetch(`${baseUrl}${path}${query}`, { headers })
   if (!response.ok) throw new Error(`API error ${response.status}: ${await response.text()}`)
   const data = await response.json()
   if (query && data.candidate_id !== session.candidate_id) {
