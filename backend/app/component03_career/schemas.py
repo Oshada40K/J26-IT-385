@@ -118,5 +118,86 @@ class ExplanationResponse(BaseModel):
     skills_to_learn: list[str] = Field(description="In-demand technologies for the job that the candidate has not shown.")
     factors: list[ExplanationFactor] = Field(description="Top SHAP contributions with plain-language labels.")
 
+class CounterfactualAction(BaseModel):
+    action: Literal["learn", "improve"]
+    technology: str
+    from_level: float = Field(description="Current level on the 0-5 scale; 0 means not shown on the CV.")
+    to_level: float = Field(description="Level assumed after the action.")
+    new_score: float = Field(description="Re-scored 0-100 match for the target job after this single change.")
+    score_gain: float = Field(description="new_score minus the current score; a model delta, not a guarantee.")
+    new_rank: int = Field(ge=1, description="Rank of the target job among all eligible occupations after the change.")
+    rank_change: int = Field(description="Positive means the job moved up the ranking.")
+    becomes_best: bool
+
+
+class AlternativeCounterfactual(BaseModel):
+    ranking: int
+    job: str
+    score: float
+    gap_to_best: float
+    best_action: CounterfactualAction | None
+    reaches_rank_1: bool = Field(description="True if the single best action alone makes this job the best match.")
+
+
+class RunnerUpPath(BaseModel):
+    job: str
+    steps: list[CounterfactualAction]
+    reaches_rank_1: bool
+
+
+class Counterfactuals(BaseModel):
+    target: str = Field(description="The best job the actions are evaluated for.")
+    baseline_score: float
+    learn_level: float = Field(description="Proficiency assumed for a newly learned technology.")
+    actions: list[CounterfactualAction] = Field(description="Single skill changes, largest gain first.")
+    alternatives: list[AlternativeCounterfactual]
+    path_to_runner_up: RunnerUpPath | None
+    meaning: str
+
+
+class JobUncertainty(BaseModel):
+    ranking: int
+    job: str
+    score: float = Field(description="Displayed point score.")
+    mean: float
+    sd: float
+    low: float = Field(description="5th percentile of the sampled scores.")
+    high: float = Field(description="95th percentile of the sampled scores.")
+    top1_probability: Annotated[float, Field(ge=0, le=1)]
+    top5_probability: Annotated[float, Field(ge=0, le=1)]
+
+
+class Uncertainty(BaseModel):
+    samples: int
+    method: str
+    confidence_counts: dict[str, int]
+    confidence_source: str
+    jobs: list[JobUncertainty]
+    stability: Literal["high", "moderate", "low"]
+    stability_meaning: str
+
+
+class ExplanationStability(BaseModel):
+    samples: int
+    top_factor_agreement: Annotated[float, Field(ge=0, le=1)]
+    mean_top3_overlap: Annotated[float, Field(ge=0, le=1)]
+    mean_abs_point_change: float
+    label: Literal["high", "moderate", "low"]
+    meaning: str
+
+
+class InsightsResponse(BaseModel):
+    candidate_id: str
+    onet_version: str
+    model_type: str
+    score_meaning: str
+    eligible_occupations: int
+    best_job: str
+    counterfactuals: Counterfactuals
+    uncertainty: Uncertainty
+    explanation_stability: ExplanationStability
+    insight_meaning: str
+
+
 class ErrorResponse(BaseModel):
     detail: str

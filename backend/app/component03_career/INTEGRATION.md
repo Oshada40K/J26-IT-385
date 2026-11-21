@@ -37,6 +37,40 @@ GET endpoints:
   in `jobs`, each containing `ranking`, `job`, and `score` in model-ranked order.
 - `/api/career/explanation`: only `candidate_id`, `onet_version`, `model_type`,
   `score_meaning`, `eligible_occupations`, and the top job's `explanation` text.
+- `/api/career/insights`: the research additions (see below). Same inputs, identity
+  rules, query parameter and error codes as the three core endpoints. About 60 extra
+  model passes (roughly 0.7 s on CPU), so the frontend loads it after the core three.
+
+## Research additions (insights API)
+
+The three core responses are unchanged byte for byte; Component 4 and the home page
+keep consuming them as before. `insights.py` re-runs the SAME saved model to add:
+
+- **Counterfactual what-if actions.** For the best job: each missing in-demand tool
+  added at level 3, and each matched tool raised by one level, re-scored across all
+  occupations with exact new score, gain and rank. For each alternative: the single
+  best learn action and whether it alone makes that job rank 1. For the runner-up: a
+  greedy path of up to three learn steps. SHAP says why; counterfactuals say what to do.
+- **Confidence-aware uncertainty.** Component 1's per-skill evidence confidence sizes a
+  Monte Carlo perturbation of each recognised skill level (high 0.25, medium 0.5, low
+  1.0 levels; 30 samples; fixed seed). Confidence never changes a level. Output: 5th-95th
+  percentile score range, mean, sd, top-1 and top-5 probability per recommended job, and
+  a ranking-stability label. Legacy schema 1.0 profiles assume medium confidence. Soft
+  skills are held fixed because Component 2 supplies a fixed sample without confidence.
+- **Explanation stability.** The best job is re-explained with SHAP for every sample.
+  Reported: how often the leading factor is unchanged, mean Jaccard overlap of the top-3
+  factor set, and mean absolute point shift per factor.
+
+Speed: the exporter builds features in a Python loop over all occupations. The insights
+module uses a vectorised twin of the exporter's three technology features and reuses the
+18 unchanged soft-skill features. `tests/component03_career/test_insights.py` asserts the
+twin reproduces `inference.pair_features` exactly and that counterfactual scores and
+ranks match a full `recommend_jobs` rerun on the changed input. The exported helper is
+not modified. Identical inputs give identical insights.
+
+Expert evaluation (non-circular): `evaluation/` exports blind, shuffled rating sheets and
+scores rater agreement (NDCG@5 with a random-order baseline, P@1, P@3, Spearman, inter-rater
+Spearman). See `evaluation/README.md` for the protocol.
 
 Without `candidate_id`, the default profile endpoints remain the legacy sample
 fixtures. For a live Component 1 assessment, call any career endpoint with

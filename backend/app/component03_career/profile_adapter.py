@@ -26,3 +26,15 @@ def adapt_technical_profile(payload):
     # Retain the legacy evidence field when present; assessment evidence is not
     # a matcher feature and must never be converted into additional skills.
     return profile.model_dump(exclude_none=True)
+
+
+def assessment_confidence(payload):
+    """Component 1 evidence confidence per skill name, or {} for legacy schema 1.0 profiles.
+
+    Used ONLY by the insights endpoint to size the uncertainty of each level.
+    It is never passed to the matcher and never changes a proficiency level.
+    """
+    if isinstance(payload, dict) and 'skills' in payload:
+        assessment = TechnicalAssessment.model_validate(payload)
+        return {skill.name: skill.confidence for skill in assessment.skills}
+    return {}

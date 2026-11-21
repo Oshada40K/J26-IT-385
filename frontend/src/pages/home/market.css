@@ -1,0 +1,229 @@
+/* Career Market Pulse sections. Uses the Home tokens from home.css. Layout responds to the
+   section's own width (container queries), so it adapts with or without the sidebar. */
+.cn-home .market-pulse { container-type: inline-size; display: grid; gap: 18px; }
+.cn-home .market-pulse h2,.cn-home .market-pulse h3,.cn-home .market-pulse h4,.cn-home .market-pulse p { margin: 0; }
+.cn-home .mp-card { position: relative; min-width: 0; padding: 20px 22px; }
+.cn-home .mp-empty { display: flex; align-items: flex-start; gap: 8px; padding: 14px 16px; border-radius: 12px; background: var(--c-surface-2); font-size: 12.5px; line-height: 1.6; color: var(--c-text-2); }
+.cn-home .mp-empty svg { flex-shrink: 0; margin-top: 2px; }
+.cn-home .mp-body { display: grid; gap: 18px; transition: opacity var(--dur-ui); }
+.cn-home .mp-body.is-switching { opacity: .45; pointer-events: none; }
+.cn-home .mp-inline-warning { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 10px; border: 1px solid #FDE68A; background: #FFFBEB; color: #92400E; font-size: 12px; }
+
+/* ---------- Dark pulse band ---------- */
+.cn-home .mp-hero { position: relative; overflow: hidden; padding: 24px 26px; border-radius: 24px; color: #fff; background: radial-gradient(circle at 96% -10%, rgb(124 58 237 / 32%), transparent 46%), radial-gradient(circle at 0% 120%, rgb(34 211 238 / 15%), transparent 42%), #0B1220; box-shadow: var(--shadow-2); }
+.cn-home .mp-hero::after { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; border: 1px solid rgb(255 255 255 / 7%); }
+.cn-home .mp-hero :focus-visible { outline-color: #22D3EE; }
+.cn-home .mp-hero-top { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.cn-home .mp-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 700; letter-spacing: 1.8px; color: #22D3EE; }
+.cn-home .market-pulse .mp-hero h2 { margin-top: 6px; font-size: 21px; font-weight: 500; letter-spacing: -.04em; color: #fff; }
+.cn-home .mp-fresh-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 22px; margin-top: 14px; font-size: 12px; color: #A8B5CE; }
+.cn-home .mp-fresh { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 9px; margin-top: 14px; font-size: 12px; color: #E2E8F0; }
+.cn-home .mp-fresh-row .mp-fresh { margin-top: 0; }
+.cn-home .live-dot { position: relative; display: inline-grid; width: 10px; height: 10px; }
+.cn-home .live-dot i { width: 10px; height: 10px; border-radius: 50%; background: #22D3EE; }
+.cn-home .live-dot::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: #22D3EE; animation: live 2s var(--ease-out) infinite; }
+.cn-home .mp-fresh.is-waiting .live-dot i,.cn-home .mp-fresh.is-waiting .live-dot::after,.cn-home .mp-fresh.is-stale .live-dot i,.cn-home .mp-fresh.is-stale .live-dot::after { background: #FBBF24; }
+.cn-home .mp-scope { display: inline-flex; align-items: center; gap: 4px; }
+.cn-home .chip-warning,.cn-home .chip-quiet { display: inline-flex; align-items: center; gap: 6px; padding: 1px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.cn-home .chip-warning { background: rgb(251 191 36 / 16%); color: #FCD34D; }
+.cn-home .chip-quiet { background: rgb(255 255 255 / 9%); color: #E2E8F0; }
+.cn-home .mp-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 18px 0 0; }
+.cn-home .kpi { position: relative; min-width: 0; padding: 14px 16px; border-radius: 16px; background: rgb(255 255 255 / 5%); border: 1px solid rgb(255 255 255 / 8%); transition: transform var(--dur-ui) var(--ease-out); }
+.cn-home .kpi::after { content: ''; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; border: 1px solid rgb(34 211 238 / 55%); box-shadow: 0 0 22px rgb(34 211 238 / 18%); opacity: 0; transition: opacity var(--dur-ui); }
+.cn-home .kpi:hover { transform: translateY(-3px); }
+.cn-home .kpi:hover::after { opacity: 1; }
+.cn-home .kpi dt { font-size: 12px; color: #A8B5CE; }
+.cn-home .kpi dd { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
+.cn-home .kpi-value { margin-top: 4px; font-size: 28px; font-weight: 600; line-height: 1.15; color: #fff; }
+.cn-home .kpi-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 8px; min-height: 24px; }
+.cn-home .kpi-delta { display: inline-flex; align-items: center; gap: 5px; padding: 2px 7px; border-radius: 6px; font: 600 11px var(--font-mono); white-space: nowrap; }
+.cn-home .kpi-delta svg { fill: currentColor; }
+.cn-home .kpi-delta.is-up { color: #6EE7B7; background: rgb(16 185 129 / 16%); }
+.cn-home .kpi-delta.is-down { color: #FCA5A5; background: rgb(239 68 68 / 16%); }
+.cn-home .kpi-delta.is-flat { color: #CBD5E1; background: rgb(255 255 255 / 9%); }
+.cn-home .kpi-spark polyline { stroke: #22D3EE; }
+.cn-home .kpi-spark circle { fill: #22D3EE; }
+.cn-home .kpi-note { display: block; font-size: 11px; line-height: 1.5; color: #A8B5CE; }
+
+.cn-home .mp-notice { display: flex; align-items: flex-start; gap: 14px; }
+.cn-home .mp-notice-icon { display: grid; place-items: center; flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px; background: var(--c-primary-soft); color: var(--c-primary); }
+.cn-home .mp-notice strong { font-size: 14px; }
+.cn-home .mp-notice p { margin: 4px 0 10px; font-size: 13px; color: var(--c-text-2); }
+.cn-home .market-pulse .card.mp-notice { padding: 20px 22px; }
+.cn-home .mp-skeleton { display: grid; gap: 18px; }
+
+/* ---------- Tables ---------- */
+.cn-home .table-wrap { position: relative; overflow-x: auto; } /* positioned, so screen-reader-only labels stay inside the scroll box */
+.cn-home .mp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.cn-home .mp-table th,.cn-home .mp-table td { padding: 10px; border-bottom: 1px solid var(--c-line); text-align: left; vertical-align: middle; }
+.cn-home .mp-table thead th { font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--c-text-2); white-space: nowrap; }
+.cn-home .mp-table tbody th { font-weight: 500; }
+.cn-home .mp-table tbody tr:last-child > * { border-bottom: 0; }
+.cn-home .mp-table .num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cn-home .mp-table .num small { display: inline-block; min-width: 46px; margin-left: 6px; font-size: 11px; color: var(--c-text-2); }
+.cn-home .col-rank { width: 36px; font: 12px var(--font-mono); color: var(--c-text-2); }
+
+/* ---------- Trending careers ---------- */
+.cn-home .trend-row { transition: background var(--dur-micro); }
+.cn-home .trend-row:hover,.cn-home .trend-row.is-open,.cn-home .trend-row:focus-within { background: var(--c-primary-soft); }
+.cn-home .trending-table .trend-row { opacity: 0; }
+.cn-home .trending-table.is-in .trend-row { opacity: 1; animation: row-in var(--dur-section) var(--ease-out) both; animation-delay: calc(var(--i) * 60ms); }
+.cn-home .career-name { display: block; }
+.cn-home .share { display: block; max-width: 240px; height: 4px; margin-top: 6px; overflow: hidden; border-radius: 4px; background: var(--c-surface-2); }
+.cn-home .share i { display: block; height: 100%; border-radius: 4px; background: var(--grad); transform: scaleX(0); transform-origin: left; transition: transform 900ms var(--ease-out); }
+.cn-home .trending-table.is-in .share i { transform: scaleX(var(--w)); }
+.cn-home .col-action { width: 1%; white-space: nowrap; }
+.cn-home button.view-career { position: relative; min-height: 32px; padding: 4px 10px; gap: 6px; border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--c-primary); background: transparent; border: 1px solid transparent; box-shadow: none; opacity: 0; transition: opacity var(--dur-micro); }
+.cn-home .trend-row:hover button.view-career,.cn-home .trend-row:focus-within button.view-career,.cn-home .trend-row.is-open button.view-career { opacity: 1; }
+.cn-home button.view-career:hover:not(:disabled) { background: var(--c-surface); border-color: var(--c-line); transform: none; }
+.cn-home .view-arrow { display: inline-block; transition: transform var(--dur-ui) var(--ease-out); }
+.cn-home .view-career:hover .view-arrow { transform: translateX(3px); }
+.cn-home .view-career[aria-expanded='true'] .view-arrow { transform: rotate(90deg); }
+@media (hover: none) { .cn-home button.view-career { opacity: 1; } }
+.cn-home .trend-detail td { background: var(--c-surface-2); }
+.cn-home .career-detail { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 300px); gap: 18px; padding: 4px 2px; animation: row-in var(--dur-ui) var(--ease-out) both; }
+.cn-home .career-detail h4 { margin: 0 0 6px; font-size: 14px; }
+.cn-home .career-detail p { margin: 0 0 4px; font-size: 12.5px; line-height: 1.6; color: var(--c-text-2); }
+.cn-home .career-detail strong { color: var(--c-text); }
+.cn-home .mini-columns { margin: 0; }
+.cn-home .mini-columns-plot { display: flex; align-items: flex-end; gap: 3px; height: 70px; }
+.cn-home .mini-columns-plot > span { flex: 1; height: 100%; display: flex; align-items: flex-end; }
+.cn-home .mini-columns-plot i { display: block; width: 100%; height: 100%; border-radius: 3px 3px 0 0; background: var(--c-primary); transform: scaleY(var(--h)); transform-origin: bottom; animation: grow-y var(--dur-section) var(--ease-out) both; }
+.cn-home .mini-columns figcaption { margin-top: 6px; font-size: 11px; color: var(--c-text-2); }
+.cn-home .trending-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 16px; margin-top: 8px; }
+.cn-home .trending-foot .footnote { margin: 0; }
+
+/* ---------- Bento grid ---------- */
+.cn-home .bento { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.cn-home .bento-wide { grid-column: 1 / -1; }
+
+/* ---------- Trend chart ---------- */
+.cn-home .trend-chart { position: relative; width: 100%; min-height: 250px; }
+.cn-home .trend-chart svg { display: block; touch-action: pan-y; }
+.cn-home .chart-grid { stroke: var(--c-line); stroke-width: 1; }
+.cn-home .chart-tick { fill: var(--c-text-2); font-size: 11px; font-variant-numeric: tabular-nums; }
+.cn-home .chart-backfill { fill: var(--c-surface-2); }
+.cn-home .chart-line { fill: none; stroke: var(--c-primary); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.cn-home .chart-area { fill: var(--c-primary); opacity: .1; }
+.cn-home .chart-dot { fill: var(--c-primary); stroke: var(--c-surface); stroke-width: 2; }
+.cn-home .chart-dot.is-partial { fill: var(--c-surface); stroke: var(--c-primary); }
+.cn-home .chart-dot.is-focus { fill: var(--c-primary); }
+.cn-home .chart-partial-ring { fill: none; stroke: var(--c-primary); stroke-width: 1.5; transform-box: fill-box; transform-origin: center; animation: ring-pulse 2.2s var(--ease-out) infinite; }
+.cn-home .chart-cross { stroke: var(--c-text-2); stroke-width: 1; opacity: .6; }
+.cn-home .draw-clip { transform: scaleX(0); transform-box: fill-box; transform-origin: left; transition: transform 1100ms var(--ease-out); }
+.cn-home .draw-clip.is-in { transform: scaleX(1); }
+.cn-home .chart-bar { fill: var(--c-primary); transform: scaleY(0); transform-box: fill-box; transform-origin: bottom; transition: transform var(--dur-section) var(--ease-out); transition-delay: calc(var(--i) * 60ms); }
+.cn-home .chart-bar.is-in { transform: scaleY(1); }
+.cn-home .chart-bar.is-partial { fill: #A5A0EA; }
+.cn-home .chart-bar.is-active { fill: var(--c-violet); }
+.cn-home .chart-tooltip { position: absolute; top: 4px; z-index: 2; display: grid; gap: 1px; padding: 8px 12px; border-radius: 10px; font-size: 12px; line-height: 1.5; white-space: nowrap; pointer-events: none; color: #A8B5CE; background: #0B1220; box-shadow: 0 8px 24px rgb(8 18 37 / 25%); transform: translateX(-50%); }
+.cn-home .chart-tooltip strong { font-family: var(--font-mono); font-size: 13px; color: #fff; }
+.cn-home .chart-tooltip strong span { font-family: var(--font-body); font-weight: 400; color: #A8B5CE; }
+.cn-home .chart-tooltip em { font-style: normal; color: #FCD34D; }
+.cn-home .chart-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 8px !important; font-size: 12px; color: var(--c-text-2); }
+.cn-home .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.cn-home .key-backfill { width: 12px; height: 12px; border: 1px solid var(--c-line); border-radius: 3px; background: var(--c-surface-2); }
+.cn-home .key-partial-dot { width: 10px; height: 10px; border: 2px solid var(--c-primary); border-radius: 50%; background: var(--c-surface); }
+.cn-home .key-partial-bar { width: 12px; height: 12px; border-radius: 3px; background: #A5A0EA; }
+
+/* ---------- Career growth ---------- */
+.cn-home .growth-pending { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: center; }
+.cn-home .growth-pending strong { font-size: 13.5px; }
+.cn-home .growth-pending p:not(.footnote) { margin: 4px 0 0; font-size: 13px; color: var(--c-text-2); }
+.cn-home .ring { position: relative; width: 112px; height: 112px; }
+.cn-home .ring svg { transform: rotate(-90deg); }
+.cn-home .ring-track,.cn-home .ring-fill { fill: none; stroke-width: 9; }
+.cn-home .ring-track { stroke: var(--c-surface-2); }
+.cn-home .ring-fill { stroke: var(--c-primary); stroke-linecap: round; transition: stroke-dashoffset 1200ms var(--ease-out); }
+.cn-home .ring-label { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.cn-home .ring-label strong { font: 600 24px var(--font-mono); line-height: 1; }
+.cn-home .ring-label small { font-size: 10.5px; color: var(--c-text-2); }
+.cn-home .diverging { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+.cn-home .diverging li { display: grid; grid-template-columns: minmax(110px, 38%) minmax(0, 1fr) 76px; align-items: center; gap: 10px; font-size: 12.5px; }
+.cn-home .diverging-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cn-home .diverging-track { position: relative; height: 10px; }
+.cn-home .diverging-track::before { content: ''; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--c-line); }
+.cn-home .diverging-track i { position: absolute; top: 0; bottom: 0; width: 50%; border-radius: 4px; transform: scaleX(0); transition: transform var(--dur-section) var(--ease-out); transition-delay: calc(var(--i) * 60ms); }
+.cn-home .diverging-track i.is-up { left: 50%; background: #10B981; transform-origin: left; }
+.cn-home .diverging-track i.is-down { right: 50%; background: #EF4444; transform-origin: right; }
+.cn-home .diverging.is-in .diverging-track i { transform: scaleX(var(--w)); }
+.cn-home .diverging-value { text-align: right; font: 600 12px var(--font-mono); color: var(--c-text-2); }
+.cn-home .diverging-value.is-up { color: var(--c-up); }
+.cn-home .diverging-value.is-down { color: var(--c-down); }
+
+/* ---------- Skill demand ---------- */
+.cn-home .skill-legend { display: flex; align-items: center; gap: 8px; margin-bottom: 10px !important; font-size: 12px; color: var(--c-text-2); }
+.cn-home .skill-owned-key,.cn-home .skill-owned { display: inline-grid; place-items: center; width: 17px; height: 17px; border-radius: 50%; font-size: 10px; font-weight: 700; color: #fff; background: var(--c-cyan-text); }
+.cn-home[data-theme='dark'] .skill-owned-key,.cn-home[data-theme='dark'] .skill-owned { color: #0B1220; }
+.cn-home .skill-bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.cn-home .skill-bars li { display: grid; grid-template-columns: minmax(104px, 38%) minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 3px 6px; margin: 0 -6px; border-radius: 8px; font-size: 12.5px; }
+.cn-home .skill-bars li.is-mine { background: rgb(34 211 238 / 10%); }
+.cn-home .skill-name { display: inline-flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cn-home .skill-owned { flex-shrink: 0; width: 15px; height: 15px; font-size: 9px; }
+.cn-home .skill-track { height: 8px; }
+.cn-home .skill-track i { display: block; height: 100%; min-width: 2px; border-radius: 0 4px 4px 0; background: var(--c-primary); transform: scaleX(0); transform-origin: left; transition: transform var(--dur-section) var(--ease-out); transition-delay: calc(var(--i) * 40ms); }
+.cn-home .skill-bars.is-in .skill-track i { transform: scaleX(var(--w)); }
+.cn-home .skill-bars li.is-mine .skill-track i { background: var(--c-cyan-text); }
+.cn-home .skill-value { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cn-home .skill-value small { display: inline-block; min-width: 46px; margin-left: 4px; font-size: 11px; color: var(--c-text-2); }
+
+/* ---------- Salary insights ---------- */
+.cn-home .salary-hero { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin-bottom: 12px; font-size: 13px; color: var(--c-text-2); }
+.cn-home .salary-big { font-size: 34px; font-weight: 600; color: var(--c-text); }
+.cn-home .salary-table tbody tr { position: relative; outline-offset: -3px; transition: background var(--dur-micro); }
+.cn-home .salary-table tbody tr:hover,.cn-home .salary-table tbody tr:focus-visible { background: var(--c-primary-soft); }
+.cn-home .salary-table td.hide-sm { position: relative; min-width: 180px; }
+.cn-home .iqr { position: relative; display: block; height: 10px; border-radius: 10px; background: var(--c-surface-2); }
+.cn-home .iqr i { position: absolute; top: 0; bottom: 0; border-radius: 10px; background: #C7C3F4; transform: scaleX(0); transition: transform 800ms var(--ease-out); transition-delay: calc(var(--i) * 60ms); }
+.cn-home[data-theme='dark'] .iqr i { background: rgb(129 140 248 / 40%); }
+.cn-home .iqr b { position: absolute; top: -4px; width: 4px; height: 18px; margin-left: -2px; border-radius: 2px; background: var(--c-primary); box-shadow: 0 0 0 2px var(--c-surface); transform: scale(0); transition: transform var(--dur-ui) var(--ease-out); transition-delay: calc(var(--i) * 60ms + 500ms); }
+.cn-home .salary-table.is-in .iqr i,.cn-home .salary-table.is-in .iqr b { transform: none; }
+.cn-home .iqr-tip { position: absolute; left: 50%; bottom: calc(100% - 4px); z-index: 3; padding: 5px 9px; border-radius: 8px; white-space: nowrap; font: 11px var(--font-mono); color: #CBD5E1; background: #0B1220; pointer-events: none; opacity: 0; transform: translate(-50%, 4px); transition: opacity var(--dur-micro), transform var(--dur-micro); }
+.cn-home .iqr-tip strong { color: #fff; }
+.cn-home .salary-table tbody tr:hover .iqr-tip,.cn-home .salary-table tbody tr:focus-visible .iqr-tip { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- Data sources ---------- */
+.cn-home .sources h3 { margin-bottom: 10px; font: 600 11px var(--font-body); letter-spacing: .12em; text-transform: uppercase; color: var(--c-text-2); }
+.cn-home .sources ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.cn-home .source-card { display: grid; align-content: start; gap: 4px; padding: 14px 16px; border-radius: 16px; background: var(--c-surface); border: 1px solid var(--c-line); box-shadow: var(--shadow-1); transition: transform var(--dur-ui) var(--ease-out); }
+.cn-home .source-card:hover { transform: translateY(-3px); }
+.cn-home .source-card a { font-weight: 600; font-size: 14px; color: var(--c-primary); }
+.cn-home .source-card strong { font: 600 18px var(--font-mono); }
+.cn-home .source-card strong span { font: 400 11px var(--font-body); color: var(--c-text-2); }
+.cn-home .source-card p { font-size: 11.5px; line-height: 1.55; color: var(--c-text-2); }
+.cn-home .source-card small { font-size: 10.5px; color: var(--c-text-2); }
+.cn-home .source-error { color: var(--c-down) !important; overflow-wrap: anywhere; }
+.cn-home .source-state { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 600; color: var(--c-text); }
+.cn-home .source-state i { width: 8px; height: 8px; border-radius: 50%; background: #94A3B8; }
+.cn-home .source-state.is-ok i { background: #10B981; }
+.cn-home .source-state.is-partial i { background: #F59E0B; }
+.cn-home .source-state.is-failed i { background: #EF4444; }
+
+@container (max-width: 820px) {
+  .cn-home .mp-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cn-home .bento { grid-template-columns: minmax(0, 1fr); }
+  .cn-home .career-detail { grid-template-columns: minmax(0, 1fr); }
+}
+@container (max-width: 560px) {
+  .cn-home .mp-hero { padding: 18px 16px; border-radius: 20px; }
+  .cn-home .mp-markets { width: 100%; }
+  .cn-home .kpi { padding: 12px; }
+  .cn-home .kpi-value { font-size: 22px; }
+  .cn-home .mp-card { padding: 16px 14px; }
+  .cn-home .hide-sm { display: none; }
+  .cn-home .mp-table th,.cn-home .mp-table td { padding: 9px 6px; }
+  .cn-home .mp-table .num small { display: none; }
+  .cn-home .mp-table thead th { white-space: normal; }
+  .cn-home .trending-table .col-rank { display: none; }
+  .cn-home .trending-table.growth-pending .col-growth { display: none; } /* every row would read 'Collecting data'; the note below says it once */
+  .cn-home button.view-career { padding: 4px 8px; }
+  .cn-home button.view-career .view-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .cn-home .growth-pending { grid-template-columns: minmax(0, 1fr); justify-items: start; }
+  .cn-home .diverging li { grid-template-columns: minmax(0, 1fr) 70px; }
+  .cn-home .diverging-track { grid-column: 1 / -1; grid-row: 2; }
+}
+
+@keyframes live { 0% { opacity: .65; transform: scale(1); } 80%,100% { opacity: 0; transform: scale(2.6); } }
+@keyframes row-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes grow-y { from { transform: scaleY(0); } }
+@keyframes ring-pulse { 0% { opacity: .8; transform: scale(1); } 80%,100% { opacity: 0; transform: scale(2.2); } }

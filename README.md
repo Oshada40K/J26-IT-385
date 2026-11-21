@@ -4,9 +4,6 @@ Group research project J26-IT-385. The system recommends career paths to student
 based on their technical skills and personality, explains the recommendations, and
 generates a learning roadmap and skill-gap analysis.
 
-> This repository currently contains the **shared base project** only. The research
-> components are placeholders — no AI/ML logic is implemented yet.
-
 ## Research Components
 
 | # | Component | Owner | Git branch | Backend folder | Frontend folder |

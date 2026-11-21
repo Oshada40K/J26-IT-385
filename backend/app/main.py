@@ -6,6 +6,7 @@ from pathlib import Path
 
 load_dotenv(Path(__file__).resolve().parents[1] / '.env', override=False)
 from app.auth.router import router as auth_router
+from app.auth.profile import router as profile_router  # /profile page
 from app.auth.config import allowed_origins
 
 from app.component01_skill.router import router as skill_router
@@ -13,6 +14,7 @@ from app.component02_personality.router import router as personality_router
 from app.component03_career.router import router as career_router
 from app.component03_career.service import career_lifespan
 from app.component04_roadmap.router import router as roadmap_router
+from app.market_pulse.router import router as market_router  # Home page: Career Market Pulse
 
 app = FastAPI(title="AI-Based Smart Career Path Recommendation System API", lifespan=career_lifespan)
 
@@ -43,6 +45,8 @@ app.include_router(personality_router)
 app.include_router(career_router)
 app.include_router(roadmap_router)
 app.include_router(auth_router)
+app.include_router(profile_router)
+app.include_router(market_router)
 
 
 @app.middleware('http')

@@ -60,6 +60,10 @@ export default defineConfig({
         AUTH_COOKIE_SAMESITE: 'lax',
         AUTH_FRONTEND_URL: APP_URL,
         SKILL_ENABLE_SBERT: 'false',
+        // Career Market Pulse: isolated storage and no live job-board collection during tests.
+        MARKET_DATABASE_PATH: join(data, 'market.sqlite3'),
+        MARKET_AUTO_REFRESH: 'false',
+        DATABASE_URL: '',
       },
     },
     {

@@ -1,83 +1,96 @@
-import { useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { savedSession, uploadCV } from './component01/skillApi.js'
-import { API_BASE_URL } from '../api/client.js'
-import { uploadAndPredictCV } from './component03/careerApi.js'
+// Home: CV upload and career journey on top, the live Career Market Pulse below (loaded when
+// it comes near the viewport), and a closing call to action. Presentation only: uploads, API
+// calls and routes are the same as before.
+import { lazy, useCallback, useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
+import { m } from 'motion/react'
+import { useAuth } from '../auth/AuthContext.jsx'
+import { Bone } from '../components/loading/Skeletons.jsx'
 import Icon from '../components/Icon.jsx'
-import { AILoader } from '../components/loading/index.js'
-import { invalidate } from '../api/resourceCache.js'
+import { useHomeTheme } from '../components/shell/theme.js'
+import MotionRoot, { useReducedMotion } from './home/MotionRoot.jsx'
+import HeroUpload from './home/HeroUpload.jsx'
+import JourneyStepper from './home/JourneyStepper.jsx'
+import CtaBand from './home/CtaBand.jsx'
+import LazySection from './home/LazySection.jsx'
+import { useInViewport } from './home/viewport.js'
+import { refreshJourney, useJourney } from './home/journey.js'
+import { firstName, greeting } from './home/homeUtils.js'
+import { wordVariants, wordsVariants } from './home/motion.js'
+import './home/home.css'
 
-const CV_STEPS = [
-  { label: 'Analyzing Your Skills…', messages: ['Extracting skills from your CV…', 'Reviewing the evidence behind each skill…', 'Estimating your skill levels…'] },
-  { label: 'Finding the Best Career Matches…', messages: ['Comparing your profile with O*NET occupations…', 'Ranking your top five careers…', 'Explaining your best match with SHAP…'] },
-]
+const MarketPulse = lazy(() => import('./home/MarketPulse.jsx'))
+const HEADLINE = [['Big', 'possibilities.'], ['Start', 'with', 'your', 'CV.']]
+
+function PulsePlaceholder() {
+  return <div className="pulse-placeholder" aria-hidden="true">
+    <div className="mp-hero"><Bone w={180} h={10} /><Bone w="45%" h={22} className="sk-gap" /><div className="mp-kpis">{[0, 1, 2, 3].map(i => <div key={i} className="kpi"><Bone w="50%" h={10} /><Bone w="60%" h={26} className="sk-gap" /></div>)}</div></div>
+  </div>
+}
 
 export default function Home() {
-  const navigate = useNavigate()
-  const [uploading, setUploading] = useState(false)
-  const [predicting, setPredicting] = useState(false)
-  const processing = useRef(false)
-  const input = useRef(null)
-  const dragDepth = useRef(0)
-  const [file, setFile] = useState(null)
-  const [error, setError] = useState('')
-  const [dragging, setDragging] = useState(false)
+  const theme = useHomeTheme()
+  const reduced = useReducedMotion()
+  const { user } = useAuth()
+  const journey = useJourney()
+  const location = useLocation()
+  const aurora = useRef(null)
+  const auroraVisible = useInViewport(aurora) // the background animation pauses off-screen
 
-  function selectFile(files) {
-    if (uploading || !files?.length) return
-    const selected = files[0]
-    if (files.length > 1) { setError('Please choose one CV at a time.'); return }
-    if (!/\.(pdf|docx)$/i.test(selected.name)) { setError('Please choose a PDF or DOCX file.'); return }
-    if (!selected.size || selected.size > 10 * 1024 * 1024) { setError('Choose a file between 1 byte and 10 MB.'); return }
-    setFile(selected)
-    setError('')
-  }
+  useEffect(() => { refreshJourney() }, [])
 
-  async function analyzeCV() {
-    if (!file || processing.current) return
-    processing.current = true
-    setUploading(true)
-    setError('')
-    try {
-      const prediction = await uploadAndPredictCV(file, {
-        uploadCV, savedSession, baseUrl: API_BASE_URL,
-        onAssessed: () => setPredicting(true),
-      })
-      invalidate() // a new CV changes skills, career matches and roadmap data
-      navigate('/component03', { state: prediction })
-    } catch (err) { invalidate(); setError(err.message) }
-    finally { processing.current = false; setUploading(false); setPredicting(false) }
-  }
+  // Scroll to a section requested by the command palette or by navigation state. Market
+  // sections load lazily, so wait briefly for them to appear after scrolling towards them.
+  const scrollTo = useCallback(id => {
+    const go = element => element.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' })
+    const target = document.getElementById(id)
+    if (target) { go(target); return }
+    const area = document.getElementById('market-area')
+    if (area) go(area)
+    let tries = 0
+    const timer = setInterval(() => {
+      const found = document.getElementById(id)
+      if (found) { clearInterval(timer); go(found) } else if (++tries > 40) clearInterval(timer)
+    }, 100)
+  }, [reduced])
+  useEffect(() => {
+    const onRequest = event => scrollTo(event.detail)
+    window.addEventListener('careernova:scroll-to', onRequest)
+    return () => window.removeEventListener('careernova:scroll-to', onRequest)
+  }, [scrollTo])
+  useEffect(() => {
+    if (!location.state?.scrollTo) return undefined
+    const timer = setTimeout(() => scrollTo(location.state.scrollTo), 350) // after the page transition
+    return () => clearTimeout(timer)
+  }, [location.state, scrollTo])
 
-  return <div className="page home-page">
-    <section className="home-intro">
-      <h1>Big possibilities.<br /><span>Start with your CV.</span></h1>
-    </section>
-    <section className="cv-panel" aria-labelledby="cv-title" aria-busy={uploading}>
-      {/* Visual only: the cv-feedback live region below announces progress. */}
-      {uploading && <div className="cv-processing" aria-hidden="true"><AILoader mode="overlay" variant={predicting ? 'career' : 'skills'} steps={CV_STEPS} activeStep={predicting ? 1 : 0} /></div>}
-      <div className="cv-art" aria-hidden="true">
-        <div className="cv-art-ring" />
-        <span className="cv-spark spark-one"><Icon size={20} /></span>
-        <span className="cv-spark spark-two"><Icon size={12} /></span>
-        <div className="cv-paper"><div className="cv-paper-heading"><span /><div><i /><i /></div></div><div className="cv-paper-rule" /><i className="cv-paper-line long" /><i className="cv-paper-line" /><i className="cv-paper-line short" /><div className="cv-paper-tags"><span /><span /><span /></div><i className="cv-paper-line long" /><i className="cv-paper-line" /></div>
-        <span className="cv-art-badge"><Icon name="check" size={16} /></span>
-      </div>
-      <h2 id="cv-title">Your journey, in one document.</h2>
-      <div className={`cv-dropzone ${dragging ? 'is-dragging' : ''} ${file ? 'has-file' : ''}`}
-        onDragEnter={event => { event.preventDefault(); dragDepth.current += 1; setDragging(true) }}
-        onDragOver={event => { event.preventDefault(); event.dataTransfer.dropEffect = 'copy' }}
-        onDragLeave={event => { event.preventDefault(); dragDepth.current -= 1; if (dragDepth.current <= 0) setDragging(false) }}
-        onDrop={event => { event.preventDefault(); dragDepth.current = 0; setDragging(false); selectFile(event.dataTransfer.files) }}>
-        <input ref={input} className="cv-file-input" type="file" disabled={uploading} accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" aria-label="Choose your CV" aria-describedby="cv-formats cv-feedback" onChange={event => { selectFile(event.target.files); event.target.value = '' }} />
-        {file ? <div className="cv-selected"><span className="cv-file-icon"><Icon name="document" size={24} /></span><div><strong>{file.name}</strong><span>{(file.size / 1024 / 1024).toFixed(2)} MB · Selected</span></div><button className="cv-remove" disabled={uploading} aria-label="Remove selected CV" onClick={() => { setFile(null); setError('') }}><Icon name="close" size={18} /></button></div> : <><span className="cv-upload-icon"><Icon name="upload" size={24} /></span><strong>{dragging ? 'Drop your CV here' : 'Drag & drop your CV here'}</strong></>}
-        <button className="cv-browse" disabled={uploading} onClick={() => input.current?.click()}><Icon name={file ? 'document' : 'upload'} size={17} />{file ? 'Choose another CV' : 'Choose your CV'}<Icon name="arrow" size={17} /></button>
-        {file && <button className="cv-analyze" disabled={uploading} onClick={analyzeCV}>{predicting ? 'Predicting your careers…' : uploading ? 'Assessing your CV…' : 'Analyze my CV'}<Icon name="arrow" size={17} /></button>}
-        <small id="cv-formats">PDF or DOCX · Up to 10 MB</small>
-      </div>
-      <div id="cv-feedback" aria-live="polite" aria-atomic="true">{error && <p className="cv-error" role="alert">{error}</p>}{uploading && <p className="cv-selection-note" role="status">{predicting ? 'Your CV assessment is complete. Finding your best career, top five jobs, and explanation…' : 'Extracting skills and reviewing CV evidence…'}</p>}</div>
-      <p className="cv-local-note">Your CV is processed for skill evidence. The original file is not retained.</p>
-    </section>
-    <div className="home-next"><div><Link to="/component01"><Icon name="skill" size={17} />Your strengths</Link><i /><Link to="/component03"><Icon name="career" size={17} />Career possibilities</Link><i /><Link to="/component04"><Icon name="roadmap" size={17} />Your next steps</Link></div></div>
-  </div>
+  const focusUpload = useCallback(() => {
+    document.getElementById('cv-upload')?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' })
+    setTimeout(() => document.getElementById('cv-choose')?.focus({ preventScroll: true }), reduced ? 0 : 400)
+  }, [reduced])
+
+  const name = firstName(user?.full_name)
+  return <MotionRoot>
+    <div className="page cn-home" data-theme={theme}>
+      <section className="hero" aria-labelledby="home-title">
+        <div ref={aurora} className={`hero-aurora ${auroraVisible ? '' : 'is-paused'}`} aria-hidden="true"><i /><i /><i /><span className="sparkle s1"><Icon size={14} /></span><span className="sparkle s2"><Icon size={10} /></span><span className="sparkle s3"><Icon size={12} /></span></div>
+        <div className="home-hero-copy">
+          <p className="hero-greeting">{greeting()}{name && `, ${name}`} <span aria-hidden="true">👋</span></p>
+          <m.h1 id="home-title" aria-label="Big possibilities. Start with your CV." variants={wordsVariants} initial="hidden" animate="show">
+            {HEADLINE.map((line, lineIndex) => <span key={lineIndex} className={`hero-line ${lineIndex ? 'is-accent' : ''}`} aria-hidden="true">
+              {line.map(word => <m.span key={word} className="hero-word" variants={wordVariants}>{word} </m.span>)}
+            </span>)}
+          </m.h1>
+        </div>
+        <div className="hero-grid">
+          <HeroUpload />
+          <JourneyStepper journey={journey} onStartHere={focusUpload} />
+        </div>
+      </section>
+      <LazySection id="market-area" minHeight={720} fallback={<PulsePlaceholder />}>
+        <MarketPulse />
+      </LazySection>
+      <CtaBand journey={journey} onUpload={focusUpload} />
+    </div>
+  </MotionRoot>
 }
