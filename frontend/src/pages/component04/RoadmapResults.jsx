@@ -5,10 +5,12 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Icon from '../../components/Icon.jsx'
 import { ErrorState, PageLoader, ReloadButton, SkeletonRoadmap, SkeletonSkillGap } from '../../components/loading/index.js'
-import { cached, hasCached, peek, prime } from '../../api/resourceCache.js'
+import { cached, candidateKey, hasCached, peek, prime } from '../../api/resourceCache.js'
+import { C3TopJobs, c3SourceText, fallbackText } from './C3Career.jsx'
 import { Activity, CoachRules, NextActivityCard, RoadmapEvents, SKILL_STATUS, SkillLessons, activityRequest, lessonTotals,
   lessonsBySkill, useLearningPlan } from './LearningCoach.jsx'
-import { deleteEvidence, generateLessons, getAnalysis, hasCvSession, listEvidence, recheckEvidence, submitEvidence } from './assessmentApi.js'
+import { deleteEvidence, generateLessons, getAnalysis, getCareerCheck, hasCvSession, listEvidence, recheckEvidence,
+  submitEvidence } from './assessmentApi.js'
 import './RoadmapResults.css'
 
 const STATUS = {
@@ -614,7 +616,34 @@ function Method({ result }) {
   </details>
 }
 
-export default function RoadmapResults({ assessmentId, onEdit, onNew }) {
+// Where the target career came from (Component 03 rank, score and top 5; or a legacy student choice) and whether
+// Component 03 now recommends another career. Read-only: regenerating is the student's decision, never automatic.
+const LEGACY_TEXT = 'This roadmap was built for a career you chose before the system followed Component 03. Generate it for your recommended career.'
+
+function CareerOrigin({ result, check, onRegenerate }) {
+  const c3 = result.c3_recommendation
+  const legacy = result.career_source !== 'c3'
+  const current = check.data?.current
+  const canRegenerate = hasCvSession()
+  return <div className="c4r-career-origin">
+    {c3 && <>
+      {c3.fallback_used && <p className="c4r-notice" role="note">{fallbackText(c3)}</p>}
+      <p className="c4r-c3-label">Component 03's top {c3.jobs.length} careers when this assessment was submitted</p>
+      <C3TopJobs jobs={c3.jobs} compact />
+    </>}
+    {legacy && <div className="c4r-notice c4r-link-cv" role="status">
+      <span>{LEGACY_TEXT}{current ? ` Component 03 now recommends ${current.career_name} (rank ${current.c3_rank}).` : ''}</span>
+      {canRegenerate && <button type="button" onClick={onRegenerate}>Generate for my recommended career</button>}
+    </div>}
+    {!legacy && check.data?.changed && <div className="c4r-notice c4r-link-cv c4r-career-changed" role="status">
+      <span>{check.data.message} Your CV (and so Component 03's result) has changed. This roadmap stays as it is until you generate a new one.</span>
+      <button type="button" onClick={onRegenerate}>Generate my roadmap for {current.career_name}</button>
+    </div>}
+    {check.error && <p className="c4r-notice" role="status">We could not check whether Component 03's recommendation has changed: {check.error.message}</p>}
+  </div>
+}
+
+export default function RoadmapResults({ assessmentId, onEdit, onRegenerate }) {
   // The last analysis is shown at once on a revisit and refreshed in the background.
   const cacheKey = `c04:analysis:${assessmentId}`
   const [state, setState] = useState(() => ({ loading: true, error: '', result: peek(cacheKey) ?? null }))
@@ -626,6 +655,9 @@ export default function RoadmapResults({ assessmentId, onEdit, onNew }) {
   const [generating, setGenerating] = useState(null)
   const coach = useLearningPlan(assessmentId, evidenceVersion)
   const tabsRef = useRef(null)
+  // Is Component 03's current recommendation still the career this roadmap was built for? (cleared on a new CV)
+  const checkKey = candidateKey(`c04:careerCheck:${assessmentId}`)
+  const [check, setCheck] = useState(() => ({ data: peek(checkKey) ?? null, error: null }))
 
   // Proof added or removed: use the regenerated roadmap from the response (or reload it).
   function handleEvidenceChange(response) {
@@ -672,6 +704,15 @@ export default function RoadmapResults({ assessmentId, onEdit, onNew }) {
     return () => { active = false }
   }, [assessmentId, reload]) // eslint-disable-line react-hooks/exhaustive-deps -- cacheKey follows assessmentId
 
+  useEffect(() => {
+    if (!hasCvSession()) return undefined                 // Component 03 needs the CV session
+    let active = true
+    cached(checkKey, () => getCareerCheck(assessmentId))
+      .then(data => { if (active) setCheck({ data, error: null }) })
+      .catch(error => { if (active) setCheck({ data: null, error }) })
+    return () => { active = false }
+  }, [assessmentId]) // eslint-disable-line react-hooks/exhaustive-deps -- checkKey follows assessmentId
+
   const refresh = () => setReload(v => v + 1)
   if (state.loading && !state.result) return <PageLoader variant="roadmap" delay={0} label="Analysing your skills and building your roadmap…"
     skeleton={<div className="sk-stack"><SkeletonSkillGap /><SkeletonRoadmap /></div>} />
@@ -688,11 +729,13 @@ export default function RoadmapResults({ assessmentId, onEdit, onNew }) {
       <div>
         <p className="eyebrow">TARGET CAREER</p>
         <h2>{result.target_career.career_name}</h2>
+        {result.c3_recommendation
+          ? <p className="c4r-c3-source"><Icon name="career" size={15} />{c3SourceText(result.c3_recommendation)}</p>
+          : <p className="c4r-c3-source is-legacy">Chosen by you before the system followed Component 03</p>}
         <p className="muted">Assessment submitted {formatDate(result.assessment.submitted_at)} · CV assessed {formatDate(result.assessment.cv_assessed_at)}</p>
       </div>
       <div className="c4r-actions">
         <button type="button" onClick={onEdit}>Update my assessment</button>
-        <button type="button" className="button-secondary" onClick={onNew}>Choose another career</button>
         <ReloadButton onClick={refresh} loading={state.loading} label="Refresh roadmap" />
       </div>
       {!result.candidate_id && hasCvSession() ? <div className="c4r-notice c4r-link-cv" role="status">
@@ -704,7 +747,9 @@ export default function RoadmapResults({ assessmentId, onEdit, onNew }) {
           interactive lessons will unlock.</span>
         <Link className="button" to="/component01">Upload my CV</Link>
       </div>}
-      {[...result.assessment.changes, ...result.warnings.filter(w => result.candidate_id || !w.startsWith('No CV skills'))]
+      <CareerOrigin result={result} check={check} onRegenerate={onRegenerate} />
+      {[...result.assessment.changes, ...result.warnings.filter(w => (result.candidate_id || !w.startsWith('No CV skills'))
+        && !(result.c3_recommendation && w.startsWith("C3's top job")))]   /* the C3 fallback is shown above in plain words */
         .map(message => <p key={message} className="c4r-notice" role="status">{message}</p>)}
       {result.inputs.cv_skills_not_in_catalogue.length > 0 && <p className="c4r-notice">CV skills not covered by the C4 skills catalogue (not used): {result.inputs.cv_skills_not_in_catalogue.join(', ')}.</p>}
     </section>

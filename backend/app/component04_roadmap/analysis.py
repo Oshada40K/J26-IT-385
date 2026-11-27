@@ -501,14 +501,17 @@ class C4Analyzer(C4Engine):
                     total_weeks=max((s["end_week"] for s in steps), default=0), stages=stages, learner_profile=profile)
 
     # ------------------------------------------------------------------ public entry point
-    def analyze_assessment(self, c1, form, evidence=None):
+    def analyze_assessment(self, c1, form, evidence=None, c3=None, c3_rule=None):
         """c1: {"candidate_id", "skills": [{"name", "level", "confidence"}]} (may be empty);
         form: the stored C4 form (c4_engine form_json format plus learning_methods);
         evidence: optional {skill_id: status} or {skill_id: {status, level, source, detail, evidence_id}}
         (service.evidence_summary). Never required: the roadmap is always built from CV evidence + the form.
-        Usable proof raises proficiency to max(CV level, proof level) / 5; C4's own checks are capped at 3/5."""
+        Usable proof raises proficiency to max(CV level, proof level) / 5; C4's own checks are capped at 3/5.
+        c3 / c3_rule: the Component 03 result stored with the assessment (c3_json "top_jobs" shape) and the rule
+        used then. form["career_id"] was selected from it, so C3's warnings (e.g. C3's #1 is outside C4) are
+        reported; the career itself is never changed here. Omitted for legacy assessments."""
         self.ensure_models()
-        st = self.student_from_json(c1, {}, form, form["career_id"])
+        st = self.student_from_json(c1, c3 or {}, form, form["career_id"], rule=c3_rule, career_from_c3=bool(c3))
         proof = {sid: (e if isinstance(e, dict) else {"status": e}) for sid, e in (evidence or {}).items()}
         # Lesson-only evidence (C4 tutor) is shown only when it is higher than the CV level; otherwise it adds nothing.
         proof = {sid: e for sid, e in proof.items() if not (e.get("tutor_only") and

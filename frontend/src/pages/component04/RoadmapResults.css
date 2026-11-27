@@ -281,3 +281,14 @@
 .c4r-link-cv { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
 .c4r-link-cv span { flex: 1 1 360px; }
 .c4r-link-cv button,.c4r-link-cv .button { min-height: 38px; padding: 8px 14px; }
+
+/* Target career source: Component 03 rank/score, C03's top 5 (read-only), legacy and changed-career banners. */
+.c4r-overview .c4r-c3-source { display: flex; align-items: center; gap: 6px; margin: 4px 0 0; font-size: 13px; font-weight: 600; color: var(--component-accent); }
+.c4r-overview .c4r-c3-source.is-legacy { color: var(--color-text-secondary); font-weight: 500; }
+.c4r-career-origin { flex-basis: 100%; display: grid; gap: 10px; min-width: 0; }
+.c4r-career-origin:empty { display: none; }
+.c4r-c3-label { margin: 0; font-size: 12px; font-weight: 600; color: var(--color-text-secondary); }
+.c4r-career-changed { border-color: var(--component-accent); }
+@media (min-width: 901px) {
+  .c4r-career-origin .c4-c3-list { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+}

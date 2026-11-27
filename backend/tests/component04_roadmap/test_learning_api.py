@@ -16,6 +16,8 @@ from app.component01_skill import repository as c1_repository
 from app.component04_roadmap import curriculum, service
 from app.component04_roadmap.router import router
 
+from .c3_stub import StubC03
+
 SOFTWARE_DEVELOPERS = "15-1252.00"
 BANK = curriculum.load()
 needs_models = unittest.skipUnless(service.engine().models_available(), "trained model files are not present")
@@ -31,11 +33,13 @@ class LearningApiTests(unittest.TestCase):
         self.env.start()
         for key in ("C1_EVIDENCE_ENDPOINT", "C4_LLM_API_KEY", "ANTHROPIC_API_KEY", "C4_TUTOR_RULES"):
             os.environ.pop(key, None)
+        self.c3 = StubC03().start()           # Component 03 stub: Software Developers is its #1
         app = FastAPI()
         app.include_router(router)
         self.client = TestClient(app)
 
     def tearDown(self):
+        self.c3.stop()
         self.env.stop()
         self.temp.cleanup()
 
@@ -43,7 +47,7 @@ class LearningApiTests(unittest.TestCase):
         session = c1_repository.create_candidate()
         c1_repository.save_assessment(session["candidate_id"], b"cv", {"skills": skills, "external_profiles": []})
         headers = {"Authorization": f"Bearer {session['access_token']}"}
-        questions = self.client.post("/api/roadmap/assessment/questions",
+        questions = self.client.post("/api/roadmap/assessment/questions", headers=headers,
                                      json={"career_id": SOFTWARE_DEVELOPERS, "c1_skills": skills}).json()["skills"]
         body = {"career_id": SOFTWARE_DEVELOPERS, "confidence": [{"skill_id": q["skill_id"], "rating": 2} for q in questions],
                 "preferences": {"learning_methods": ["video_tutorials"], "weekly_hours": "4-6"},

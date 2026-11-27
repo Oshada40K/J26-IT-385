@@ -14,6 +14,12 @@ EVIDENCE_EXTRA_COLUMNS = {"proof_type": "TEXT", "file_path": "TEXT", "file_name"
                           "created_at": "TEXT", "status_reason": "TEXT", "reviewed_at": "TEXT", "review_note": "TEXT"}
 
 
+# Target career taken from Component 03 (c3_link.py). Rows saved before this have NULL in both and are reported
+# as career_source "student_selected_legacy" (the student chose the career then); they are never rewritten.
+ASSESSMENT_EXTRA_COLUMNS = {"career_source": "TEXT", "c3_snapshot_json": "TEXT"}
+LEGACY_CAREER_SOURCE = "student_selected_legacy"
+
+
 def database_path():
     default = Path(__file__).parents[2] / ".data" / "component04.sqlite3"
     return Path(os.getenv("C4_DATABASE_PATH", str(default)))
@@ -38,6 +44,10 @@ def connection():
             readiness_score REAL,
             form_json TEXT NOT NULL)""")
         db.execute("CREATE INDEX IF NOT EXISTS c4_assessments_candidate ON c4_assessments (candidate_id, id)")
+        existing = {row["name"] for row in db.execute("PRAGMA table_info(c4_assessments)")}
+        for column, kind in ASSESSMENT_EXTRA_COLUMNS.items():        # nullable; older rows stay untouched
+            if column not in existing:
+                db.execute(f"ALTER TABLE c4_assessments ADD COLUMN {column} {kind}")
         # Optional proof for claimed skills: pending | provisional | verified | rejected.
         db.execute("""CREATE TABLE IF NOT EXISTS c4_evidence (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -68,18 +78,24 @@ def _record(row):
         return None
     record = dict(row)
     record["form"] = json.loads(record.pop("form_json"))
+    snapshot = record.pop("c3_snapshot_json", None)
+    record["c3_snapshot"] = json.loads(snapshot) if snapshot else None
+    record["career_source"] = record.get("career_source") or LEGACY_CAREER_SOURCE
     record.pop("id", None)
     return record
 
 
 def save(record):
+    snapshot = record.get("c3_snapshot")
     with connection() as db:
         db.execute(
             "INSERT INTO c4_assessments (assessment_id, candidate_id, career_id, career_name, submitted_at, "
-            "previous_assessment_id, c1_assessment_id, readiness_score, form_json) VALUES (?,?,?,?,?,?,?,?,?)",
+            "previous_assessment_id, c1_assessment_id, readiness_score, form_json, career_source, c3_snapshot_json) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
             (record["assessment_id"], record["candidate_id"], record["career_id"], record["career_name"],
              record["submitted_at"], record.get("previous_assessment_id"), record.get("c1_assessment_id"),
-             record.get("readiness_score"), json.dumps(record["form"])))
+             record.get("readiness_score"), json.dumps(record["form"]), record.get("career_source"),
+             json.dumps(snapshot) if snapshot is not None else None))
     return record
 
 
@@ -98,9 +114,10 @@ def history(candidate_id, limit=10):
     if not candidate_id:
         return []
     with connection() as db:
-        rows = db.execute("SELECT assessment_id, career_name, submitted_at, readiness_score FROM c4_assessments "
-                          "WHERE candidate_id=? ORDER BY id DESC LIMIT ?", (candidate_id, limit)).fetchall()
-    return [dict(row) for row in rows]
+        rows = db.execute("SELECT assessment_id, career_name, submitted_at, readiness_score, career_source "
+                          "FROM c4_assessments WHERE candidate_id=? ORDER BY id DESC LIMIT ?",
+                          (candidate_id, limit)).fetchall()
+    return [{**dict(row), "career_source": row["career_source"] or LEGACY_CAREER_SOURCE} for row in rows]
 
 
 EVIDENCE_FIELDS = ("evidence_id", "candidate_id", "skill_id", "type", "url", "status", "submitted_at",

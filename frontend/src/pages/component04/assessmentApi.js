@@ -1,8 +1,8 @@
 // Owner: Dewmi - Component 04: Career Readiness Assessment form API helpers.
-// Reads Component 01 (CV skills) and Component 03 (top careers) through their existing helpers.
+// Reads Component 01 (CV skills) through its existing helper. The target career is decided by the backend from
+// Component 03's recommendation for the signed-in CV candidate; the browser never sends a chosen career.
 import { API_BASE_URL } from '../../api/client.js'
 import { getSkillDetails, savedSession } from '../component01/skillApi.js'
-import { getCareerResult } from '../component03/careerApi.js'
 import { candidateKey, reuse } from '../../api/resourceCache.js'
 
 const ROOT = `${API_BASE_URL}/api/roadmap`
@@ -39,12 +39,26 @@ export function getCareers() {
   return request('/careers')
 }
 
-export function getQuestions(careerId, c1Skills) {
+// The career recommended by Component 03 (rank, score, C03's top 5, fallback). Errors carry .status:
+// 401 not signed in, 409 no CV assessment yet, 422 no supported career, 503/504 Component 03 unavailable.
+export function getRecommendedCareer() {
+  return request('/recommended-career', { headers: authHeaders() })
+}
+
+// Skills to rate for the Component 03 career, decided on the server. expectedCareerId is the career the server
+// itself returned from /recommended-career (never a student choice): if Component 03's result changed in the
+// meantime the server answers 409 instead of silently switching career.
+export function getQuestions(c1Skills, expectedCareerId) {
   return request('/questions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ career_id: careerId, c1_skills: c1Skills }),
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ c1_skills: c1Skills, ...(expectedCareerId ? { career_id: expectedCareerId } : {}) }),
   })
+}
+
+// Has Component 03's recommended career changed since this assessment? Never changes the assessment.
+export function getCareerCheck(assessmentId) {
+  return request(`/${encodeURIComponent(assessmentId)}/career-check`, { headers: authHeaders() })
 }
 
 export async function submitAssessment(payload) {
@@ -117,16 +131,6 @@ export async function loadCvSkills() {
   try {
     const details = await reuse(candidateKey('c01:details'), getSkillDetails) // already loaded by Component 01
     return (details?.skills || []).map(skill => ({ name: skill.name, level: skill.level }))
-  } catch {
-    return []
-  }
-}
-
-// C3's ranked careers for the current candidate (or the sample profile).
-export async function loadCareerMatches() {
-  try {
-    const data = await reuse(candidateKey('c03:topJobs'), () => getCareerResult('topJobs', API_BASE_URL, savedSession())) // already loaded by Component 03
-    return data.jobs || []
   } catch {
     return []
   }

@@ -5,12 +5,12 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
 
-from . import repository, service
+from . import c3_link, repository, service
 from .errors import EvidenceError, LearningError, ModelsUnavailable
 from .evidence_check import MAX_FILE_BYTES
-from .schemas import (AnalysisResponse, AssessmentRecord, AssessmentSaved, AssessmentSubmission, Career, EvidenceDeleted,
-                      EvidenceRecord, EvidenceReview, EvidenceSubmission, LearningAttempt, QuestionRequest,
-                      QuestionResponse)
+from .schemas import (AnalysisResponse, AssessmentRecord, AssessmentSaved, AssessmentSubmission, Career, CareerCheck,
+                      EvidenceDeleted, EvidenceRecord, EvidenceReview, EvidenceSubmission, LearningAttempt,
+                      QuestionRequest, QuestionResponse, RecommendedCareer)
 
 router = APIRouter(prefix="/api/roadmap", tags=["Learning Roadmap & Skill Gap"])
 security = HTTPBearer(auto_error=False)
@@ -35,18 +35,6 @@ async def assessment_careers():
     return service.careers()
 
 
-@router.post("/assessment/questions", response_model=QuestionResponse,
-             summary="Choose 10-15 skills to rate for the selected career")
-async def assessment_questions(body: QuestionRequest):
-    await run_in_threadpool(_engine_or_503)
-    try:
-        career_id, career_name = service.resolve_career(body.career_id, body.career_name)
-    except service.CareerNotSupported as exc:
-        raise HTTPException(404, str(exc)) from exc
-    skills = service.assessment_skills(career_id, [s.model_dump() for s in body.c1_skills])
-    return {"career_id": career_id, "career_name": career_name, "skills": skills}
-
-
 def _candidate(credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(security)]):
     if not credentials:
         return None
@@ -69,14 +57,75 @@ def _owned_record(assessment_id, owner):
     return record
 
 
+# ------------------------------------------------------------------ target career from Component 03
+# The career is decided on the server from Component 03's recommendation for the signed-in CV candidate
+# (c3_link.py). The student cannot choose another career, and there is no fallback to a manual choice or to
+# C03's sample data when C03 has no result.
+C3_C01_LINK = "Upload your CV in Component 01 first: your target career comes from Component 03's recommendation for your CV."
+
+
+def _body_career(career_id=None, career_name=None):
+    """A career still sent by an older client: None, or the C4 career it names (404 when C4 does not know it)."""
+    if not career_id and not career_name:
+        return None
+    try:
+        return service.resolve_career(career_id, career_name)[0]
+    except service.CareerNotSupported as exc:
+        raise HTTPException(404, str(exc)) from exc
+
+
+async def _c3_career(request, owner, body_career=None):
+    """(selection, c3_snapshot) from Component 03 for the owner. 401 not signed in, 409 no CV assessment yet,
+    503 C03 unavailable, 504 C03 timed out, 422 no supported career, 409 body career differs from C03's."""
+    if not owner:
+        raise HTTPException(401, C3_C01_LINK)
+    c1 = await run_in_threadpool(service.c1_profile, owner)
+    if not c1["assessment_id"]:
+        raise HTTPException(409, "No CV assessment was found for you yet. " + C3_C01_LINK)
+    eng = await run_in_threadpool(_engine_or_503)
+    try:
+        selection, snapshot = await c3_link.selected_career(request, owner, eng.req_by_career)
+    except c3_link.C3LinkError as exc:
+        raise HTTPException(exc.status_code, str(exc)) from exc
+    if body_career and body_career != snapshot["selected_career_id"]:
+        raise HTTPException(409, f"Your target career is set by the system from Component 03's recommendation: "
+                                 f"{eng.career_name[snapshot['selected_career_id']]}. A different career "
+                                 f"({eng.career_name[body_career]}) cannot be used. Reload the page to continue "
+                                 "with your recommended career.")
+    return selection, snapshot
+
+
+@router.post("/assessment/questions", response_model=QuestionResponse,
+             summary="Choose 10-15 skills to rate for the career recommended by Component 03",
+             description="Needs the CV session (Bearer token). The career comes from Component 03 on the server; "
+                         "career_id / career_name in the body are optional and must name that career (409 otherwise).")
+async def assessment_questions(body: QuestionRequest, request: Request,
+                               owner: Annotated[str | None, Depends(_candidate)]):
+    if not owner:
+        raise HTTPException(401, C3_C01_LINK)
+    await run_in_threadpool(_engine_or_503)
+    body_career = _body_career(body.career_id, body.career_name)
+    _, snapshot = await _c3_career(request, owner, body_career)
+    career_id, career_name = service.resolve_career(snapshot["selected_career_id"])
+    skills = service.assessment_skills(career_id, [s.model_dump() for s in body.c1_skills])
+    return {"career_id": career_id, "career_name": career_name, "skills": skills}
+
+
 @router.post("/assessment", response_model=AssessmentSaved, status_code=201,
-             summary="Submit the Career Readiness Assessment form")
-async def submit_assessment(body: AssessmentSubmission, owner: Annotated[str | None, Depends(_candidate)]):
+             summary="Submit the Career Readiness Assessment form (career from Component 03)",
+             description="Needs the CV session. Saves the Component 03 result used (c3_snapshot) with "
+                         "career_source \"c3\". career_id in the body is optional; a different career -> 409.")
+async def submit_assessment(body: AssessmentSubmission, request: Request,
+                            owner: Annotated[str | None, Depends(_candidate)]):
     if body.candidate_id and body.candidate_id != owner:
         raise HTTPException(403, "You cannot submit an assessment for another candidate.")
+    if not owner:
+        raise HTTPException(401, C3_C01_LINK)
     await run_in_threadpool(_engine_or_503)
+    body_career = _body_career(body.career_id)
+    _, snapshot = await _c3_career(request, owner, body_career)
     try:
-        return await run_in_threadpool(service.save_assessment, body, owner)
+        return await run_in_threadpool(service.save_assessment, body, owner, snapshot)
     except service.CareerNotSupported as exc:
         raise HTTPException(404, str(exc)) from exc
     except ValueError as exc:
@@ -91,9 +140,41 @@ async def latest_assessment(owner: Annotated[str | None, Depends(_candidate)]):
     return await run_in_threadpool(repository.latest_for, owner)
 
 
+# Declared before /assessment/{assessment_id} so "recommended-career" is not read as an assessment ID.
+@router.get("/assessment/recommended-career", response_model=RecommendedCareer,
+            summary="The target career decided from Component 03 for the signed-in CV candidate",
+            description="Read-only. Rule c4_engine.C3_CAREER_RULE: top5_supported (highest-ranked C03 job C4 supports) "
+                        "or strict_top1. 401 not signed in, 409 no CV assessment yet, 422 no supported career in "
+                        "C03's top 5, 503 Component 03 unavailable, 504 Component 03 timed out.")
+async def recommended_career(request: Request, owner: Annotated[str | None, Depends(_candidate)]):
+    _, snapshot = await _c3_career(request, owner)
+    return service.c3_view(snapshot)
+
+
 @router.get("/assessment/{assessment_id}", response_model=AssessmentRecord, summary="Stored assessment answers")
 async def get_assessment(assessment_id: str, owner: Annotated[str | None, Depends(_candidate)]):
     return await run_in_threadpool(_owned_record, assessment_id, owner)
+
+
+@router.get("/assessment/{assessment_id}/career-check", response_model=CareerCheck,
+            summary="Has Component 03's recommended career changed since this assessment? (never changes it)",
+            description="Compares the saved career with Component 03's current selection, e.g. after a new CV. "
+                        "The UI asks the student to regenerate; nothing is changed automatically.")
+async def career_check(assessment_id: str, request: Request, owner: Annotated[str | None, Depends(_candidate)]):
+    record = await run_in_threadpool(_owned_record, assessment_id, owner)
+    _, snapshot = await _c3_career(request, owner)
+    current = service.c3_view(snapshot)
+    saved_view = service.c3_view(record.get("c3_snapshot"))
+    legacy = record["career_source"] != c3_link.CAREER_SOURCE_C3
+    changed = current["career_id"] != record["career_id"]
+    message = (f"Component 03 now recommends {current['career_name']} for your CV, but this roadmap was built for "
+               f"{record['career_name']}." if changed else None)
+    return {"assessment_id": assessment_id, "changed": changed, "legacy": legacy,
+            "saved": {"career_id": record["career_id"], "career_name": record["career_name"],
+                      "career_source": record["career_source"],
+                      "c3_rank": saved_view["c3_rank"] if saved_view else None,
+                      "c3_score": saved_view["c3_score"] if saved_view else None},
+            "current": current, "message": message}
 
 
 @router.get("/analysis/{assessment_id}", response_model=AnalysisResponse,

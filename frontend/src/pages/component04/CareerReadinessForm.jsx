@@ -1,12 +1,13 @@
 // Owner: Dewmi - Component 04: Career Readiness Assessment form.
-// Collects skill confidence, learning preferences and practical experience for the career
-// selected from the Component 03 recommendations. Roadmap generation is not part of this form.
+// Collects skill confidence, learning preferences and practical experience for the target career, which the
+// system decides on the server from Component 03's recommendation (read-only here; the student cannot choose
+// another career). Roadmap generation is not part of this form.
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
 import Icon from '../../components/Icon.jsx'
 import { ErrorState, PageLoader, SkeletonForm, Spinner } from '../../components/loading/index.js'
-import { getCareers, getQuestions, loadCareerMatches, loadCvSkills, submitAssessment } from './assessmentApi.js'
+import { getQuestions, getRecommendedCareer, loadCvSkills, submitAssessment } from './assessmentApi.js'
 import { cached, candidateKey, hasCached, invalidate, peek } from '../../api/resourceCache.js'
+import C3CareerCard, { C3CareerError } from './C3Career.jsx'
 import './CareerReadinessForm.css'
 
 const CONFIDENCE_PROMPT = 'Rate how confident you are that you can use this skill to complete a practical task.'
@@ -42,7 +43,6 @@ const EXPERIENCE = [
 ]
 const MAX_COUNT = 1000
 const emptyExperience = { num_projects: '', num_certifications: '', num_internships: '' }
-const norm = value => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ')
 
 function experienceError(value) {
   if (String(value).trim() === '') return 'Enter a number. Use 0 if you have none.'
@@ -71,41 +71,6 @@ const fieldId = key => key.startsWith('skill-') ? `c4-${key}-0` : key === 'metho
 
 function FieldError({ id, message }) {
   return message ? <p className="c4-field-error" id={id} role="alert">{message}</p> : null
-}
-
-function CareerPicker({ careers, matches, careerId, onChange, cvSkillCount }) {
-  return <section className="card c4-career" aria-labelledby="c4-career-title">
-    <div className="c4-section-heading">
-      <span className="component-icon"><Icon name="career" size={22} /></span>
-      <div><h2 id="c4-career-title">Selected career</h2><p className="muted">The assessment is tailored to the career you want to work towards.</p></div>
-    </div>
-    {matches.length > 0 && <>
-      <p className="c4-label">Your Component 03 career matches</p>
-      <div className="c4-match-list" role="radiogroup" aria-label="Component 03 career matches">
-        {matches.map(match => {
-          const supported = Boolean(match.careerId)
-          const selected = supported && match.careerId === careerId
-          return <label key={match.ranking} className={`c4-match ${selected ? 'is-selected' : ''} ${supported ? '' : 'is-disabled'}`}>
-            <input type="radio" name="c4-career-match" disabled={!supported} checked={selected} onChange={() => onChange(match.careerId)} />
-            <span className="rank-badge">{match.ranking}</span>
-            <span className="c4-match-text"><strong>{match.job}</strong><small>{supported ? `Match score ${Number(match.score).toFixed(1)}` : 'Not covered by Component 04'}</small></span>
-            {selected && <Icon name="check" size={17} />}
-          </label>
-        })}
-      </div>
-    </>}
-    <label className="c4-label" htmlFor="c4-career-select">{matches.length ? 'Or choose another IT career' : 'Choose your target career'}</label>
-    <select id="c4-career-select" value={careerId} onChange={event => onChange(event.target.value)}>
-      <option value="" disabled>Select a career</option>
-      {careers.map(career => <option key={career.career_id} value={career.career_id}>{career.career_name}</option>)}
-    </select>
-    <p className="c4-source-note">
-      <Icon name="spark" size={15} />
-      {cvSkillCount
-        ? `Skills are selected from the O*NET requirements for this career and the ${cvSkillCount} skills found in your CV.`
-        : <>Skills are selected from the O*NET requirements for this career. <Link to="/">Upload your CV</Link> to include your own skills.</>}
-    </p>
-  </section>
 }
 
 function ProgressCard({ sections, percent }) {
@@ -151,7 +116,6 @@ function previousAnswers(record) {
   const prefs = form.preferences || {}
   const activity = form.activity || {}
   return {
-    careerId: record?.career_id || '',
     ratings: Object.fromEntries((form.confidence || []).map(c => [c.skill_id, c.rating === null ? 'not_studied' : c.rating])),
     methods: prefs.learning_methods || [],
     otherText: prefs.learning_methods_other || '',
@@ -160,30 +124,24 @@ function previousAnswers(record) {
   }
 }
 
-// Career list, C03 matches and C01 skills -> picker data, plus the career to preselect:
-// one passed from Component 03 takes priority, then the best supported match.
-function deriveBoot({ careers, jobs, cvSkills }, state) {
-  const byName = Object.fromEntries(careers.map(c => [norm(c.career_name), c.career_id]))
-  const matches = jobs.map(job => ({ ...job, careerId: byName[norm(job.job)] || '' }))
-  const passed = state?.careerId || byName[norm(state?.careerName)]
-  const preferred = careers.some(c => c.career_id === passed) ? passed : matches.find(m => m.careerId)?.careerId || ''
-  return { boot: { loading: false, error: '', careers, matches, cvSkills }, preferred }
-}
-
-const questionsKey = (careerId, cvSkills) => `c04:questions:${careerId}:${JSON.stringify(cvSkills)}`
+// Cache keys include the CV candidate (candidateKey); a new CV upload clears every cache (HeroUpload.jsx), and
+// LearningRoadmap clears these before regenerating for a changed Component 03 recommendation.
+export const RECOMMENDED_KEY = 'c04:recommended'
+export const QUESTIONS_PREFIX = 'c04:questions:'
+const questionsKey = (careerId, cvSkills) => candidateKey(`${QUESTIONS_PREFIX}${careerId}:${JSON.stringify(cvSkills)}`)
+const loadedBoot = data => ({ loading: false, error: null, c3: data.c3, cvSkills: data.cvSkills })
 
 export default function CareerReadinessForm({ initialRecord = null, onSubmitted, onCancel }) {
-  const location = useLocation()
   const [initial] = useState(() => previousAnswers(initialRecord))
   // Reopening the form (e.g. "Update my assessment") reuses the data loaded last time, so it
-  // renders immediately instead of flashing a loader.
-  const bootKey = candidateKey('c04:boot')
-  const [cachedBoot] = useState(() => hasCached(bootKey) ? deriveBoot(peek(bootKey), location.state) : null)
-  const [boot, setBoot] = useState(() => cachedBoot?.boot ?? { loading: true, error: '', careers: [], matches: [], cvSkills: [] })
+  // renders immediately instead of flashing a loader. Failed requests are never cached.
+  const bootKey = candidateKey(RECOMMENDED_KEY)
+  const [cachedBoot] = useState(() => hasCached(bootKey) ? loadedBoot(peek(bootKey)) : null)
+  const [boot, setBoot] = useState(() => cachedBoot ?? { loading: true, error: null, c3: null, cvSkills: [] })
   const [reload, setReload] = useState(0)
-  const [careerId, setCareerId] = useState(() => initial.careerId || cachedBoot?.preferred || '')
+  const careerId = boot.c3?.career_id || ''         // decided by the system from Component 03, never by the student
   const [questions, setQuestions] = useState(() => {
-    const key = cachedBoot && careerId && questionsKey(careerId, cachedBoot.boot.cvSkills)
+    const key = cachedBoot && careerId && questionsKey(careerId, cachedBoot.cvSkills)
     return { loading: false, error: '', data: key && hasCached(key) ? peek(key) : null }
   })
   const [questionsRetry, setQuestionsRetry] = useState(0)
@@ -195,22 +153,26 @@ export default function CareerReadinessForm({ initialRecord = null, onSubmitted,
   const [attempted, setAttempted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const [submitStatus, setSubmitStatus] = useState(null)
 
   useEffect(() => {
     if (cachedBoot && reload === 0) return undefined
     let active = true
-    setBoot(prev => ({ ...prev, loading: true, error: '' }))
-    cached(bootKey, () => Promise.all([getCareers(), loadCareerMatches(), loadCvSkills()])
-      .then(([careers, jobs, cvSkills]) => ({ careers, jobs, cvSkills }))).then(raw => {
-      // No C03 matches usually means that service failed; try again next time instead of caching it.
-      if (!raw.jobs.length) invalidate(bootKey)
-      if (!active) return
-      const { boot: next, preferred } = deriveBoot(raw, location.state)
-      setBoot(next)
-      setCareerId(current => current || preferred)
-    }).catch(error => { if (active) setBoot(prev => ({ ...prev, loading: false, error: error.message })) })
+    setBoot(prev => ({ ...prev, loading: true, error: null }))
+    cached(bootKey, () => Promise.all([getRecommendedCareer(), loadCvSkills()])
+      .then(([c3, cvSkills]) => ({ c3, cvSkills }))).then(data => {
+      if (active) setBoot(loadedBoot(data))
+    }).catch(error => { if (active) setBoot({ loading: false, error, c3: null, cvSkills: [] }) })
     return () => { active = false }
   }, [reload]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Component 03's recommendation changed after the form was loaded (server answered 409): load it again.
+  function reloadRecommendation() {
+    invalidate(bootKey)
+    invalidate(QUESTIONS_PREFIX)
+    setSubmitError('')
+    setReload(v => v + 1)
+  }
 
   // Wait for the CV skills: asking earlier fetched the questions twice and blanked the form in between.
   useEffect(() => {
@@ -223,9 +185,10 @@ export default function CareerReadinessForm({ initialRecord = null, onSubmitted,
     }
     let active = true
     setQuestions({ loading: true, error: '', data: null })
-    cached(key, () => getQuestions(careerId, boot.cvSkills))
+    // careerId is the server's own Component 03 selection, sent back only so a changed recommendation gives 409.
+    cached(key, () => getQuestions(boot.cvSkills, careerId))
       .then(data => { if (active) setQuestions({ loading: false, error: '', data }) })
-      .catch(error => { if (active) setQuestions({ loading: false, error: error.message, data: null }) })
+      .catch(error => { if (active) setQuestions({ loading: false, error: error.message, status: error.status, data: null }) })
     return () => { active = false }
   }, [careerId, boot.loading, boot.cvSkills, questionsRetry])
 
@@ -250,6 +213,7 @@ export default function CareerReadinessForm({ initialRecord = null, onSubmitted,
     event.preventDefault()
     setAttempted(true)
     setSubmitError('')
+    setSubmitStatus(null)
     const found = validate(skills, form)
     const first = Object.keys(found)[0]
     if (first) {
@@ -260,6 +224,8 @@ export default function CareerReadinessForm({ initialRecord = null, onSubmitted,
     }
     setSubmitting(true)
     try {
+      // No student-chosen career: career_id is the Component 03 career the server returned for this form, so
+      // the server rejects the submission (409) if Component 03's recommendation changed after the form loaded.
       const result = await submitAssessment({
         career_id: careerId,
         confidence: skills.map(s => ({ skill_id: s.skill_id, rating: ratings[s.skill_id] === 'not_studied' ? null : ratings[s.skill_id] })),
@@ -269,6 +235,7 @@ export default function CareerReadinessForm({ initialRecord = null, onSubmitted,
       onSubmitted?.(result)
     } catch (error) {
       setSubmitError(error.message)
+      setSubmitStatus(error.status ?? null)
     } finally {
       setSubmitting(false)
     }
@@ -276,15 +243,14 @@ export default function CareerReadinessForm({ initialRecord = null, onSubmitted,
 
   return <>
     {boot.loading ? <PageLoader variant="roadmap" label="Loading your assessment…" skeleton={<SkeletonForm fields={3} />}
-      messages={['Preparing Your Readiness Assessment…', 'Loading careers and your CV skills…', 'Matching your top careers…']} />
-      : boot.error ? <ErrorState title="We could not prepare your assessment" message={boot.error} onRetry={() => setReload(v => v + 1)} />
+      messages={['Preparing Your Readiness Assessment…', 'Loading your Component 03 career and your CV skills…', 'Checking your recommended career…']} />
+      : boot.error ? <C3CareerError error={boot.error} onRetry={() => setReload(v => v + 1)} />
       : <>
-        <CareerPicker careers={boot.careers} matches={boot.matches} careerId={careerId} cvSkillCount={boot.cvSkills.length}
-          onChange={id => { setCareerId(id); setSubmitError('') }} />
+        <C3CareerCard c3={boot.c3} cvSkillCount={boot.cvSkills.length} />
 
-        {!careerId ? <div className="card c4-empty"><p>Select a career above to start the assessment.</p></div>
-          : questions.loading ? <div className="fx-delayed"><SkeletonForm fields={3} label="Preparing skills for this career…" /></div>
-          : questions.error ? <ErrorState title="We could not load the skills for this career" message={questions.error} onRetry={() => setQuestionsRetry(v => v + 1)} />
+        {questions.loading ? <div className="fx-delayed"><SkeletonForm fields={3} label="Preparing skills for this career…" /></div>
+          : questions.error ? <ErrorState title="We could not load the skills for this career" message={questions.error}
+            onRetry={questions.status === 409 ? reloadRecommendation : () => setQuestionsRetry(v => v + 1)} />
           : questions.data && <form className="c4-form fx-reveal" onSubmit={handleSubmit} noValidate>
             <ProgressCard sections={sections} percent={percent} />
 
@@ -356,7 +322,10 @@ export default function CareerReadinessForm({ initialRecord = null, onSubmitted,
               </div>
             </section>
 
-            {submitError && <p className="c4-error-summary" role="alert">{submitError}</p>}
+            {submitError && <div className="c4-error-summary" role="alert">
+              <span>{submitError}</span>
+              {submitStatus === 409 && <button type="button" className="button-secondary" onClick={reloadRecommendation}>Load my recommended career again</button>}
+            </div>}
             <div className="c4-submit">
               <p className="muted">Your responses are used only for this research assessment.</p>
               <div className="c4-submit-actions">

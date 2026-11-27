@@ -5,7 +5,7 @@ Owner: Dewmi. Frontend: `frontend/src/pages/component04/`. Route: `/component04`
 ## Flow
 
 1. **C1** extracts skills and evidence levels (0–5) from the student's CV.
-2. **C3** recommends careers. The C4 page lists C3's top five; careers C4 supports can be selected (32 O*NET IT occupations).
+2. **C3** recommends careers. **The target career is decided by the system on the server from C3's recommendation for the signed-in student** (see [Target career from Component 03](#target-career-from-component-03)); the student sees it read-only with C3's top five and cannot choose another career.
 3. **C4 assessment form** collects confidence ratings for 10–15 career skills, learning methods, weekly hours, projects, certifications and internships.
 4. **C4 analysis** (`GET /api/roadmap/analysis/{assessment_id}`) is recomputed on every request from the **latest** C1 CV assessment and the stored form, so the roadmap changes when the CV is re-uploaded or the assessment is updated.
 5. **C4 learning coach** (`/api/roadmap/learning/...`) teaches the roadmap skills: placement per skill (with a diagnostic when evidence lets the student skip basics or a skill is only claimed), adapted lessons, quizzes, feedback and an adaptive decision. Mastered stages feed back into step 4 as capped C4 evidence, so the roadmap and readiness regenerate.
@@ -16,6 +16,7 @@ Owner: Dewmi. Frontend: `frontend/src/pages/component04/`. Route: `/component04`
 |---|---|
 | `c4_engine.py` | Engine shared with the training notebook. Feature code unchanged; severity, status/message and verify steps added. |
 | `analysis.py` | Student-facing analysis built on the engine and trained models (the five features below). |
+| `c3_link.py` | Read-only link to Component 03: calls C03's public `service.recommend` for the signed-in candidate and stores a `c3_snapshot`. |
 | `service.py` | Skill selection for the form, C1 integration (read-only), saving assessments. |
 | `repository.py` | Component-local SQLite store (`backend/.data/component04.sqlite3`, override with `C4_DATABASE_PATH`). |
 | `router.py` | API under `/api/roadmap`. |
@@ -25,6 +26,22 @@ Owner: Dewmi. Frontend: `frontend/src/pages/component04/`. Route: `/component04`
 | `lesson_provider.py` | Optional AI lesson generation (server-side key only); output must pass the same validation. |
 | `trained_models/` | `A_gap.joblib`, `A_severity.joblib`, `C_readiness.joblib`, `D_forecast.joblib`, `c4_config.json`. |
 | `inputs/` | O*NET requirements, skills catalogue, prerequisites, learning resources. |
+
+## Target career from Component 03
+
+The target career is **not** chosen by the student. On every career-dependent request the server calls Component 03 for the signed-in CV candidate and applies one rule. The learning path for that career still adapts to the student (CV level, quick checks, quiz results, learning style); that logic is unchanged.
+
+- **How C03 is called.** `c3_link._call_c03` awaits C03's public `app.component03_career.service.recommend(request, candidate_id)` (read-only; C03 is not changed). `candidate_id` is always the owner of the Bearer token (`router._candidate`), and C03 forwards the same token to C01 `/api/component01/skills/{candidate_id}/details`. C04 refuses before calling C03 when there is no token (401) or no completed C01 CV assessment (409), so C03's sample-data path (`candidate_id=None`) is never used. The whole call is limited to `C3_TIMEOUT_SECONDS = 30` (C03's own upstream fetches time out after 10 s). The C04 handlers are `async` and await C03 on the event loop, so C03's loopback HTTP calls work with a single uvicorn worker.
+- **Rule** (`c4_engine.C3_CAREER_RULE`, one pure function `select_career_from_c3`, also used by `student_from_json`):
+  - `top5_supported` (default): the highest-ranked C3 job whose O*NET code C4 supports. If C3's #1 is outside C4, the next supported job is used and the fallback is recorded.
+  - `strict_top1`: only C3's #1; if C4 does not support it there is no roadmap.
+  Jobs are matched by `onet_soc_code`, then `onet_code`, then the normalised title (the training notebook's `c3_json` has titles only and gives the same result as before).
+- **Errors** (clear messages, never a fallback to a manual choice): 401 not signed in, 409 no CV assessment yet, 422 no supported career under the rule, 503 C03 unavailable, 504 C03 timed out. A `career_id`/`career_name` in a request body that differs from C03's career is rejected with 409, never silently switched; an unknown one is 404.
+- **Snapshot.** Each new assessment stores `career_source = "c3"` and `c3_snapshot` (column `c3_snapshot_json`): `onet_version, model_type, retrieved_at, rule, jobs` (all five: `rank, onet_soc_code, job_title, score`), `selected_rank, selected_career_id, top1_supported, fallback_used, fallback_reason`. The analysis converts it to the engine's `c3_json` shape only when calling `student_from_json`, so C3's warnings (e.g. C3's #1 is outside C4) reach the results, plus the new fields `career_source` and `c3_recommendation`. The analysis uses the stored snapshot and never calls C03, so a roadmap does not change on its own.
+- **Legacy assessments** (saved before this change) have no snapshot and are reported as `career_source = "student_selected_legacy"`. They still load and analyse; they are never rewritten. The UI asks the student to generate a roadmap for their recommended career.
+- **Endpoints:** `GET /api/roadmap/assessment/recommended-career` (the selected career, its C3 rank and score, C3's #1, the five jobs with `supported`/`selected`, fallback and rule) and `GET /api/roadmap/assessment/{id}/career-check` (`{changed, legacy, saved, current, message}`; read-only, so the UI can offer to regenerate after a new CV).
+
+**Limits of the C3 link.** C3 ranks 889 O*NET 30.0 occupations and C4 covers 32 IT careers; 27 overlap by code (identical titles). C3 can recommend careers C4 cannot build (anything outside those 27). Five C4 careers can never be recommended by C3 because they are not in C3's catalogue: 15-1255.00 Web and Digital Interface Designers, 15-1299.04 Penetration Testers, 15-1299.06 Digital Forensics Analysts, 15-1299.07 Blockchain Engineers, 15-2051.00 Data Scientists. C3's soft-skill input is Component 02's fixed sample profile (`/api/personality/profile`), so C3's ranking (and therefore the C4 career) reflects the student's CV only. C3's scores are prototype match scores, not suitability probabilities. C3 calls the backend over HTTP at `CAREER_UPSTREAM_BASE_URL` (default `http://127.0.0.1:$PORT`, port 8000), which must point at the running server.
 
 ## Methods
 
@@ -163,6 +180,7 @@ Opening a lesson and practical self-checks are recorded but never count as evide
 - `job_postings_monthly.csv` is labelled **synthetic**, so the demand-trend signal (and `D_forecast`) is not shown to students; real O*NET flags are used instead.
 - ESCO URIs are empty in the datasets, so ESCO is not used.
 - The readiness score summarises evidence for one career; it is not an employment probability.
+- The career comes from Component 03 (see [Target career from Component 03](#target-career-from-component-03) for its limits): careers outside C4's 32, C4 careers C3 cannot recommend, and C3's fixed Component 02 sample input.
 - C1 skills not in the 85-skill C4 catalogue are listed in the results and ignored.
 - Tutor thresholds are design settings, not validated with real students. Short answers are graded by keywords, not by a person. Curated lessons cover 6 skills; others are self-study unless AI lessons are configured. Lesson quizzes are C4's own checks, so they never raise a skill above 3/5; Component 01 (an updated CV) is still needed for verified levels.
 
@@ -178,6 +196,7 @@ The models were saved with scikit-learn 1.6.1 / NumPy 2.x; the backend pins scik
 cd backend
 .venv\Scripts\python -m unittest tests.component04_roadmap.test_c4 -v   # C4 only
 .venv\Scripts\python -m unittest tests.component04_roadmap.test_tutor tests.component04_roadmap.test_learning_api -v   # learning coach
+.venv\Scripts\python -m unittest tests.component04_roadmap.test_c3_link -v   # career from Component 03 (stub C03, never the real model)
 .venv\Scripts\python -m unittest discover -s tests                   # whole backend (as in CI)
 ```
 

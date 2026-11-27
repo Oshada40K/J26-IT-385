@@ -9,7 +9,9 @@ Component 4 – Learning Roadmap & Skill Gap Analyzer: the engine used in TRAINI
 Inputs (same formats as the team's components):
   c1_json   Component 1 output: {"candidate_id", "skills": [{"name", "level" 0–5, "confidence" low/medium/high}, ...]}
   c3_json   Component 3 output: {"top_jobs": {"candidate_id", "jobs": [{"ranking", "job", "score"}, ...]}}
-  form_json C4 frontend form:   {"candidate_id", "career_id" (optional, the student's chosen career),
+            (each job may also carry "onet_soc_code" or "onet_code"; matching is code first, then title)
+  form_json C4 frontend form:   {"candidate_id", "career_id" (optional; in the live system this is the career
+                                 select_career_from_c3 chose from Component 3, never a student choice),
                                  "confidence": [{"skill_id", "rating": 1–5 | null = not studied}],
                                  "preferences": {...}, "activity": {...}}
 Training and live use share the same feature code, so the models see identical inputs in both.
@@ -127,6 +129,65 @@ def band_of(score):
     return BANDS[-1][1]
 
 
+# ---------------------------------------------------------------------- target career from Component 3
+# The target career is decided by the system from Component 3's ranked jobs (never chosen by the student).
+#   "top5_supported": the highest-ranked C3 job that C4 has a roadmap for (C3's #1 when it is supported)
+#   "strict_top1":    only C3's rank-1 job; when C4 does not support it there is no roadmap
+C3_CAREER_RULES = ("top5_supported", "strict_top1")
+C3_CAREER_RULE = "top5_supported"
+
+
+class NoSupportedCareer(ValueError):
+    """Component 3's ranked jobs contain no career C4 can build a roadmap for under the rule."""
+
+
+def c3_job_options(jobs, supported_ids, title_to_code=None):
+    """C3 jobs -> career_options sorted by rank: [{rank, career_name, career_id, c3_score, supported}].
+    Each job is matched by onet_soc_code (C3's service output), then onet_code, then the normalised title
+    (title_to_code; the training notebook's c3_json has titles only). Accepts rank/ranking, job_title/job,
+    score/match_score_0_to_100."""
+    title_to_code = title_to_code or {}
+    options = []
+    for j in jobs:
+        rank = j.get("rank", j.get("ranking"))
+        name = j.get("job_title", j.get("job"))
+        code = j.get("onet_soc_code") or j.get("onet_code") or title_to_code.get(_norm(name or ""))
+        score = j.get("score", j.get("match_score_0_to_100"))
+        options.append(dict(rank=rank, career_name=name, career_id=code, c3_score=score,
+                            supported=code in supported_ids))
+    return sorted(options, key=lambda o: 99 if o["rank"] is None else o["rank"])
+
+
+def select_career_from_c3(jobs, supported_ids, rule=None, title_to_code=None):
+    """The single career-selection rule (pure). jobs: C3's ranked jobs (see c3_job_options).
+    Returns {career_id, career_name, rank, score, top1, top1_supported, fallback_used, fallback_reason, rule,
+    options}; raises NoSupportedCareer when the rule finds no supported career."""
+    rule = rule or C3_CAREER_RULE
+    if rule not in C3_CAREER_RULES:
+        raise ValueError(f"Unknown C3 career rule '{rule}'. Use one of {C3_CAREER_RULES}.")
+    options = c3_job_options(jobs, supported_ids, title_to_code)
+    top1 = options[0] if options else None
+    if rule == "strict_top1":
+        chosen = top1 if top1 and top1["supported"] else None
+        if not chosen:
+            raise NoSupportedCareer(
+                f"Component 3's #1 career '{top1['career_name']}' is outside C4's IT occupations, and the rule "
+                f"'strict_top1' builds a roadmap only for C3's #1 career" if top1
+                else "Component 3 returned no careers")
+    else:
+        supported = [o for o in options if o["supported"]]
+        if not supported:
+            raise NoSupportedCareer("None of Component 3's careers is supported by Component 4")
+        chosen = supported[0]
+    fallback = top1 is not None and chosen is not top1
+    return dict(career_id=chosen["career_id"], career_name=chosen["career_name"], rank=chosen["rank"],
+                score=chosen["c3_score"], top1=top1, top1_supported=bool(top1 and top1["supported"]),
+                fallback_used=fallback,
+                fallback_reason=(f"C3's top job '{top1['career_name']}' is outside C4's IT occupations; "
+                                 f"using '{chosen['career_name']}'") if fallback else None,
+                rule=rule, options=options)
+
+
 class C4Engine:
     def __init__(self, inputs_dir, models_dir=None):
         rd = lambda f: pd.read_csv(os.path.join(inputs_dir, f))
@@ -191,7 +252,10 @@ class C4Engine:
             return self.by_name[best[0]], "fuzzy"
         return None, "unmapped"
 
-    def student_from_json(self, c1, c3, form=None, target_career_id=None):
+    def student_from_json(self, c1, c3, form=None, target_career_id=None, rule=None, career_from_c3=False):
+        """rule: C3 career rule (default C3_CAREER_RULE). career_from_c3=True means target_career_id was itself
+        selected from this c3 list by select_career_from_c3 (stored C4 assessments), so C3's fallback warning is
+        reported as if the career were selected here."""
         form = form or {}
         cid = c1.get("candidate_id") or form.get("candidate_id")
         c3_cid = (c3.get("top_jobs") or {}).get("candidate_id") or (c3.get("best_job") or {}).get("candidate_id")
@@ -221,22 +285,22 @@ class C4Engine:
         jobs = (c3.get("top_jobs") or {}).get("jobs") or []
         if not jobs and (c3.get("best_job") or {}).get("best_job"):
             jobs = [{"ranking": 1, "job": c3["best_job"]["best_job"], "score": None}]
-        options = []
-        for j in sorted(jobs, key=lambda x: x.get("ranking", 99)):
-            code = j.get("onet_code") or self.title_to_code.get(_norm(j.get("job", "")))
-            options.append(dict(rank=j.get("ranking"), career_name=j.get("job"), career_id=code,
-                                c3_score=j.get("score"), supported=code in self.req_by_career))
+        options = c3_job_options(jobs, self.req_by_career, self.title_to_code)
         chosen = target_career_id or form.get("career_id")
         if chosen and chosen not in self.req_by_career:
             raise ValueError(f"Career {chosen} is not one of C4's {len(self.req_by_career)} occupations")
         if not chosen:
-            sup = [o for o in options if o["supported"]]
-            if not sup:
-                raise ValueError("None of Component 3's careers is supported by Component 4")
-            chosen = sup[0]["career_id"]
-            if options and not options[0]["supported"]:
-                warnings.append(f"C3's top job '{options[0]['career_name']}' is outside C4's IT occupations; "
-                                f"using '{sup[0]['career_name']}'")
+            selection = select_career_from_c3(jobs, self.req_by_career, rule, self.title_to_code)
+            chosen = selection["career_id"]
+            if selection["fallback_used"]:
+                warnings.append(selection["fallback_reason"])
+        elif career_from_c3 and jobs:
+            try:
+                selection = select_career_from_c3(jobs, self.req_by_career, rule, self.title_to_code)
+            except NoSupportedCareer:
+                selection = None
+            if selection and selection["career_id"] == chosen and selection["fallback_used"]:
+                warnings.append(selection["fallback_reason"])
         conf, asked = {}, set()
         for c in form.get("confidence", []):
             sid = c.get("skill_id")

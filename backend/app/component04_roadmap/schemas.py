@@ -9,6 +9,7 @@ LearningMethod = Literal[
     "interactive_exercises", "instructor_led", "group_learning", "other",
 ]
 WeeklyHours = Literal["1-3", "4-6", "7-10", "11-15", "15+"]
+CareerSource = Literal["c3", "student_selected_legacy"]
 
 
 class Career(BaseModel):
@@ -22,15 +23,11 @@ class C1Skill(BaseModel):
 
 
 class QuestionRequest(BaseModel):
+    # The career is decided on the server from Component 03 (c3_link.py). career_id / career_name are optional and
+    # only accepted when they name that same career (otherwise 409); older clients that still send them keep working.
     career_id: str | None = None
     career_name: str | None = None
     c1_skills: list[C1Skill] = Field(default_factory=list, max_length=200)
-
-    @model_validator(mode="after")
-    def needs_career(self):
-        if not self.career_id and not self.career_name:
-            raise ValueError("Provide career_id or career_name.")
-        return self
 
 
 class AssessmentSkill(BaseModel):
@@ -73,7 +70,7 @@ class Experience(BaseModel):
 
 class AssessmentSubmission(BaseModel):
     candidate_id: str | None = None
-    career_id: str
+    career_id: str | None = None          # optional: the server uses Component 03's career; a different one -> 409
     confidence: list[SkillRating] = Field(min_length=1, max_length=15)
     preferences: Preferences
     experience: Experience
@@ -95,6 +92,8 @@ class AssessmentSaved(BaseModel):
     readiness_score: float | None = None
     previous_assessment_id: str | None = None
     status: Literal["submitted"] = "submitted"
+    career_source: CareerSource = "student_selected_legacy"
+    c3_snapshot: dict | None = None
 
 
 class AssessmentRecord(BaseModel):
@@ -106,6 +105,52 @@ class AssessmentRecord(BaseModel):
     readiness_score: float | None = None
     previous_assessment_id: str | None = None
     form: dict
+    career_source: CareerSource = "student_selected_legacy"
+    c3_snapshot: dict | None = None
+
+
+class C3Job(BaseModel):
+    rank: int
+    onet_soc_code: str
+    job_title: str
+    score: float
+    supported: bool                       # C4 has a roadmap for this career
+    selected: bool                        # the career C4 builds the roadmap for
+
+
+class RecommendedCareer(BaseModel):
+    """GET /api/roadmap/assessment/recommended-career: the target career decided from Component 03."""
+    career_id: str
+    career_name: str
+    c3_rank: int
+    c3_score: float | None = None
+    c3_top1: C3Job
+    top1_supported: bool
+    fallback_used: bool
+    fallback_reason: str | None = None
+    rule: Literal["top5_supported", "strict_top1"]
+    onet_version: str | None = None
+    model_type: str | None = None
+    retrieved_at: str | None = None
+    jobs: list[C3Job]
+
+
+class SavedCareer(BaseModel):
+    career_id: str
+    career_name: str
+    career_source: CareerSource
+    c3_rank: int | None = None
+    c3_score: float | None = None
+
+
+class CareerCheck(BaseModel):
+    """GET /api/roadmap/assessment/{id}/career-check. Never changes the assessment."""
+    assessment_id: str
+    changed: bool                         # C03 now selects a different career than the saved one
+    legacy: bool                          # saved before the career came from Component 03
+    saved: SavedCareer
+    current: RecommendedCareer
+    message: str | None = None
 
 
 # Analysis response (GET /api/roadmap/analysis/{id}). extra="allow" keeps every existing field;

@@ -11,7 +11,7 @@ from uuid import uuid4
 
 import httpx
 
-from . import evidence_check, repository
+from . import c3_link, evidence_check, repository
 from .errors import EvidenceError, ModelsUnavailable
 
 MIN_SKILLS, MAX_SKILLS = 10, 15
@@ -93,19 +93,35 @@ def c1_profile(candidate_id):
             "assessment_id": details.get("assessment_id"), "created_at": details.get("created_at")}
 
 
-def _readiness_snapshot(c1, form):
+def _c3_inputs(c3_snapshot, candidate_id):
+    """Stored c3_snapshot -> (c3_json, rule) for analyze_assessment; ({}, None) for legacy assessments."""
+    if not c3_snapshot:
+        return {}, None
+    return c3_link.snapshot_to_c3_json(c3_snapshot, candidate_id), c3_snapshot.get("rule")
+
+
+def _readiness_snapshot(c1, form, c3_snapshot=None):
+    c3, rule = _c3_inputs(c3_snapshot, form.get("candidate_id"))
     try:
-        return engine().analyze_assessment(c1, form)["readiness"]["score"]
+        return engine().analyze_assessment(c1, form, c3=c3, c3_rule=rule)["readiness"]["score"]
     except ModelsUnavailable:
         return None
 
 
-def save_assessment(submission, candidate_id):
+def c3_view(c3_snapshot):
+    """The Component 03 source shown to the student, or None for legacy assessments."""
+    eng = engine()
+    return c3_link.public_view(c3_snapshot, eng.req_by_career, eng.career_name) if c3_snapshot else None
+
+
+def save_assessment(submission, candidate_id, c3_snapshot):
+    """c3_snapshot: from c3_link.selected_career (the router calls Component 03 on the server). The career is
+    always c3_snapshot["selected_career_id"]; the router rejects a different career_id in the body (409)."""
     eng = engine()
     unknown = [c.skill_id for c in submission.confidence if c.skill_id not in eng.name]
     if unknown:
         raise ValueError(f"Unknown skill IDs: {unknown}")
-    career_id, career_name = resolve_career(submission.career_id)
+    career_id, career_name = resolve_career(c3_snapshot["selected_career_id"])
     prefs = submission.preferences
     preferred, secondary = _resource_preferences(prefs.learning_methods)
     # Same shape as c4_engine's form_json, plus the raw form answers.
@@ -133,8 +149,10 @@ def save_assessment(submission, candidate_id):
         "submitted_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "previous_assessment_id": previous["assessment_id"] if previous else None,
         "c1_assessment_id": c1["assessment_id"],
-        "readiness_score": _readiness_snapshot(c1, form),
+        "readiness_score": _readiness_snapshot(c1, form, c3_snapshot),
         "form": form,
+        "career_source": c3_link.CAREER_SOURCE_C3,
+        "c3_snapshot": c3_snapshot,
     }
     repository.save(record)
     return {**record, "status": "submitted"}
@@ -431,7 +449,12 @@ def analysis(record):
     c1 = c1_profile(record["candidate_id"])
     sync_evidence(record["candidate_id"], c1)        # fallback until Component 01 calls on_c1_assessment_updated
     evidence = merge_tutor_evidence(evidence_summary(record["candidate_id"]), record["candidate_id"])
-    out = engine().analyze_assessment(c1, record["form"], evidence)
+    snapshot = record.get("c3_snapshot")
+    c3, rule = _c3_inputs(snapshot, record["candidate_id"])
+    out = engine().analyze_assessment(c1, record["form"], evidence, c3=c3, c3_rule=rule)
+    # New fields only: where the target career came from (Component 03 rank/score, or a legacy student choice).
+    out["career_source"] = record.get("career_source") or repository.LEGACY_CAREER_SOURCE
+    out["c3_recommendation"] = c3_view(snapshot)
     previous = repository.get(record["previous_assessment_id"]) if record.get("previous_assessment_id") else None
     changes = []
     if record.get("c1_assessment_id") and c1["assessment_id"] and c1["assessment_id"] != record["c1_assessment_id"]:

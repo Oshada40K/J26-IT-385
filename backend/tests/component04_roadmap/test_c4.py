@@ -17,6 +17,8 @@ from app.component04_roadmap import evidence_check, service
 from app.component04_roadmap.c4_engine import C_FEATURES
 from app.component04_roadmap.router import router
 
+from .c3_stub import StubC03
+
 SOFTWARE_DEVELOPERS = "15-1252.00"
 REAL_GITHUB_GET = evidence_check._github_get                   # the tests patch it; kept for the HTTP-level test
 MODELS = service.engine().models_available()
@@ -43,11 +45,14 @@ class C4Tests(unittest.TestCase):
         self.github = patch.object(evidence_check, "_github_get",
                                    side_effect=evidence_check.GitHubUnavailable("offline in tests"))
         self.github_get = self.github.start()
+        # Component 03 is replaced by a stub (Software Developers is its #1), so the career comes from "C03".
+        self.c3 = StubC03().start()
         app = FastAPI()
         app.include_router(router)
         self.client = TestClient(app)
 
     def tearDown(self):
+        self.c3.stop()
         self.github.stop()
         self.env.stop()
         self.temp.cleanup()
@@ -60,8 +65,12 @@ class C4Tests(unittest.TestCase):
             c1_repository.save_assessment(session["candidate_id"], b"cv", {"skills": skills, "external_profiles": profiles})
         return session["candidate_id"], {"Authorization": f"Bearer {session['access_token']}"}
 
-    def questions(self, c1_skills=()):
-        response = self.client.post("/api/roadmap/assessment/questions",
+    def questions(self, c1_skills=(), headers=None):
+        """The questions endpoint needs a signed-in CV candidate (its career comes from Component 03); the skills to
+        ask about still come from c1_skills, so a separate candidate with a CV is used when none is given."""
+        if headers is None:
+            _, headers = self.candidate([])
+        response = self.client.post("/api/roadmap/assessment/questions", headers=headers,
                                     json={"career_id": SOFTWARE_DEVELOPERS, "c1_skills": list(c1_skills)})
         self.assertEqual(response.status_code, 200, response.text)
         return response.json()["skills"]
@@ -78,7 +87,8 @@ class C4Tests(unittest.TestCase):
         self.assertTrue(next(s for s in skills if s["skill_name"] == "React")["in_cv"])
 
     def test_unseen_career_is_rejected_safely(self):
-        response = self.client.post("/api/roadmap/assessment/questions", json={"career_name": "Astronaut"})
+        _, headers = self.candidate([])
+        response = self.client.post("/api/roadmap/assessment/questions", headers=headers, json={"career_name": "Astronaut"})
         self.assertEqual(response.status_code, 404)
         self.assertIn("not one of", response.json()["detail"])
 
@@ -104,10 +114,12 @@ class C4Tests(unittest.TestCase):
     def test_missing_models_keep_the_form_working(self):
         with patch.object(service.engine(), "models_dir", Path(self.temp.name) / "missing"), \
              patch.object(service.engine(), "cfg", {}), patch.object(service.engine(), "_models_ready", False):
-            saved = self.client.post("/api/roadmap/assessment", json=form(self.rate_all(self.questions())))
+            _, headers = self.candidate([])
+            saved = self.client.post("/api/roadmap/assessment", headers=headers,
+                                     json=form(self.rate_all(self.questions(headers=headers))))
             self.assertEqual(saved.status_code, 201)
             self.assertIsNone(saved.json()["readiness_score"])
-            response = self.client.get(f"/api/roadmap/analysis/{saved.json()['assessment_id']}")
+            response = self.client.get(f"/api/roadmap/analysis/{saved.json()['assessment_id']}", headers=headers)
             self.assertEqual(response.status_code, 503)
             self.assertIn("missing", response.json()["detail"])
 
