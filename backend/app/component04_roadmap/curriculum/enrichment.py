@@ -6,7 +6,7 @@
 #   video        - one short YouTube video; title and channel are copied exactly from YouTube oEmbed on checked_on
 #   exercises    - interactive practice exercises (EXERCISES at the end of this file), checked on the server; practice
 #                  only, never evidence. See EXERCISES for how they were written and verified.
-# The parts above the EXERCISES table were written by the C4 author, not AI-generated. Merged into the topics by curriculum.load().
+# Drafted with an AI assistant, checked by the curriculum validator and tests, and reviewed by the C4 author. Merged into the topics by curriculum.load().
 
 ENRICHMENT = {
     # ------------------------------------------------------------------ Programming Fundamentals (SK001)
@@ -296,7 +296,7 @@ ENRICHMENT = {
 # ---------------------------------------------------------------------------------------------- interactive exercises
 # Practice exercises, 3 per topic, checked instantly on the server (tutor.check_exercise). They are PRACTICE ONLY: never
 # evidence, never mastery, placement, roadmap or readiness. Drafted with an AI coding assistant from each topic's own
-# explanation and worked example, for the C4 author to review; they are not part of the author-written text above.
+# explanation and worked example, for the C4 author to review.
 #
 # Fields: id, type, language, prompt, hint, explanation, plus
 #   predict_output  code, options, answer (index)     - choose what the code prints (an error is shown by its type name)
@@ -693,13 +693,15 @@ EXERCISES = {
                       "It deletes the feature branch", "It reports a merge conflict"], answer=0,
              hint="If main has no new commits, Git can simply move the main pointer forward.",
              explanation="When main did not change, Git fast-forwards. A merge commit is only needed when both branches have new commits."),
-        dict(id="git-b2-e3", type="find_bug", language="bash", prompt="The goal is to merge fix-typo into main. Which line is wrong?",
+        dict(id="git-b2-e3", type="find_bug", language="bash", prompt="The goal is to merge fix-typo into main. Which is the first wrong line?",
              lines=["git switch -c fix-typo", "git add README.md", "git commit -m \"Fix typo in README\"", "git merge fix-typo",
                     "git branch -d fix-typo"],
              answer=3,
              hint="git merge brings a branch into the branch you are currently on. Which branch are you on at that line?",
              explanation="You are still on fix-typo, so this merges the branch into itself and main never gets the fix. "
-                         "Run git switch main first, then git merge fix-typo."),
+                         "Run git switch main first, then git merge fix-typo. "
+                         "The next line also fails, because Git cannot delete the branch you are on. "
+                         "The fix is to add git switch main before the merge."),
     ],
     "git-i1": [
         dict(id="git-i1-e1", type="find_bug", language="text",
@@ -708,10 +710,12 @@ EXERCISES = {
              hint="Look for the markers Git adds to show a conflict.",
              explanation="The >>>>>>> line is a conflict marker. Remove all <<<<<<<, ======= and >>>>>>> markers before git add and commit."),
         dict(id="git-i1-e2", type="order_steps", language="text", prompt="Put the steps for resolving a merge conflict in order.",
-             lines=["git pull origin main", "Edit rules.py: keep the correct lines and remove the conflict markers", "git add rules.py",
+             lines=["git pull --no-rebase origin main", "Edit rules.py: keep the correct lines and remove the conflict markers", "git add rules.py",
                     "git commit -m \"Merge main and resolve PASS_MARK conflict\"", "git push origin feature-rules"],
              hint="The conflict appears when you bring in teammates' commits; you push only after it is committed.",
-             explanation="Pulling shows the conflict, you edit the file to the correct version, git add marks it resolved, commit finishes the merge, then push."),
+             explanation="Pulling shows the conflict, you edit the file to the correct version, git add marks it resolved, commit finishes the merge, then push. "
+                         "Plain git pull can stop with 'Need to specify how to reconcile divergent branches' when both "
+                         "sides have new commits; --no-rebase tells Git to merge."),
         dict(id="git-i1-e3", type="predict_output", language="bash",
              prompt="A teammate pushed to main. You did not pull. What happens when you push?",
              code="git commit -m \"Update rules\"\ngit push origin main",
@@ -733,7 +737,8 @@ EXERCISES = {
              code="git log --oneline\n# 9f8e7d6 Break the checkout page   (already pushed to main)\ngit ____ 9f8e7d6\ngit push",
              answers=["revert"],
              hint="Which command adds a new commit that undoes an old one?",
-             explanation="git revert creates a new commit that undoes 9f8e7d6, so teammates' history is not rewritten."),
+             explanation="git revert creates a new commit that undoes 9f8e7d6, so teammates' history is not rewritten. "
+                         "Git opens an editor for the commit message: save and close it, or add --no-edit."),
         dict(id="git-a1-e3", type="find_bug", language="bash",
              prompt="Goal: undo the last commit on the shared main branch without rewriting history. Which is the first wrong line?",
              lines=["git switch main", "git pull", "git reset --hard HEAD~1", "git push --force"], answer=2,

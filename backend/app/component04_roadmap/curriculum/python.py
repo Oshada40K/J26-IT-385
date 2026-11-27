@@ -1,4 +1,4 @@
-# Owner: Dewmi - Component 04. Curated lesson bank for Python (SK002). Written by the C4 author, not AI-generated.
+# Owner: Dewmi - Component 04. Curated lesson bank for Python (SK002). Drafted with an AI assistant, checked by the curriculum validator and tests, and reviewed by the C4 author.
 SKILL_ID = "SK002"
 
 TOPICS = [

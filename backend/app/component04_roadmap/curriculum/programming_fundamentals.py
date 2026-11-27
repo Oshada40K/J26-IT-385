@@ -1,4 +1,4 @@
-# Owner: Dewmi - Component 04. Curated lesson bank for Programming Fundamentals (SK001). Written by the C4 author.
+# Owner: Dewmi - Component 04. Curated lesson bank for Programming Fundamentals (SK001). Drafted with an AI assistant, checked by the curriculum validator and tests, and reviewed by the C4 author.
 # Examples use Python because it is the most common first language in the careers C4 supports.
 SKILL_ID = "SK001"
 

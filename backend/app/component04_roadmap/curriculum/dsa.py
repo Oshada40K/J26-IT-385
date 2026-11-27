@@ -1,4 +1,4 @@
-# Owner: Dewmi - Component 04. Curated lesson bank for Data Structures and Algorithms (SK009). Written by the C4 author.
+# Owner: Dewmi - Component 04. Curated lesson bank for Data Structures and Algorithms (SK009). Drafted with an AI assistant, checked by the curriculum validator and tests, and reviewed by the C4 author.
 SKILL_ID = "SK009"
 
 TOPICS = [

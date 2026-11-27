@@ -1,4 +1,4 @@
-# Owner: Dewmi - Component 04. Curated lesson bank for Git (SK014). Written by the C4 author, not AI-generated.
+# Owner: Dewmi - Component 04. Curated lesson bank for Git (SK014). Drafted with an AI assistant, checked by the curriculum validator and tests, and reviewed by the C4 author.
 SKILL_ID = "SK014"
 
 TOPICS = [

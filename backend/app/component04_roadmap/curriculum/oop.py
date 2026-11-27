@@ -1,4 +1,4 @@
-# Owner: Dewmi - Component 04. Curated lesson bank for Object-Oriented Programming (SK008). Written by the C4 author.
+# Owner: Dewmi - Component 04. Curated lesson bank for Object-Oriented Programming (SK008). Drafted with an AI assistant, checked by the curriculum validator and tests, and reviewed by the C4 author.
 SKILL_ID = "SK008"
 
 TOPICS = [
