@@ -5,6 +5,7 @@ import re
 import time
 import httpx
 from .profile_identifier import normalize_identifier
+from .skill_extractor import get_skill_metadata
 
 AUTO_FILES = re.compile(r'(^|/)(?:vendor|node_modules|dist|build|generated)/|(?:^|/)(?:package-lock\.json|yarn\.lock|poetry\.lock|pnpm-lock\.yaml)$|(?:\.lock|\.min\.js|\.svg|\.png|\.jpg)$', re.I)
 CODE = {'.py', '.js', '.jsx', '.ts', '.tsx', '.java', '.go', '.rs', '.c', '.cpp', '.cs', '.rb', '.php', '.sh', '.sql'}
@@ -118,7 +119,7 @@ def collect_usage(handle, cache_window):
     return records, warnings
 
 
-def assess_github_usage(records):
+def assess_github_usage(records, detected_domain=None):
     """Only activity evidence can produce a rating. No expert rating from a small sample."""
     activity = [r for r in records if r.get('skill') == 'GitHub' and r.get('match_method') == 'github_activity_v1']
     commits = {r['url']: r for r in activity if r.get('activity') == 'commit'}
@@ -140,5 +141,41 @@ def assess_github_usage(records):
         level = 4
         reason = 'Substantive multi-project changes, peer-reviewed collaboration, tests, and workflow automation support an advanced estimate; review required.'
     evidence = [{key: r[key] for key in ('source', 'section', 'text', 'url', 'match_method')} for r in [*commits.values(), *pulls.values()]]
-    return {'name': 'GitHub', 'level': level, 'confidence': 'medium' if level >= 3 else 'low',
-            'status': 'needs_review' if level == 4 else 'provisional', 'reason': reason, 'evidence': evidence}
+    primary_domain = (detected_domain or {}).get('primary_domain')
+    meta = get_skill_metadata('GitHub')
+    domains = meta.get('career_fields', [])
+    occupations = meta.get('occupations', [])
+    relevant = True if not primary_domain else any(primary_domain.casefold() in d.casefold() for d in domains) or primary_domain in {'Software Engineering', 'Cloud Computing', 'Data Science', 'AI/ML'}
+    percentage = {1: 24, 2: 42, 3: 68, 4: 84}.get(level, 40)
+    confidence = 'medium' if level >= 3 else 'low'
+    xai = {
+        'why_identified': 'Identified from public GitHub commit and pull request activity.',
+        'match_methods': ['github_activity_v1'],
+        'evidence_types': ['external_corroboration', 'practical_evidence'],
+        'self_reported_only': False,
+        'practical_evidence_count': len(evidence),
+        'score_factors': [
+            {'factor': 'Public GitHub activity', 'points': percentage, 'detail': reason},
+        ],
+        'confidence': confidence,
+        'evidence_limitations': ['Account ownership is unverified; small sample of public repositories.'],
+        'score_disclaimer': 'Estimated proficiency from available evidence, not verified ability.',
+    }
+    return {
+        'name': 'GitHub',
+        'level': level,
+        'percentage': percentage,
+        'proficiency_label': {1: 'Familiarity', 2: 'Basic', 3: 'Intermediate', 4: 'Advanced'}.get(level, 'Basic'),
+        'score_disclaimer': 'Estimated proficiency from available evidence, not verified ability.',
+        'category': 'Tools and platforms',
+        'taxonomy_source': 'github_activity_v1',
+        'is_discovered': False,
+        'occupations': occupations,
+        'domains': domains,
+        'relevant_to_domain': relevant,
+        'confidence': confidence,
+        'status': 'needs_review' if level == 4 else 'provisional',
+        'reason': reason,
+        'evidence': evidence,
+        'xai': xai,
+    }

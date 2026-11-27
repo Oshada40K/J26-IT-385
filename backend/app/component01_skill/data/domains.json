@@ -1,0 +1,309 @@
+{
+  "Software Engineering": {
+    "description": "Designing, building, testing, and maintaining software applications, APIs, and web or mobile systems.",
+    "role_keywords": [
+      "software engineer",
+      "software developer",
+      "full stack developer",
+      "full-stack developer",
+      "frontend developer",
+      "front-end developer",
+      "backend developer",
+      "back-end developer",
+      "web developer",
+      "mobile developer",
+      "application developer",
+      "qa engineer",
+      "quality assurance engineer",
+      "software tester",
+      "test automation engineer",
+      "devops engineer"
+    ],
+    "context_keywords": [
+      "full-stack",
+      "frontend",
+      "backend",
+      "web application",
+      "mobile application",
+      "rest api",
+      "microservices",
+      "unit testing",
+      "integration testing",
+      "regression testing",
+      "automated tests",
+      "code review",
+      "pull requests",
+      "agile",
+      "scrum",
+      "software architecture",
+      "CRUD"
+    ]
+  },
+  "Data Science": {
+    "description": "Applying statistical modeling, experimentation, feature engineering, and predictive analytics to extract insights from data.",
+    "role_keywords": [
+      "data scientist",
+      "applied scientist",
+      "research scientist",
+      "quantitative analyst",
+      "statistical modeler"
+    ],
+    "context_keywords": [
+      "predictive modeling",
+      "statistical modeling",
+      "feature engineering",
+      "hypothesis testing",
+      "a/b testing",
+      "experimentation",
+      "regression analysis",
+      "clustering",
+      "classification",
+      "time series",
+      "exploratory data analysis",
+      "cross-validation",
+      "data modeling",
+      "bayesian"
+    ]
+  },
+  "Data Analytics": {
+    "description": "Transforming, querying, and visualizing business and operational datasets into actionable dashboards and reports.",
+    "role_keywords": [
+      "data analyst",
+      "business intelligence analyst",
+      "BI analyst",
+      "analytics engineer",
+      "reporting analyst",
+      "business analyst",
+      "marketing analyst",
+      "operations analyst"
+    ],
+    "context_keywords": [
+      "business intelligence",
+      "data visualization",
+      "KPI",
+      "KPIs",
+      "reporting",
+      "data cleaning",
+      "ETL",
+      "data pipeline",
+      "cohort analysis",
+      "forecasting",
+      "pivot tables",
+      "executive dashboard",
+      "metrics",
+      "stakeholder reporting"
+    ]
+  },
+  "UI/UX Design": {
+    "description": "Researching user needs and crafting accessible, intuitive user interfaces, wireframes, prototypes, and design systems.",
+    "role_keywords": [
+      "ui/ux designer",
+      "ux designer",
+      "ui designer",
+      "product designer",
+      "interaction designer",
+      "ux researcher",
+      "visual designer"
+    ],
+    "context_keywords": [
+      "wireframe",
+      "wireframing",
+      "prototype",
+      "prototyping",
+      "user research",
+      "usability testing",
+      "user journey",
+      "user flow",
+      "design system",
+      "information architecture",
+      "persona",
+      "accessibility",
+      "WCAG",
+      "typography",
+      "heuristic evaluation",
+      "mockups"
+    ]
+  },
+  "Networking": {
+    "description": "Designing, configuring, monitoring, and troubleshooting network infrastructure, routing, switching, and connectivity.",
+    "role_keywords": [
+      "network engineer",
+      "network administrator",
+      "network technician",
+      "NOC engineer",
+      "network analyst",
+      "network architect",
+      "telecommunications engineer"
+    ],
+    "context_keywords": [
+      "routing",
+      "switching",
+      "subnetting",
+      "VLAN",
+      "VLANs",
+      "VPN",
+      "firewall",
+      "LAN",
+      "WAN",
+      "OSI model",
+      "packet analysis",
+      "network topology",
+      "load balancing",
+      "cisco",
+      "BGP",
+      "OSPF",
+      "DHCP",
+      "DNS"
+    ]
+  },
+  "Cybersecurity": {
+    "description": "Protecting systems, networks, and applications through vulnerability assessment, threat detection, incident response, and security controls.",
+    "role_keywords": [
+      "cybersecurity analyst",
+      "security analyst",
+      "SOC analyst",
+      "penetration tester",
+      "ethical hacker",
+      "information security analyst",
+      "security engineer",
+      "cybersecurity engineer",
+      "appsec engineer",
+      "incident responder"
+    ],
+    "context_keywords": [
+      "vulnerability assessment",
+      "penetration testing",
+      "incident response",
+      "threat modeling",
+      "security audit",
+      "malware analysis",
+      "SIEM",
+      "SOC",
+      "OWASP",
+      "zero trust",
+      "phishing",
+      "exploit",
+      "iso 27001",
+      "NIST",
+      "cryptography",
+      "intrusion detection"
+    ]
+  },
+  "Cloud Computing": {
+    "description": "Architecting, automating, and operating scalable cloud infrastructure, containers, and cloud-native services.",
+    "role_keywords": [
+      "cloud engineer",
+      "cloud architect",
+      "solutions architect",
+      "site reliability engineer",
+      "SRE",
+      "platform engineer",
+      "cloud administrator",
+      "cloud devops engineer"
+    ],
+    "context_keywords": [
+      "cloud infrastructure",
+      "infrastructure as code",
+      "auto-scaling",
+      "cloud migration",
+      "container orchestration",
+      "serverless",
+      "high availability",
+      "multi-region",
+      "VPC",
+      "cloud-native",
+      "deployment pipeline",
+      "monitoring and observability",
+      "helm"
+    ]
+  },
+  "Database Administration": {
+    "description": "Administering, tuning, securing, backing up, and designing relational and NoSQL database systems.",
+    "role_keywords": [
+      "database administrator",
+      "DBA",
+      "database engineer",
+      "sql developer",
+      "database developer",
+      "data architect"
+    ],
+    "context_keywords": [
+      "database administration",
+      "query optimization",
+      "performance tuning",
+      "backup and recovery",
+      "database replication",
+      "schema design",
+      "normalization",
+      "stored procedures",
+      "indexing",
+      "high availability",
+      "ACID",
+      "sharding",
+      "partitioning",
+      "database migration"
+    ]
+  },
+  "IT Support": {
+    "description": "Delivering technical help desk support, endpoint management, system administration, and IT service operations.",
+    "role_keywords": [
+      "it support specialist",
+      "it support technician",
+      "help desk technician",
+      "helpdesk analyst",
+      "service desk analyst",
+      "desktop support engineer",
+      "technical support specialist",
+      "system administrator",
+      "it technician"
+    ],
+    "context_keywords": [
+      "help desk",
+      "service desk",
+      "ticketing",
+      "SLA",
+      "workstation",
+      "desktop support",
+      "hardware troubleshooting",
+      "onboarding",
+      "offboarding",
+      "active directory",
+      "group policy",
+      "remote support",
+      "printer",
+      "ITIL",
+      "patch management"
+    ]
+  },
+  "AI/ML": {
+    "description": "Building, training, fine-tuning, and deploying machine learning, deep learning, NLP, computer vision, and LLM systems.",
+    "role_keywords": [
+      "ai engineer",
+      "machine learning engineer",
+      "ml engineer",
+      "deep learning engineer",
+      "nlp engineer",
+      "computer vision engineer",
+      "ai researcher",
+      "llm engineer",
+      "mlops engineer"
+    ],
+    "context_keywords": [
+      "machine learning",
+      "deep learning",
+      "neural network",
+      "neural networks",
+      "model training",
+      "fine-tuning",
+      "embeddings",
+      "natural language processing",
+      "computer vision",
+      "transformer",
+      "large language model",
+      "retrieval augmented generation",
+      "inference pipeline",
+      "mlops",
+      "reinforcement learning"
+    ]
+  }
+}

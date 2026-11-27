@@ -328,7 +328,7 @@ Reuse `backend/app/database.py` and team conventions. Proposed logical entities 
 **Done when:** A stored assessment is returned via GET with exactly the team's v1.0 JSON shape.
 
 ### Milestone 4 — React integration
-
+ 
 - [ ] Add CV upload form, errors/loading/results states.
 - [ ] Show estimated 1–5 levels and evidence confidence, not definitive expertise.
 - [ ] Ensure API integration uses project-wide auth/base URL conventions.

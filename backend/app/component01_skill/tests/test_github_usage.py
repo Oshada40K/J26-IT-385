@@ -93,6 +93,8 @@ def test_automatic_upload_preserves_cv_and_adds_only_supported_github(links, rec
         result = profile_service.process_cv('candidate', 'cv.pdf', b'cv')
     assert analyzer.call_count == len(links)
     assert [(s['name'], s['level']) for s in result['skills']] == expected
-    assert all(set(s) == {'name', 'level', 'confidence', 'status', 'reason', 'evidence'} for s in result['skills'])
+    required_keys = {'name', 'level', 'percentage', 'proficiency_label', 'score_disclaimer', 'category', 'taxonomy_source', 'is_discovered', 'occupations', 'domains', 'relevant_to_domain', 'confidence', 'status', 'reason', 'evidence', 'xai'}
+    assert all(required_keys <= set(s) for s in result['skills'])
     if not links:
-        assert 'github' not in str(result).lower()
+        assert 'github' not in [s['name'].lower() for s in result['skills']]
+        assert result['source_profiles']['github']['status'] == 'not_provided'

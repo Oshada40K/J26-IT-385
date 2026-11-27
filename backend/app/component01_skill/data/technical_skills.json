@@ -1,445 +1,714 @@
 {
   "Python": {
-    "aliases": [
-      "Python",
-      "Python 3"
-    ],
-    "description": "Programming scripts, applications and automation using Python"
+    "aliases": ["Python", "Python 3"],
+    "description": "Programming scripts, applications and automation using Python",
+    "domains": ["Software Engineering", "Data Science", "Data Analytics", "AI/ML", "Cybersecurity", "Cloud Computing"]
   },
   "JavaScript": {
-    "aliases": [
-      "JavaScript",
-      "JS",
-      "ECMAScript"
-    ],
-    "description": "Practical software development using JavaScript"
+    "aliases": ["JavaScript", "JS", "ECMAScript"],
+    "description": "Practical software development using JavaScript",
+    "domains": ["Software Engineering", "UI/UX Design"]
   },
   "TypeScript": {
-    "aliases": [
-      "TypeScript",
-      "TS"
-    ],
-    "description": "Practical software development using TypeScript"
+    "aliases": ["TypeScript", "TS"],
+    "description": "Practical software development using TypeScript",
+    "domains": ["Software Engineering"]
   },
   "React": {
-    "aliases": [
-      "React",
-      "React.js",
-      "ReactJS"
-    ],
-    "description": "Building user interfaces and reusable components using React"
+    "aliases": ["React", "React.js", "ReactJS"],
+    "description": "Building user interfaces and reusable components using React",
+    "domains": ["Software Engineering", "UI/UX Design"]
   },
   "Node.js": {
-    "aliases": [
-      "Node.js",
-      "NodeJS",
-      "Node JS"
-    ],
-    "description": "Practical software development using Node.js"
+    "aliases": ["Node.js", "NodeJS", "Node JS"],
+    "description": "Practical software development using Node.js",
+    "domains": ["Software Engineering"]
   },
   "Express.js": {
-    "aliases": [
-      "Express.js",
-      "Express",
-      "ExpressJS"
-    ],
-    "description": "Practical software development using Express.js"
+    "aliases": ["Express.js", "Express", "ExpressJS"],
+    "description": "Practical software development using Express.js",
+    "domains": ["Software Engineering"]
   },
   "HTML": {
-    "aliases": [
-      "HTML",
-      "HTML5"
-    ],
-    "description": "Practical software development using HTML"
+    "aliases": ["HTML", "HTML5"],
+    "description": "Practical software development using HTML",
+    "domains": ["Software Engineering", "UI/UX Design"]
   },
   "CSS": {
-    "aliases": [
-      "CSS",
-      "CSS3"
-    ],
-    "description": "Practical software development using CSS"
+    "aliases": ["CSS", "CSS3"],
+    "description": "Practical software development using CSS",
+    "domains": ["Software Engineering", "UI/UX Design"]
   },
   "SQL": {
-    "aliases": [
-      "SQL"
-    ],
-    "description": "Querying relational databases using SQL"
+    "aliases": ["SQL"],
+    "description": "Querying relational databases using SQL",
+    "domains": ["Software Engineering", "Data Science", "Data Analytics", "Database Administration"]
   },
   "PostgreSQL": {
-    "aliases": [
-      "PostgreSQL",
-      "Postgres"
-    ],
-    "description": "Relational database development using PostgreSQL"
+    "aliases": ["PostgreSQL", "Postgres"],
+    "description": "Relational database development using PostgreSQL",
+    "domains": ["Software Engineering", "Database Administration", "Data Analytics"]
   },
   "MongoDB": {
-    "aliases": [
-      "MongoDB"
-    ],
-    "description": "Practical software development using MongoDB"
+    "aliases": ["MongoDB"],
+    "description": "Practical software development using MongoDB",
+    "domains": ["Software Engineering", "Database Administration"]
   },
   "MySQL": {
-    "aliases": [
-      "MySQL"
-    ],
-    "description": "Practical software development using MySQL"
+    "aliases": ["MySQL"],
+    "description": "Practical software development using MySQL",
+    "domains": ["Software Engineering", "Database Administration", "Data Analytics"]
   },
   "SQLite": {
-    "aliases": [
-      "SQLite"
-    ],
-    "description": "Practical software development using SQLite"
+    "aliases": ["SQLite"],
+    "description": "Practical software development using SQLite",
+    "domains": ["Software Engineering", "Database Administration"]
   },
   "Java": {
-    "aliases": [
-      "Java"
-    ],
-    "description": "Practical software development using Java"
+    "aliases": ["Java"],
+    "description": "Practical software development using Java",
+    "domains": ["Software Engineering"]
   },
   "C": {
-    "aliases": [
-      "C"
-    ],
-    "description": "Practical software development using C"
+    "aliases": ["C"],
+    "description": "Practical software development using C",
+    "domains": ["Software Engineering", "Cybersecurity", "Networking"]
   },
   "C++": {
-    "aliases": [
-      "C++",
-      "CPP"
-    ],
-    "description": "Practical software development using C++"
+    "aliases": ["C++", "CPP"],
+    "description": "Practical software development using C++",
+    "domains": ["Software Engineering", "AI/ML"]
   },
   "C#": {
-    "aliases": [
-      "C#",
-      "C Sharp"
-    ],
-    "description": "Practical software development using C#"
+    "aliases": ["C#", "C Sharp"],
+    "description": "Practical software development using C#",
+    "domains": ["Software Engineering"]
   },
   "Go": {
-    "aliases": [
-      "Go",
-      "Golang"
-    ],
-    "description": "Practical software development using Go"
+    "aliases": ["Go", "Golang"],
+    "description": "Practical software development using Go",
+    "domains": ["Software Engineering", "Cloud Computing"]
   },
   "R": {
-    "aliases": [
-      "R"
-    ],
-    "description": "Practical software development using R"
+    "aliases": ["R"],
+    "description": "Practical statistical computing and analysis using R",
+    "domains": ["Data Science", "Data Analytics"]
   },
   "PHP": {
-    "aliases": [
-      "PHP"
-    ],
-    "description": "Practical software development using PHP"
+    "aliases": ["PHP"],
+    "description": "Practical software development using PHP",
+    "domains": ["Software Engineering"]
   },
   "Ruby": {
-    "aliases": [
-      "Ruby"
-    ],
-    "description": "Practical software development using Ruby"
+    "aliases": ["Ruby"],
+    "description": "Practical software development using Ruby",
+    "domains": ["Software Engineering"]
   },
   "Swift": {
-    "aliases": [
-      "Swift"
-    ],
-    "description": "Practical software development using Swift"
+    "aliases": ["Swift"],
+    "description": "Practical software development using Swift",
+    "domains": ["Software Engineering"]
   },
   "Kotlin": {
-    "aliases": [
-      "Kotlin"
-    ],
-    "description": "Practical software development using Kotlin"
+    "aliases": ["Kotlin"],
+    "description": "Practical software development using Kotlin",
+    "domains": ["Software Engineering"]
   },
   "Rust": {
-    "aliases": [
-      "Rust"
-    ],
-    "description": "Practical software development using Rust"
+    "aliases": ["Rust"],
+    "description": "Practical software development using Rust",
+    "domains": ["Software Engineering", "Cybersecurity"]
   },
   "Dart": {
-    "aliases": [
-      "Dart"
-    ],
-    "description": "Practical software development using Dart"
+    "aliases": ["Dart"],
+    "description": "Practical software development using Dart",
+    "domains": ["Software Engineering"]
   },
   "Flutter": {
-    "aliases": [
-      "Flutter"
-    ],
-    "description": "Practical software development using Flutter"
+    "aliases": ["Flutter"],
+    "description": "Practical software development using Flutter",
+    "domains": ["Software Engineering"]
   },
   "Vue": {
-    "aliases": [
-      "Vue",
-      "Vue.js",
-      "VueJS"
-    ],
-    "description": "Practical software development using Vue"
+    "aliases": ["Vue", "Vue.js", "VueJS"],
+    "description": "Practical software development using Vue",
+    "domains": ["Software Engineering"]
   },
   "Angular": {
-    "aliases": [
-      "Angular",
-      "AngularJS"
-    ],
-    "description": "Practical software development using Angular"
+    "aliases": ["Angular", "AngularJS"],
+    "description": "Practical software development using Angular",
+    "domains": ["Software Engineering"]
   },
   "Next.js": {
-    "aliases": [
-      "Next.js",
-      "NextJS"
-    ],
-    "description": "Practical software development using Next.js"
+    "aliases": ["Next.js", "NextJS"],
+    "description": "Practical software development using Next.js",
+    "domains": ["Software Engineering"]
   },
   "Django": {
-    "aliases": [
-      "Django"
-    ],
-    "description": "Practical software development using Django"
+    "aliases": ["Django"],
+    "description": "Practical software development using Django",
+    "domains": ["Software Engineering"]
   },
   "Flask": {
-    "aliases": [
-      "Flask"
-    ],
-    "description": "Practical software development using Flask"
+    "aliases": ["Flask"],
+    "description": "Practical software development using Flask",
+    "domains": ["Software Engineering", "AI/ML"]
   },
   "FastAPI": {
-    "aliases": [
-      "FastAPI"
-    ],
-    "description": "Practical software development using FastAPI"
+    "aliases": ["FastAPI"],
+    "description": "Practical software development using FastAPI",
+    "domains": ["Software Engineering", "AI/ML"]
   },
   "Spring Boot": {
-    "aliases": [
-      "Spring Boot"
-    ],
-    "description": "Practical software development using Spring Boot"
+    "aliases": ["Spring Boot"],
+    "description": "Practical software development using Spring Boot",
+    "domains": ["Software Engineering"]
   },
   ".NET": {
-    "aliases": [
-      ".NET",
-      "ASP.NET",
-      "dotnet"
-    ],
-    "description": "Practical software development using .NET"
+    "aliases": [".NET", "ASP.NET", "dotnet"],
+    "description": "Practical software development using .NET",
+    "domains": ["Software Engineering"]
   },
   "Git": {
-    "aliases": [
-      "Git"
-    ],
-    "description": "Practical software development using Git"
+    "aliases": ["Git"],
+    "description": "Version control and collaborative workflows using Git",
+    "domains": ["Software Engineering", "Cloud Computing", "Data Science", "AI/ML"]
   },
   "Docker": {
-    "aliases": [
-      "Docker"
-    ],
-    "description": "Practical software development using Docker"
+    "aliases": ["Docker"],
+    "description": "Containerizing applications and services using Docker",
+    "domains": ["Software Engineering", "Cloud Computing", "AI/ML"]
   },
   "Kubernetes": {
-    "aliases": [
-      "Kubernetes",
-      "K8s"
-    ],
-    "description": "Practical software development using Kubernetes"
+    "aliases": ["Kubernetes", "K8s"],
+    "description": "Orchestrating containerized workloads using Kubernetes",
+    "domains": ["Cloud Computing", "Software Engineering"]
   },
   "AWS": {
-    "aliases": [
-      "AWS",
-      "Amazon Web Services"
-    ],
-    "description": "Practical software development using AWS"
+    "aliases": ["AWS", "Amazon Web Services"],
+    "description": "Building and operating cloud services on AWS",
+    "domains": ["Cloud Computing", "Software Engineering", "Data Science", "Database Administration"]
   },
   "Azure": {
-    "aliases": [
-      "Azure",
-      "Microsoft Azure"
-    ],
-    "description": "Practical software development using Azure"
+    "aliases": ["Azure", "Microsoft Azure"],
+    "description": "Building and operating cloud services on Microsoft Azure",
+    "domains": ["Cloud Computing", "Software Engineering", "IT Support", "Data Analytics"]
   },
   "Linux": {
-    "aliases": [
-      "Linux"
-    ],
-    "description": "Practical software development using Linux"
+    "aliases": ["Linux"],
+    "description": "Operating and administering Linux environments",
+    "domains": ["Software Engineering", "Cloud Computing", "Cybersecurity", "Networking", "IT Support", "Database Administration"]
   },
   "REST APIs": {
-    "aliases": [
-      "REST APIs",
-      "REST API",
-      "RESTful APIs",
-      "REST endpoints"
-    ],
-    "description": "Implementing and integrating REST API endpoints"
+    "aliases": ["REST APIs", "REST API", "RESTful APIs", "REST endpoints"],
+    "description": "Implementing and integrating REST API endpoints",
+    "domains": ["Software Engineering", "Cloud Computing"]
   },
   "GraphQL": {
-    "aliases": [
-      "GraphQL"
-    ],
-    "description": "Practical software development using GraphQL"
+    "aliases": ["GraphQL"],
+    "description": "Practical software development using GraphQL",
+    "domains": ["Software Engineering"]
   },
   "Selenium": {
-    "aliases": [
-      "Selenium"
-    ],
-    "description": "Automated browser testing using Selenium"
+    "aliases": ["Selenium"],
+    "description": "Automated browser testing using Selenium",
+    "domains": ["Software Engineering"]
   },
   "Pytest": {
-    "aliases": [
-      "Pytest",
-      "pytest"
-    ],
-    "description": "Writing automated Python tests using Pytest"
+    "aliases": ["Pytest", "pytest"],
+    "description": "Writing automated Python tests using Pytest",
+    "domains": ["Software Engineering"]
   },
   "Postman": {
-    "aliases": [
-      "Postman"
-    ],
-    "description": "Practical software development using Postman"
+    "aliases": ["Postman"],
+    "description": "API testing and validation using Postman",
+    "domains": ["Software Engineering"]
   },
   "Jest": {
-    "aliases": [
-      "Jest"
-    ],
-    "description": "Practical software development using Jest"
+    "aliases": ["Jest"],
+    "description": "Unit and integration testing using Jest",
+    "domains": ["Software Engineering"]
   },
   "Cypress": {
-    "aliases": [
-      "Cypress"
-    ],
-    "description": "Practical software development using Cypress"
+    "aliases": ["Cypress"],
+    "description": "End-to-end web testing using Cypress",
+    "domains": ["Software Engineering"]
   },
   "Playwright": {
-    "aliases": [
-      "Playwright"
-    ],
-    "description": "Practical software development using Playwright"
+    "aliases": ["Playwright"],
+    "description": "End-to-end automated testing using Playwright",
+    "domains": ["Software Engineering"]
   },
   "Manual testing": {
-    "aliases": [
-      "Manual testing",
-      "manual tests"
-    ],
-    "description": "Manually executing software tests and reporting defects"
+    "aliases": ["Manual testing", "manual tests"],
+    "description": "Manually executing software tests and reporting defects",
+    "domains": ["Software Engineering"]
   },
   "Regression testing": {
-    "aliases": [
-      "Regression testing",
-      "regression tests"
-    ],
-    "description": "Testing software changes for regressions"
+    "aliases": ["Regression testing", "regression tests"],
+    "description": "Testing software changes for regressions",
+    "domains": ["Software Engineering"]
   },
   "Test case design": {
-    "aliases": [
-      "Test case design",
-      "test cases"
-    ],
-    "description": "Designing software test cases for user workflows"
+    "aliases": ["Test case design", "test cases"],
+    "description": "Designing software test cases for user workflows",
+    "domains": ["Software Engineering"]
   },
   "GitHub Actions": {
-    "aliases": [
-      "GitHub Actions"
-    ],
-    "description": "Practical software development using GitHub Actions"
+    "aliases": ["GitHub Actions"],
+    "description": "Automating CI/CD pipelines using GitHub Actions",
+    "domains": ["Software Engineering", "Cloud Computing"]
   },
   "CI/CD": {
-    "aliases": [
-      "CI/CD",
-      "continuous integration",
-      "continuous delivery"
-    ],
-    "description": "Practical software development using CI/CD"
+    "aliases": ["CI/CD", "continuous integration", "continuous delivery"],
+    "description": "Building automated build, test, and deployment pipelines",
+    "domains": ["Software Engineering", "Cloud Computing", "AI/ML"]
   },
   "Jira": {
-    "aliases": [
-      "Jira"
-    ],
-    "description": "Practical software development using Jira"
+    "aliases": ["Jira"],
+    "description": "Issue tracking and agile workflow management using Jira",
+    "domains": ["Software Engineering", "IT Support"]
   },
   "VS Code": {
-    "aliases": [
-      "VS Code",
-      "Visual Studio Code"
-    ],
-    "description": "Practical software development using VS Code"
+    "aliases": ["VS Code", "Visual Studio Code"],
+    "description": "Software development and debugging using VS Code",
+    "domains": ["Software Engineering"]
   },
   "Responsive design": {
-    "aliases": [
-      "Responsive design",
-      "responsive UI",
-      "responsive interfaces",
-      "responsive dashboard"
-    ],
-    "description": "Building responsive user interfaces for multiple screen sizes"
+    "aliases": ["Responsive design", "responsive UI", "responsive interfaces", "responsive dashboard"],
+    "description": "Building responsive user interfaces for multiple screen sizes",
+    "domains": ["Software Engineering", "UI/UX Design"]
   },
   "Machine learning": {
-    "aliases": [
-      "Machine learning",
-      "ML"
-    ],
-    "description": "Practical software development using Machine learning"
+    "aliases": ["Machine learning", "ML"],
+    "description": "Designing and training predictive machine learning models",
+    "domains": ["AI/ML", "Data Science"]
   },
   "TensorFlow": {
-    "aliases": [
-      "TensorFlow"
-    ],
-    "description": "Practical software development using TensorFlow"
+    "aliases": ["TensorFlow"],
+    "description": "Building and training deep learning models using TensorFlow",
+    "domains": ["AI/ML", "Data Science"]
   },
   "PyTorch": {
-    "aliases": [
-      "PyTorch"
-    ],
-    "description": "Practical software development using PyTorch"
+    "aliases": ["PyTorch"],
+    "description": "Building and training deep learning models using PyTorch",
+    "domains": ["AI/ML", "Data Science"]
   },
   "Pandas": {
-    "aliases": [
-      "Pandas"
-    ],
-    "description": "Practical software development using Pandas"
+    "aliases": ["Pandas"],
+    "description": "Data manipulation and analysis using Pandas",
+    "domains": ["Data Science", "Data Analytics", "AI/ML"]
   },
   "NumPy": {
-    "aliases": [
-      "NumPy"
-    ],
-    "description": "Practical software development using NumPy"
+    "aliases": ["NumPy"],
+    "description": "Numerical computing and array processing using NumPy",
+    "domains": ["Data Science", "AI/ML"]
   },
   "scikit-learn": {
-    "aliases": [
-      "scikit-learn",
-      "sklearn"
-    ],
-    "description": "Practical software development using scikit-learn"
+    "aliases": ["scikit-learn", "sklearn"],
+    "description": "Developing machine learning pipelines using scikit-learn",
+    "domains": ["AI/ML", "Data Science"]
   },
   "Power BI": {
-    "aliases": [
-      "Power BI"
-    ],
-    "description": "Practical software development using Power BI"
+    "aliases": ["Power BI"],
+    "description": "Creating interactive BI dashboards and reports in Power BI",
+    "domains": ["Data Analytics"]
   },
   "Figma": {
-    "aliases": [
-      "Figma"
-    ],
-    "description": "Practical software development using Figma"
+    "aliases": ["Figma"],
+    "description": "Designing interfaces, wireframes, and interactive prototypes in Figma",
+    "domains": ["UI/UX Design", "Software Engineering"]
   },
   "Redis": {
-    "aliases": [
-      "Redis"
-    ],
-    "description": "Practical software development using Redis"
+    "aliases": ["Redis"],
+    "description": "In-memory caching and data structures using Redis",
+    "domains": ["Software Engineering", "Database Administration", "Cloud Computing"]
   },
   "Firebase": {
-    "aliases": [
-      "Firebase"
-    ],
-    "description": "Practical software development using Firebase"
+    "aliases": ["Firebase"],
+    "description": "Building applications with Firebase backend and database services",
+    "domains": ["Software Engineering", "Cloud Computing"]
   },
   "Bash": {
-    "aliases": [
-      "Bash",
-      "shell scripting"
-    ],
-    "description": "Practical software development using Bash"
+    "aliases": ["Bash", "shell scripting"],
+    "description": "Automating system and operational tasks using Bash shell scripting",
+    "domains": ["Software Engineering", "Cloud Computing", "IT Support", "Cybersecurity"]
+  },
+  "Tableau": {
+    "aliases": ["Tableau"],
+    "description": "Building visual analytics dashboards and reports in Tableau",
+    "domains": ["Data Analytics", "Data Science"]
+  },
+  "Microsoft Excel": {
+    "aliases": ["Microsoft Excel", "Excel", "Pivot Tables", "VLOOKUP"],
+    "description": "Analyzing and modeling tabular data using Microsoft Excel",
+    "domains": ["Data Analytics", "IT Support"]
+  },
+  "Looker": {
+    "aliases": ["Looker", "LookML"],
+    "description": "Business intelligence modeling and dashboards using Looker",
+    "domains": ["Data Analytics"]
+  },
+  "Google Analytics": {
+    "aliases": ["Google Analytics", "GA4"],
+    "description": "Tracking and analyzing web and product metrics with Google Analytics",
+    "domains": ["Data Analytics"]
+  },
+  "Data Visualization": {
+    "aliases": ["Data Visualization", "Data Visualisation"],
+    "description": "Communicating analytical findings through charts and dashboards",
+    "domains": ["Data Analytics", "Data Science"]
+  },
+  "ETL": {
+    "aliases": ["Extract Transform Load", "ETL pipeline", "ETL pipelines"],
+    "case_sensitive_aliases": ["ETL"],
+    "description": "Designing extract, transform, and load data pipelines",
+    "domains": ["Data Analytics", "Data Science", "Database Administration"]
+  },
+  "DAX": {
+    "aliases": [],
+    "case_sensitive_aliases": ["DAX"],
+    "description": "Writing analytical formulas and measures in Power BI DAX",
+    "domains": ["Data Analytics"]
+  },
+  "Jupyter Notebook": {
+    "aliases": ["Jupyter Notebook", "Jupyter", "JupyterLab"],
+    "description": "Interactive data analysis and experimentation in Jupyter Notebooks",
+    "domains": ["Data Science", "AI/ML", "Data Analytics"]
+  },
+  "Matplotlib": {
+    "aliases": ["Matplotlib"],
+    "description": "Plotting and visualizing scientific data with Matplotlib",
+    "domains": ["Data Science", "AI/ML", "Data Analytics"]
+  },
+  "Seaborn": {
+    "aliases": ["Seaborn"],
+    "description": "Statistical data visualization using Seaborn",
+    "domains": ["Data Science", "Data Analytics"]
+  },
+  "SciPy": {
+    "aliases": ["SciPy"],
+    "description": "Scientific and statistical computation using SciPy",
+    "domains": ["Data Science", "AI/ML"]
+  },
+  "Apache Spark": {
+    "aliases": ["Apache Spark", "PySpark", "Spark"],
+    "description": "Distributed large-scale data processing using Apache Spark",
+    "domains": ["Data Science", "Data Analytics", "Cloud Computing"]
+  },
+  "Feature Engineering": {
+    "aliases": ["Feature Engineering", "feature selection"],
+    "description": "Transforming raw data into informative features for predictive models",
+    "domains": ["Data Science", "AI/ML"]
+  },
+  "Hypothesis Testing": {
+    "aliases": ["Hypothesis Testing", "A/B Testing", "AB Testing"],
+    "description": "Designing and evaluating statistical experiments and hypothesis tests",
+    "domains": ["Data Science", "Data Analytics"]
+  },
+  "Statistical Modeling": {
+    "aliases": ["Statistical Modeling", "Statistical Analysis"],
+    "description": "Applying statistical models and inference to datasets",
+    "domains": ["Data Science", "Data Analytics"]
+  },
+  "Deep Learning": {
+    "aliases": ["Deep Learning", "Neural Networks", "Neural Network"],
+    "description": "Designing and training multi-layer neural network architectures",
+    "domains": ["AI/ML", "Data Science"]
+  },
+  "Keras": {
+    "aliases": ["Keras"],
+    "description": "Building deep learning models with Keras",
+    "domains": ["AI/ML"]
+  },
+  "Natural Language Processing": {
+    "aliases": ["Natural Language Processing"],
+    "case_sensitive_aliases": ["NLP"],
+    "description": "Processing, classifying, and extracting meaning from human language text",
+    "domains": ["AI/ML", "Data Science"]
+  },
+  "Computer Vision": {
+    "aliases": ["Computer Vision", "Image Classification", "Object Detection"],
+    "description": "Analyzing and understanding visual data with computer vision models",
+    "domains": ["AI/ML"]
+  },
+  "OpenCV": {
+    "aliases": ["OpenCV"],
+    "description": "Image processing and computer vision pipelines with OpenCV",
+    "domains": ["AI/ML"]
+  },
+  "Hugging Face": {
+    "aliases": ["Hugging Face", "Transformers"],
+    "description": "Fine-tuning and deploying transformer models with Hugging Face",
+    "domains": ["AI/ML"]
+  },
+  "Large Language Models": {
+    "aliases": ["Large Language Models", "Large Language Model", "RAG", "Retrieval-Augmented Generation"],
+    "case_sensitive_aliases": ["LLM", "LLMs"],
+    "description": "Building applications and workflows powered by large language models",
+    "domains": ["AI/ML"]
+  },
+  "LangChain": {
+    "aliases": ["LangChain"],
+    "description": "Orchestrating LLM workflows and agents using LangChain",
+    "domains": ["AI/ML"]
+  },
+  "MLOps": {
+    "aliases": ["MLOps", "MLflow", "Weights & Biases"],
+    "description": "Deploying, monitoring, and managing machine learning lifecycles",
+    "domains": ["AI/ML", "Cloud Computing"]
+  },
+  "Adobe XD": {
+    "aliases": ["Adobe XD"],
+    "description": "Designing user interfaces and clickable prototypes in Adobe XD",
+    "domains": ["UI/UX Design"]
+  },
+  "Sketch": {
+    "aliases": ["Sketch"],
+    "description": "Vector interface design and component libraries using Sketch",
+    "domains": ["UI/UX Design"]
+  },
+  "Wireframing": {
+    "aliases": ["Wireframing", "Wireframes", "Wireframe"],
+    "description": "Creating low- and mid-fidelity layout wireframes for user flows",
+    "domains": ["UI/UX Design"]
+  },
+  "Prototyping": {
+    "aliases": ["Prototyping", "Interactive Prototypes", "Clickable Prototype"],
+    "description": "Building interactive UI/UX prototypes for design validation",
+    "domains": ["UI/UX Design"]
+  },
+  "User Research": {
+    "aliases": ["User Research", "UX Research", "User Interviews", "Persona Creation"],
+    "description": "Conducting qualitative and quantitative user research",
+    "domains": ["UI/UX Design"]
+  },
+  "Usability Testing": {
+    "aliases": ["Usability Testing", "Heuristic Evaluation"],
+    "description": "Evaluating product usability with structured testing and heuristics",
+    "domains": ["UI/UX Design"]
+  },
+  "Design Systems": {
+    "aliases": ["Design Systems", "Design System", "UI Kit", "Style Guide"],
+    "description": "Creating reusable UI design tokens, guidelines, and component libraries",
+    "domains": ["UI/UX Design", "Software Engineering"]
+  },
+  "Information Architecture": {
+    "aliases": ["Information Architecture", "User Flows", "Sitemap"],
+    "description": "Structuring navigation, content hierarchy, and user journeys",
+    "domains": ["UI/UX Design"]
+  },
+  "Accessibility": {
+    "aliases": ["Accessibility", "WCAG"],
+    "description": "Designing inclusive interfaces compliant with accessibility standards",
+    "domains": ["UI/UX Design", "Software Engineering"]
+  },
+  "TCP/IP": {
+    "aliases": ["TCP/IP", "OSI Model"],
+    "description": "Applying TCP/IP networking protocols and layered troubleshooting",
+    "domains": ["Networking", "Cybersecurity"]
+  },
+  "DNS": {
+    "aliases": ["Domain Name System"],
+    "case_sensitive_aliases": ["DNS"],
+    "description": "Configuring and troubleshooting DNS resolution and records",
+    "domains": ["Networking", "Cloud Computing", "IT Support"]
+  },
+  "DHCP": {
+    "aliases": [],
+    "case_sensitive_aliases": ["DHCP"],
+    "description": "Managing dynamic IP allocation with DHCP",
+    "domains": ["Networking", "IT Support"]
+  },
+  "Subnetting": {
+    "aliases": ["Subnetting", "IP Addressing", "CIDR", "IPv4", "IPv6"],
+    "description": "Designing IP addressing plans and network subnets",
+    "domains": ["Networking"]
+  },
+  "Routing and Switching": {
+    "aliases": ["Routing and Switching", "Routing & Switching", "OSPF", "BGP", "VLAN", "VLANs"],
+    "description": "Configuring L2/L3 switching, VLANs, and dynamic routing protocols",
+    "domains": ["Networking"]
+  },
+  "Cisco IOS": {
+    "aliases": ["Cisco IOS", "Cisco Packet Tracer", "Packet Tracer", "CCNA"],
+    "description": "Configuring and managing Cisco routers and switches",
+    "domains": ["Networking"]
+  },
+  "Wireshark": {
+    "aliases": ["Wireshark", "Packet Analysis", "tcpdump"],
+    "description": "Capturing and inspecting network traffic with Wireshark",
+    "domains": ["Networking", "Cybersecurity"]
+  },
+  "VPN": {
+    "aliases": ["Virtual Private Network", "IPsec", "OpenVPN", "WireGuard"],
+    "case_sensitive_aliases": ["VPN"],
+    "description": "Configuring and securing remote-access and site-to-site VPN tunnels",
+    "domains": ["Networking", "Cybersecurity", "IT Support"]
+  },
+  "Firewall Administration": {
+    "aliases": ["Firewall Administration", "Firewall Configuration", "Firewalls", "pfSense", "iptables"],
+    "description": "Configuring firewall rules, network segmentation, and traffic filtering",
+    "domains": ["Networking", "Cybersecurity"]
+  },
+  "Load Balancing": {
+    "aliases": ["Load Balancing", "Load Balancer", "NGINX", "HAProxy"],
+    "description": "Distributing network and application traffic across servers",
+    "domains": ["Networking", "Cloud Computing"]
+  },
+  "Penetration Testing": {
+    "aliases": ["Penetration Testing", "Ethical Hacking", "Pen Testing"],
+    "description": "Identifying and validating exploitable security weaknesses",
+    "domains": ["Cybersecurity"]
+  },
+  "SIEM": {
+    "aliases": ["Splunk", "QRadar", "Microsoft Sentinel", "Wazuh"],
+    "case_sensitive_aliases": ["SIEM"],
+    "description": "Monitoring security logs and alerts using SIEM platforms",
+    "domains": ["Cybersecurity"]
+  },
+  "OWASP": {
+    "aliases": ["OWASP", "OWASP Top 10"],
+    "description": "Assessing and mitigating web application security risks per OWASP",
+    "domains": ["Cybersecurity", "Software Engineering"]
+  },
+  "Vulnerability Assessment": {
+    "aliases": ["Vulnerability Assessment", "Vulnerability Scanning", "Nessus", "OpenVAS"],
+    "description": "Scanning systems and prioritizing remediation for security vulnerabilities",
+    "domains": ["Cybersecurity"]
+  },
+  "Incident Response": {
+    "aliases": ["Incident Response", "SOC Analysis", "Threat Hunting"],
+    "description": "Investigating, containing, and remediating security incidents",
+    "domains": ["Cybersecurity"]
+  },
+  "Nmap": {
+    "aliases": ["Nmap"],
+    "description": "Performing network discovery and port auditing with Nmap",
+    "domains": ["Cybersecurity", "Networking"]
+  },
+  "Kali Linux": {
+    "aliases": ["Kali Linux"],
+    "description": "Conducting security testing and auditing using Kali Linux tools",
+    "domains": ["Cybersecurity"]
+  },
+  "Burp Suite": {
+    "aliases": ["Burp Suite"],
+    "description": "Testing web application security using Burp Suite",
+    "domains": ["Cybersecurity"]
+  },
+  "Metasploit": {
+    "aliases": ["Metasploit"],
+    "description": "Validating vulnerabilities and exploit paths using Metasploit",
+    "domains": ["Cybersecurity"]
+  },
+  "Cryptography": {
+    "aliases": ["Cryptography", "PKI", "TLS/SSL", "SSL/TLS", "Encryption"],
+    "description": "Applying cryptographic primitives, certificates, and secure transport",
+    "domains": ["Cybersecurity", "Networking"]
+  },
+  "IAM": {
+    "aliases": ["Identity and Access Management", "RBAC", "SSO", "OAuth 2.0"],
+    "case_sensitive_aliases": ["IAM"],
+    "description": "Managing identity, least-privilege permissions, and access controls",
+    "domains": ["Cybersecurity", "Cloud Computing", "IT Support"]
+  },
+  "Threat Modeling": {
+    "aliases": ["Threat Modeling", "Risk Assessment", "ISO 27001"],
+    "description": "Evaluating architectural threats, security controls, and risk posture",
+    "domains": ["Cybersecurity"]
+  },
+  "Google Cloud Platform": {
+    "aliases": ["Google Cloud Platform", "Google Cloud"],
+    "case_sensitive_aliases": ["GCP"],
+    "description": "Deploying and managing infrastructure on Google Cloud Platform",
+    "domains": ["Cloud Computing", "Data Science", "AI/ML"]
+  },
+  "Terraform": {
+    "aliases": ["Terraform", "Infrastructure as Code"],
+    "description": "Provisioning and managing cloud infrastructure declaratively with Terraform",
+    "domains": ["Cloud Computing"]
+  },
+  "Ansible": {
+    "aliases": ["Ansible"],
+    "description": "Automating server configuration and provisioning with Ansible",
+    "domains": ["Cloud Computing", "IT Support"]
+  },
+  "AWS Cloud Services": {
+    "aliases": ["AWS Lambda", "Amazon S3", "AWS EC2", "CloudFormation"],
+    "case_sensitive_aliases": ["EC2", "S3"],
+    "description": "Architecting serverless, compute, and storage workloads on AWS",
+    "domains": ["Cloud Computing"]
+  },
+  "Monitoring & Observability": {
+    "aliases": ["Prometheus", "Grafana", "CloudWatch", "Datadog"],
+    "description": "Instrumenting metrics, dashboards, and alerts for cloud reliability",
+    "domains": ["Cloud Computing", "Software Engineering", "Networking"]
+  },
+  "Oracle Database": {
+    "aliases": ["Oracle Database", "Oracle DB", "PL/SQL"],
+    "description": "Administering and developing Oracle relational databases",
+    "domains": ["Database Administration"]
+  },
+  "Microsoft SQL Server": {
+    "aliases": ["Microsoft SQL Server", "SQL Server", "MSSQL", "T-SQL", "SSMS"],
+    "description": "Administering and querying Microsoft SQL Server databases",
+    "domains": ["Database Administration", "Data Analytics"]
+  },
+  "Database Tuning": {
+    "aliases": ["Database Tuning", "Query Optimization", "Performance Tuning", "Indexing"],
+    "description": "Optimizing SQL queries, execution plans, and database indexes",
+    "domains": ["Database Administration", "Software Engineering"]
+  },
+  "Backup and Recovery": {
+    "aliases": ["Backup and Recovery", "Database Backup", "Disaster Recovery"],
+    "description": "Implementing reliable database backups, restore drills, and failover",
+    "domains": ["Database Administration", "Cloud Computing", "IT Support"]
+  },
+  "Database Replication": {
+    "aliases": ["Database Replication", "High Availability", "Sharding"],
+    "description": "Configuring database replication, clustering, and high availability",
+    "domains": ["Database Administration"]
+  },
+  "Schema Design": {
+    "aliases": ["Schema Design", "Database Design", "Data Modeling", "Normalization", "ERD"],
+    "description": "Designing normalized relational schemas and entity-relationship models",
+    "domains": ["Database Administration", "Software Engineering", "Data Analytics"]
+  },
+  "Active Directory": {
+    "aliases": ["Active Directory", "Group Policy", "Entra ID"],
+    "description": "Managing user accounts, directory permissions, and group policies",
+    "domains": ["IT Support", "Cybersecurity"]
+  },
+  "Windows Server": {
+    "aliases": ["Windows Server", "Windows Administration"],
+    "description": "Installing, configuring, and maintaining Windows Server environments",
+    "domains": ["IT Support", "Networking"]
+  },
+  "ServiceNow": {
+    "aliases": ["ServiceNow", "Ticketing Systems", "Help Desk", "Service Desk"],
+    "description": "Managing IT support tickets, incidents, and SLAs in service platforms",
+    "domains": ["IT Support"]
+  },
+  "ITIL": {
+    "aliases": ["ITIL v4"],
+    "case_sensitive_aliases": ["ITIL"],
+    "description": "Applying ITIL service management practices for incidents and changes",
+    "domains": ["IT Support"]
+  },
+  "Hardware Troubleshooting": {
+    "aliases": ["Hardware Troubleshooting", "Desktop Support", "Workstation Setup", "Remote Desktop"],
+    "description": "Diagnosing and resolving endpoint hardware, OS, and peripheral issues",
+    "domains": ["IT Support"]
+  },
+  "Microsoft 365": {
+    "aliases": ["Microsoft 365", "Office 365"],
+    "description": "Administering Microsoft 365 accounts, licenses, and collaboration tools",
+    "domains": ["IT Support"]
+  },
+  "System Administration": {
+    "aliases": ["System Administration", "Patch Management", "PowerShell"],
+    "description": "Maintaining servers, endpoints, updates, and operational scripts",
+    "domains": ["IT Support", "Cloud Computing"]
   }
 }

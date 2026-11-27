@@ -4,7 +4,7 @@ import re
 import time
 import httpx
 from .profile_identifier import normalize_identifier
-from .skill_extractor import TAXONOMY
+from .skill_extractor import canonical_skill_name
 from .github_usage import collect_usage
 
 
@@ -29,11 +29,12 @@ def _public_metadata(handle, cache_window):
         if repo.get('fork') or repo.get('archived') or repo.get('owner', {}).get('login', '').casefold() != handle.casefold():
             continue
         language = repo.get('language')
+        canonical_lang = canonical_skill_name(language) if language else None
         name = repo.get('name', '')
-        if language not in TAXONOMY or not isinstance(name, str) or not re.fullmatch(r'[A-Za-z0-9_.-]{1,100}', name):
+        if not canonical_lang or not isinstance(name, str) or not re.fullmatch(r'[A-Za-z0-9_.-]{1,100}', name):
             continue
-        evidence.append({'skill': language, 'source': 'github', 'section': 'external',
-                         'text': f'Public repository {name} reports {language} as its primary language; contribution and proficiency are unverified.',
+        evidence.append({'skill': canonical_lang, 'source': 'github', 'section': 'external',
+                         'text': f'Public repository {name} reports {canonical_lang} as its primary language; contribution and proficiency are unverified.',
                          'url': f'https://github.com/{handle}/{name}', 'match_method': 'repository_metadata'})
         evidence[-1]['project_name'] = name
     return evidence

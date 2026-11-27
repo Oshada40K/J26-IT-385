@@ -18,6 +18,10 @@ export default function SkillProfile() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [reload, setReload] = useState(0)
+  const [domainView, setDomainView] = useState('relevant')
+  const [activeCategory, setActiveCategory] = useState('All')
+  const [activeSource, setActiveSource] = useState('combined')
+
   useEffect(() => {
     let active = true
     setLoading(true)
@@ -25,15 +29,124 @@ export default function SkillProfile() {
     getSkillDetails().then(data => { if (active) setResult(data) }).catch(err => { if (active) setError(err.message) }).finally(() => { if (active) setLoading(false) })
     return () => { active = false }
   }, [reload])
+
+  const domain = result?.detected_domain
+  const primaryDomain = domain?.primary_domain || null
+  const primaryOccupation = domain?.primary_occupation || null
+  const sourceProfiles = result?.source_profiles || null
+
+  const baseSkills = activeSource === 'combined'
+    ? (result?.skills || [])
+    : (sourceProfiles?.[activeSource]?.skills || [])
+
+  const relevantSkills = primaryDomain && activeSource === 'combined'
+    ? baseSkills.filter(skill => skill.relevant_to_domain ?? (Array.isArray(skill.domains) ? skill.domains.includes(primaryDomain) : true))
+    : baseSkills
+
+  const hasOtherSkills = Boolean(primaryDomain && activeSource === 'combined' && relevantSkills.length < baseSkills.length)
+  const domainFiltered = (primaryDomain && activeSource === 'combined' && domainView === 'relevant' && relevantSkills.length > 0)
+    ? relevantSkills
+    : baseSkills
+
+  const categories = ['All', ...Array.from(new Set(domainFiltered.map(s => s.category).filter(Boolean)))]
+  const visibleSkills = activeCategory === 'All'
+    ? domainFiltered
+    : domainFiltered.filter(s => s.category === activeCategory)
+
   return <div className="page">
-    <div className="page-heading"><div><p className="eyebrow">YOUR CV, EXPLAINED</p><h1>Your technical strengths</h1><p className="page-description">Estimated skill levels based on the evidence in your CV.</p></div><Link className="button button-secondary" to="/">Upload another CV <Icon name="upload" size={17} /></Link></div>
-    {loading ? <div className="card" role="status">Loading your assessment…</div> : error ? <div className="card"><p className="error-message" role="alert">{error}</p><button onClick={() => setReload(value => value + 1)}>Try again</button></div> : !result ? <div className="card skill-empty"><span className="component-icon"><Icon name="document" size={25} /></span><h2>Start with your CV</h2><p>Upload a PDF or DOCX to discover your skills and the evidence behind each estimate.</p><Link className="button" to="/">Choose your CV <Icon name="arrow" size={17} /></Link></div> : <>
-      <div className="skill-result-summary card"><span className="status status-ai"><Icon name="check" size={15} /> Assessment complete</span><strong>{result.skills.length} technical skills identified</strong><p>{result.limitations}</p></div>
+    <div className="page-heading"><div><p className="eyebrow">DYNAMIC SKILL INTELLIGENCE</p><h1>Your skill assessment</h1><p className="page-description">Estimated proficiency levels, percentages, and explainable evidence across ESCO, O*NET, and newly discovered skills.</p></div><Link className="button button-secondary" to="/">Upload another CV <Icon name="upload" size={17} /></Link></div>
+    {loading ? <div className="card" role="status">Loading your assessment…</div> : error ? <div className="card"><p className="error-message" role="alert">{error}</p><button onClick={() => setReload(value => value + 1)}>Try again</button></div> : !result ? <div className="card skill-empty"><span className="component-icon"><Icon name="document" size={25} /></span><h2>Start with your CV</h2><p>Upload a PDF or DOCX to discover your skills, matched occupations, and explainable evidence.</p><Link className="button" to="/">Choose your CV <Icon name="arrow" size={17} /></Link></div> : <>
+      <div className="skill-result-summary card">
+        <span className="status status-ai"><Icon name="check" size={15} /> Assessment complete</span>
+        <strong>{(result.skills || []).length} skills identified{primaryDomain ? ` · ${relevantSkills.length} aligned with ${primaryDomain}` : ''}</strong>
+        <p>{result.limitations}</p>
+      </div>
+
+      {domain && <section className="card skill-domain-card" aria-label="Detected candidate domain and occupation">
+        <div className="skill-domain-header">
+          <div>
+            <p className="eyebrow">{domain.is_unknown_occupation ? 'EMERGING / UNKNOWN OCCUPATION PROFILE' : 'DETECTED CAREER FIELD & OCCUPATION'}</p>
+            <h2>{primaryOccupation || primaryDomain || 'General / Cross-Disciplinary Profile'}</h2>
+            {primaryDomain && primaryOccupation && primaryDomain !== primaryOccupation && <p className="skill-domain-field">Career Field: <strong>{primaryDomain}</strong></p>}
+          </div>
+          <span className={`skill-domain-confidence confidence-${domain.confidence || 'low'}`}>{domain.confidence || 'low'} confidence</span>
+        </div>
+        {!!domain.secondary_domains?.length && <p className="skill-domain-secondary">Related fields: {domain.secondary_domains.join(', ')}</p>}
+        {!!domain.related_occupations?.length && <div className="skill-occ-matches">
+          <span className="skill-occ-label">Matched ESCO / O*NET occupations:</span>
+          {domain.related_occupations.slice(0, 4).map(occ => <span className="skill-domain-tag" key={occ.title}>{occ.title} <small>({occ.source?.toUpperCase()})</small></span>)}
+        </div>}
+        {!!domain.signals?.length && <ul className="skill-domain-signals">{domain.signals.map((signal, index) => <li key={index}>{signal}</li>)}</ul>}
+        {hasOtherSkills && <div className="skill-domain-filter" role="group" aria-label="Filter skills by detected domain">
+          <button type="button" className={domainView === 'relevant' ? '' : 'button-secondary'} onClick={() => setDomainView('relevant')}>
+            {primaryDomain} aligned ({relevantSkills.length})
+          </button>
+          <button type="button" className={domainView === 'all' ? '' : 'button-secondary'} onClick={() => setDomainView('all')}>
+            All extracted skills ({baseSkills.length})
+          </button>
+        </div>}
+      </section>}
+
+      {sourceProfiles && <section className="card skill-sources-card" aria-label="Independent source summaries">
+        <div className="skill-source-tabs" role="tablist" aria-label="Assessment source view">
+          {[
+            { key: 'combined', label: `Combined (${(result.skills || []).length})` },
+            { key: 'cv', label: `CV (${sourceProfiles.cv?.skill_count ?? 0})` },
+            { key: 'github', label: `GitHub (${sourceProfiles.github?.skill_count ?? 0}) · ${sourceProfiles.github?.status?.replaceAll('_', ' ') || 'not provided'}` },
+            { key: 'linkedin', label: `LinkedIn (${sourceProfiles.linkedin?.skill_count ?? 0}) · ${sourceProfiles.linkedin?.status?.replaceAll('_', ' ') || 'not provided'}` },
+          ].map(tab => <button key={tab.key} type="button" role="tab" aria-selected={activeSource === tab.key} className={activeSource === tab.key ? '' : 'button-secondary'} onClick={() => { setActiveSource(tab.key); setActiveCategory('All') }}>{tab.label}</button>)}
+        </div>
+      </section>}
+
+      {categories.length > 2 && <div className="skill-category-bar" role="group" aria-label="Filter by skill category">
+        {categories.map(cat => <button key={cat} type="button" className={`skill-cat-pill ${activeCategory === cat ? 'is-active' : ''}`} onClick={() => setActiveCategory(cat)}>{cat}</button>)}
+      </div>}
+
       {['github', 'linkedin'].some(platform => result.external_profiles?.some(profile => profile.platform === platform)) && <div className="skill-profile-detection" aria-label="Detected profiles">
         {['github', 'linkedin'].filter(platform => result.external_profiles.some(profile => profile.platform === platform)).map(platform => <span className={`skill-profile-chip skill-profile-chip-${platform}`} key={platform}><ProfileIcon platform={platform} />{platform === 'github' ? 'GitHub Profile Detected' : 'LinkedIn Profile Detected'}</span>)}
       </div>}
-      {result.skills.length === 0 && <div className="card"><h2>No recognized technical skills found</h2><p>Your CV was processed successfully. Add specific technologies and examples of your work, then upload an updated CV.</p></div>}
-      <div className="skill-results-grid">{result.skills.map(skill => <article className="card skill-result" key={skill.name}><div className="skill-result-heading"><h2>{skill.name}</h2><span className="skill-level">{skill.level}<small>/ 5 estimated</small></span></div><div className="skill-level-bars" aria-hidden="true">{[1,2,3,4,5].map(level => <span key={level} className={level <= skill.level ? 'filled' : ''} />)}</div><p className="skill-confidence">{skill.confidence === 'low' ? 'Limited evidence · review recommended' : 'Moderate evidence'} · {skill.status.replaceAll('_', ' ')}</p><p>{skill.reason}</p><details><summary>View CV evidence ({skill.evidence.length})</summary>{skill.evidence.map((evidence, index) => <blockquote key={index}><small>{evidence.section}</small>{evidence.text}</blockquote>)}</details></article>)}</div>
+
+      {visibleSkills.length === 0 && <div className="card"><h2>No skills in this view</h2><p>No skills were extracted for the selected source or category filter. Missing external sources do not reduce your CV assessment.</p></div>}
+
+      <div className="skill-results-grid">{visibleSkills.map(skill => {
+        const pct = skill.percentage ?? skill.level * 20
+        const xai = skill.xai
+        return <article className="card skill-result" key={skill.name}>
+          <div className="skill-result-heading">
+            <div>
+              <h2>{skill.name}</h2>
+              <div className="skill-meta-badges">
+                {skill.category && <span className="skill-badge-cat">{skill.category}</span>}
+                {skill.is_discovered ? <span className="skill-badge-discovered">Newly discovered</span> : skill.taxonomy_source && <span className="skill-badge-source">{skill.taxonomy_source.toUpperCase()}</span>}
+              </div>
+            </div>
+            <span className="skill-level">{pct}% <small>Est. · Lv {skill.level}/5 ({skill.proficiency_label || 'Provisional'})</small></span>
+          </div>
+
+          <div className="skill-progress-track" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={`${skill.name} estimated proficiency ${pct}%`}>
+            <div className="skill-progress-fill" style={{ width: `${pct}%` }} />
+          </div>
+          <div className="skill-level-bars" aria-hidden="true">{[1,2,3,4,5].map(level => <span key={level} className={level <= skill.level ? 'filled' : ''} />)}</div>
+
+          <p className="skill-confidence">
+            {skill.confidence === 'high' ? 'High evidence confidence' : skill.confidence === 'medium' ? 'Moderate evidence confidence' : 'Limited evidence · review recommended'} · {skill.status.replaceAll('_', ' ')}
+          </p>
+
+          {!!skill.occupations?.length && <div className="skill-domain-tags">{skill.occupations.slice(0, 4).map(occ => <span key={occ} className={`skill-domain-tag ${occ === primaryOccupation ? 'is-primary' : ''}`}>{occ}</span>)}</div>}
+          <p>{skill.reason}</p>
+
+          {xai && <details className="skill-xai-box">
+            <summary>Explainable AI (XAI) breakdown</summary>
+            <p className="xai-why"><strong>Why identified:</strong> {xai.why_identified}</p>
+            <p className="xai-type"><strong>Evidence basis:</strong> {xai.self_reported_only ? 'Self-reported only' : (xai.evidence_types || []).join(', ').replaceAll('_', ' ')}</p>
+            {!!xai.score_factors?.length && <ul className="xai-factors">{xai.score_factors.map((f, idx) => <li key={idx}><strong>{f.factor} (+{f.points}%):</strong> {f.detail}</li>)}</ul>}
+            {!!xai.evidence_limitations?.length && <p className="xai-limits"><strong>Limitations:</strong> {xai.evidence_limitations.join(' ')}</p>}
+          </details>}
+
+          <details><summary>View supporting evidence ({skill.evidence.length})</summary>{skill.evidence.map((evidence, index) => <blockquote key={index}><small>{evidence.section}{evidence.match_method ? ` · ${evidence.match_method.replaceAll('_', ' ')}` : ''}{typeof evidence.semantic_similarity === 'number' ? ` · sim ${evidence.semantic_similarity.toFixed(2)}` : ''}</small>{evidence.text}</blockquote>)}</details>
+        </article>
+      })}</div>
+
       {!!result.external_profiles.length && <section className="card skill-profile-links"><h2>Profiles found in your CV</h2><p>Identifiers only. Ownership and external experience have not been verified.</p>{result.external_profiles.map(profile => <a key={profile.platform} href={profile.url} target="_blank" rel="noopener noreferrer">{profile.platform === 'github' ? 'GitHub' : 'LinkedIn'}: {profile.handle} <Icon name="arrow" size={15} /></a>)}</section>}
       <details className="card skill-method"><summary>Assessment method and limitations</summary><p>{result.assessment_method} · {result.model_version}</p>{result.warnings.map((warning, index) => <p key={index}>{warning}</p>)}</details>
     </>}

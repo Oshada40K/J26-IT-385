@@ -1,13 +1,14 @@
 import json
 from pathlib import Path
 from typing import Annotated
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.concurrency import run_in_threadpool
-from . import repository
+from . import repository, taxonomy_repository
 from .config import MAX_FILE_BYTES
 from .schemas import CandidateSession, SkillProfileResponse, UploadResponse
 from .services.cv_parser import CVError
+from .services.esco_client import DEFAULT_ESCO_OCCUPATION_SEEDS, sync_esco_occupation
 from .services.profile_service import process_cv
 
 # Keep the existing /api/skill sample endpoints for other components.
@@ -82,3 +83,50 @@ def shared_profile(candidate_id: str, owner: Annotated[str, Depends(current_cand
 @router.get('/api/component01/skills/{candidate_id}/details')
 def profile_details(candidate_id: str, owner: Annotated[str, Depends(current_candidate)]):
     return stored_assessment(candidate_id, owner)
+
+
+@router.get('/api/component01/taxonomy/stats')
+def get_taxonomy_stats():
+    with repository.connection() as db:
+        repository.ensure_taxonomy_bootstrapped(db)
+        return taxonomy_repository.taxonomy_stats(db)
+
+
+@router.get('/api/component01/taxonomy/skills')
+def list_taxonomy_skills(
+    q: str = '',
+    category: str | None = None,
+    source: str | None = None,
+    limit: int = Query(default=50, ge=1, le=200),
+):
+    with repository.connection() as db:
+        repository.ensure_taxonomy_bootstrapped(db)
+        return {'skills': taxonomy_repository.search_skills(db, query=q, category=category, source=source, limit=limit)}
+
+
+@router.get('/api/component01/taxonomy/occupations')
+def list_taxonomy_occupations(
+    q: str = '',
+    career_field: str | None = None,
+    limit: int = Query(default=50, ge=1, le=200),
+):
+    with repository.connection() as db:
+        repository.ensure_taxonomy_bootstrapped(db)
+        return {'occupations': taxonomy_repository.search_occupations(db, query=q, career_field=career_field, limit=limit)}
+
+
+@router.post('/api/component01/taxonomy/sync-esco')
+def sync_esco_taxonomy(
+    queries: list[str] | None = None,
+    owner: Annotated[str, Depends(current_candidate)] = None,
+):
+    targets = queries or list(DEFAULT_ESCO_OCCUPATION_SEEDS)
+    synced = []
+    with repository.connection() as db:
+        repository.ensure_taxonomy_bootstrapped(db)
+        for query in targets[:20]:
+            result = sync_esco_occupation(db, query)
+            if result:
+                synced.append(result)
+        stats = taxonomy_repository.taxonomy_stats(db)
+    return {'synced': synced, 'taxonomy': stats}
