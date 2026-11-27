@@ -7,10 +7,37 @@ from ..repository import connection, ensure_taxonomy_bootstrapped
 from ..taxonomy_repository import norm_key
 from .cv_parser import evidence_units
 from .skill_extractor import positive_context
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 DATA = Path(__file__).parents[1] / 'data'
 DOMAINS = json.loads((DATA / 'domains.json').read_text(encoding='utf-8')) if (DATA / 'domains.json').exists() else {}
 SUPPORTED_DOMAINS = list(DOMAINS.keys())
+
+CAREER_FIELD_SIGNALS = {
+    'Healthcare': (
+        'medical student', 'mbbs', 'physician', 'doctor', 'clinical clerkship', 'clinical training',
+        'internal medicine', 'general surgery', 'paediatrics', 'pediatrics', 'obstetrics', 'gynaecology',
+        'patient care', 'patient history', 'vital-sign', 'basic life support', 'bls', 'cpr', 'ecg',
+        'nursing', 'registered nurse', 'hospital', 'pharmacology', 'pathology', 'anatomy', 'microbiology',
+    ),
+    'Finance & Accounting': (
+        'financial analyst', 'accountant', 'auditor', 'gaap', 'ifrs', 'balance sheet', 'taxation',
+        'financial modeling', 'budgeting', 'forecasting', 'quickbooks',
+    ),
+    'Education & Training': (
+        'teacher', 'lecturer', 'curriculum development', 'lesson planning', 'classroom management',
+        'student assessment', 'pedagogy', 'faculty',
+    ),
+    'Engineering & Architecture': (
+        'civil engineer', 'mechanical engineer', 'electrical engineer', 'structural analysis',
+        'autocad', 'solidworks', 'cad', 'thermodynamics',
+    ),
+    'Marketing & Sales': (
+        'marketing manager', 'digital marketing', 'seo', 'sem', 'brand strategy', 'campaign management',
+        'lead generation', 'hubspot',
+    ),
+}
 
 
 def _phrase_pattern(phrase):
@@ -32,8 +59,20 @@ UNKNOWN_ROLE_HINT = re.compile(
     r'^(?:junior|senior|lead|associate|assistant|certified|registered|principal|staff)?\s*'
     r'([A-Z][A-Za-z/&\- ]{2,45}(?:Engineer|Developer|Analyst|Scientist|Designer|Manager|Nurse|Doctor|'
     r'Accountant|Auditor|Teacher|Lecturer|Specialist|Technician|Administrator|Consultant|Architect|'
-    r'Coordinator|Director|Officer|Therapist|Pharmacist|Lawyer|Researcher))$'
+    r'Coordinator|Director|Officer|Therapist|Pharmacist|Lawyer|Researcher|Student))$'
 )
+
+
+def detect_career_stage(text: str, units: list[dict] | None = None) -> dict:
+    """Identify candidate professional level / career stage from CV text."""
+    low = (text or '').casefold()
+    if re.search(r'\b(?:medical student|undergraduate|in progress|expected\s+20\d{2}|clinical clerkship|student training|intern|internship|trainee|apprentice)\b', low):
+        return {'stage': 'student_trainee', 'label': 'Student / Trainee'}
+    if re.search(r'\b(?:senior|principal|staff|lead\s+|head\s+of|director|chief\s+|[5-9]\+?\s+years|1\d\+?\s+years)\b', low):
+        return {'stage': 'senior_lead', 'label': 'Senior / Lead'}
+    if re.search(r'\b(?:junior|entry[- ]level|associate|graduate|1\s+year)\b', low):
+        return {'stage': 'entry_junior', 'label': 'Entry / Junior'}
+    return {'stage': 'mid_level', 'label': 'Mid-Level / Practitioner'}
 
 
 def _detect_it_subdomain(units: list[dict], extracted: dict, skill_meta: dict) -> dict | None:
@@ -155,6 +194,9 @@ def detect_domain(text: str, extracted: dict | None = None, units: list[dict] | 
                     seed_domains_by_norm.setdefault(norm_key(sname), {}).setdefault('seed_domains', []).append(occ['title'])
                     continue
                 deg = max(1, link['deg'] or 1)
+                # Ultra-generic office tools (e.g. Word, Excel, PowerPoint linked to 200+ occupations) cannot drive occupation selection.
+                if deg > 150:
+                    continue
                 idf = 1.0 / math.log2(deg + 1.5)
                 has_practical = any(r.get('section') in {'projects', 'experience'} for r in extracted.get(sname, []))
                 contrib = float(link['weight'] or 1.0) * idf * (1.35 if has_practical else 1.0)
@@ -164,8 +206,8 @@ def detect_domain(text: str, extracted: dict | None = None, units: list[dict] | 
                     bucket['skills'].append(sname)
 
         # Title/Role matching in CV header, summary, and experience sections against ESCO/O*NET occupations.
-        header_and_role_units = [u for u in units if u.get('section') in {'other', 'summary', 'experience'}]
-        header_text = ' \n '.join(u.get('text', '') for u in header_and_role_units)
+        header_and_role_units = [u for u in units if u.get('section') in {'personal_info', 'other', 'summary', 'experience'}]
+        header_text = ' \n '.join(u.get('text', '') for u in header_and_role_units if '@' not in u.get('text', ''))
         header_low = header_text.casefold()
         for oid, occ in occ_by_id.items():
             if occ['source'] == 'taxonomy_seed':
@@ -191,6 +233,49 @@ def detect_domain(text: str, extracted: dict | None = None, units: list[dict] | 
                 bucket['score'] += 5.0
                 bucket['title_hit'] = True
                 bucket['signals'].append(f'Role title match: {title}')
+
+        # Fallback semantic + career-field matching against DB occupations when no strong title/skill match exists.
+        if not occ_scores or max((v['score'] for v in occ_scores.values()), default=0.0) < 2.0:
+            full_cv_low = text.casefold()
+            field_hits = {}
+            for field_name, cues in CAREER_FIELD_SIGNALS.items():
+                hits = [c for c in cues if re.search(r'(?<!\w)' + re.escape(c) + r'(?!\w)', full_cv_low)]
+                if hits:
+                    field_hits[field_name] = hits
+
+            # Compute TF-IDF cosine similarity between CV summary/skills and DB occupation descriptions.
+            has_nursing_cue = bool(re.search(r'\b(?:nurse|nursing|rn|bsn)\b', full_cv_low))
+            has_medical_cue = bool(re.search(r'\b(?:mbbs|md|medical student|clinical clerkship|physician|doctor|internal medicine|general surgery|paediatrics)\b', full_cv_low))
+            candidate_occs = [
+                occ for occ in occ_by_id.values()
+                if occ['source'] != 'taxonomy_seed' and (not field_hits or occ['career_field'] in field_hits)
+            ]
+            if candidate_occs and (field_hits or extracted):
+                cv_query = ' '.join([header_text[:1500], *extracted.keys()])
+                occ_docs = [f"{o['title']} {o['career_field']} {o['description']}" for o in candidate_occs]
+                vec = TfidfVectorizer(ngram_range=(1, 2), stop_words='english', max_features=12000)
+                mat = vec.fit_transform([cv_query, *occ_docs])
+                sims = (mat[1:] @ mat[0].T).toarray().ravel()
+                # Penalize nursing titles when medical/physician cues are present without nursing cues (and vice versa).
+                for i, occ in enumerate(candidate_occs):
+                    tlow = occ['normalized_title']
+                    if has_medical_cue and not has_nursing_cue and 'nurse' in tlow:
+                        sims[i] *= 0.25
+                    elif has_nursing_cue and not has_medical_cue and ('physician' in tlow or 'surgeon' in tlow):
+                        sims[i] *= 0.25
+                top_indices = np.argsort(-sims)[:5]
+                for idx in top_indices:
+                    sim = float(sims[idx])
+                    if sim < 0.05:
+                        continue
+                    occ = candidate_occs[int(idx)]
+                    oid = occ['id']
+                    bonus = 2.0 if occ['career_field'] in field_hits else 0.0
+                    bucket = occ_scores.setdefault(oid, {'score': 0.0, 'skills': [], 'title_hit': False, 'signals': []})
+                    bucket['score'] += round(sim * 12.0 + bonus, 2)
+                    if field_hits.get(occ['career_field']):
+                        bucket['signals'].append('Domain cues: ' + ', '.join(field_hits[occ['career_field']][:4]))
+                    bucket['signals'].append(f'Semantic occupation similarity ({sim:.2f})')
 
     # Rank flexible occupation matches.
     ranked_occs = sorted(
@@ -261,7 +346,7 @@ def detect_domain(text: str, extracted: dict | None = None, units: list[dict] | 
     )
     it_has_role_hit = bool(it_sub and any('Role/title signals:' in s for s in (it_sub['domain_scores'][0].get('signals') or [])))
     is_it_field = top_field in {'IT & Computing', 'Data Science & Analytics', 'Design & Media', 'Design, Arts & Media', None}
-    if it_sub and (not top_occ or (it_has_role_hit and not top_has_role_hit) or (is_it_field and not top_has_role_hit) or (is_it_field and it_sub['top_score'] >= top_occ['score'])):
+    if it_sub and (not top_occ or (it_has_role_hit and not top_has_role_hit) or (not top_has_role_hit and it_sub['top_score'] >= top_occ['score'] * 1.5) or (is_it_field and not top_has_role_hit) or (is_it_field and it_sub['top_score'] >= top_occ['score'])):
         primary_domain = it_sub['top']
         secondary_domains = it_sub['secondary']
         domain_scores = it_sub['domain_scores']
@@ -285,12 +370,17 @@ def detect_domain(text: str, extracted: dict | None = None, units: list[dict] | 
         signals = top_occ['signals'] if top_occ else []
         top_score = top_occ['score'] if top_occ else 0.0
 
+    career_stage = detect_career_stage(text, units)
     confidence = 'high' if top_score >= 6.5 else ('medium' if top_score >= 2.8 else 'low')
+    primary_occ_title = top_occ['title'] if top_occ else inferred_role
+    if career_stage['stage'] == 'student_trainee' and inferred_role and re.search(r'\bstudent\b', inferred_role, re.I):
+        primary_occ_title = inferred_role
 
     return {
         'primary_domain': primary_domain,
-        'primary_occupation': top_occ['title'] if top_occ else inferred_role,
+        'primary_occupation': primary_occ_title,
         'career_field': top_field or primary_domain,
+        'career_stage': career_stage,
         'is_unknown_occupation': False,
         'confidence': confidence,
         'status': 'detected',

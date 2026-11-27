@@ -1,8 +1,7 @@
-"""Adapter for an application-authorized LinkedIn evidence provider; no scraping.
+"""Adapter for authorized LinkedIn evidence provider or candidate-submitted LinkedIn text; no scraping.
 
 The application may register a callable(candidate_id, canonical_profile_url).
-It must enforce candidate-specific authorization and return evidence dictionaries
-with skill, source, section, text, and optional url. No provider is installed here.
+Alternatively, candidates may supply exported LinkedIn profile text directly with consent.
 """
 from .profile_identifier import normalize_identifier
 
@@ -16,10 +15,33 @@ def register_authorized_provider(provider):
     _authorized_provider = provider
 
 
-def analyze_linkedin(candidate_id, profile):
-    valid = normalize_identifier('linkedin', profile.get('url'))
-    if not valid:
+def analyze_linkedin(candidate_id, profile, candidate_text: str | None = None):
+    valid = normalize_identifier('linkedin', profile.get('url')) if profile else None
+    if profile and not valid:
         return [], 'invalid', ['Invalid LinkedIn profile; CV-only assessment continues.']
+
+    # Candidate-submitted authorized LinkedIn export text (no scraping).
+    if isinstance(candidate_text, str) and candidate_text.strip():
+        from .skill_extractor import extract_skills
+        extracted, _, _ = extract_skills(candidate_text.strip()[:20000])
+        records = []
+        url = valid['url'] if valid else ''
+        for skill_name, ev_list in extracted.items():
+            for ev in ev_list:
+                rec = {
+                    'skill': skill_name,
+                    'source': 'linkedin',
+                    'section': ev.get('section', 'skills'),
+                    'text': ev.get('text', ''),
+                    'match_method': 'linkedin_user_provided',
+                }
+                if url:
+                    rec['url'] = url
+                records.append(rec)
+        return records[:150], 'completed', []
+
+    if not valid:
+        return [], 'not_provided', []
     if _authorized_provider is None:
         return [], 'not_performed', ['LinkedIn evidence unavailable: no authorized provider is configured.']
     try:

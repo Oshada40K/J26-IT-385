@@ -87,18 +87,41 @@ def parse_cv_document(filename: str, content: bytes) -> tuple[str, list[str]]:
 
 
 HEADINGS = {
-    'skills': {'skills', 'technical skills', 'technical expertise', 'technologies', 'core competencies'},
-    'projects': {'projects', 'selected projects', 'personal projects', 'academic projects', 'project experience'},
-    'experience': {'experience', 'work experience', 'professional experience', 'employment', 'employment history'},
+    'skills': {
+        'skills', 'technical skills', 'technical expertise', 'technologies', 'core competencies',
+        'clinical skills', 'medical skills', 'core skills', 'key skills', 'areas of expertise',
+        'skills & competencies', 'skills and competencies', 'technical & clinical skills',
+    },
+    'projects': {
+        'projects', 'selected projects', 'personal projects', 'academic projects', 'project experience',
+        'selected academic & community projects', 'academic & community projects', 'community projects',
+        'research projects',
+    },
+    'experience': {
+        'experience', 'work experience', 'professional experience', 'employment', 'employment history',
+        'clinical experience', 'medical experience', 'work history', 'internships', 'clinical rotations',
+        'teaching experience', 'research experience',
+    },
     'education': {'education', 'academic qualifications', 'qualifications'},
-    'certifications': {'certifications', 'certificates', 'courses', 'training'},
+    'certifications': {
+        'certifications', 'certificates', 'courses', 'training',
+        'certifications & additional information', 'certifications and additional information',
+        'licenses & certifications', 'certifications & training', 'additional information',
+    },
     'summary': {'summary', 'professional summary', 'profile', 'about me', 'objective'},
 }
 
+CONTACT_LINE = re.compile(
+    r'(?:[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}|\+?\d[\d\s().-]{7,}\d|'
+    r'^(?:address|phone|tel|mobile|email|e-mail|linkedin|github|portfolio|website|dob|nationality)\s*[:\-])',
+    re.I,
+)
+
 
 def evidence_units(text):
-    """Keep project blocks together so technology lists accompany their actions."""
-    section = 'other'
+    """Keep project blocks together and isolate personal/contact header lines from skill extraction."""
+    section = 'personal_info'
+    seen_heading = False
     block = []
     offset = 0
     start = 0
@@ -118,11 +141,21 @@ def evidence_units(text):
         if new_section:
             flush()
             section = new_section
+            seen_heading = True
         elif not line:
             if section == 'projects':
                 project_gap = True
             else:
                 flush()
+        elif not seen_heading:
+            # Lines before the first heading belong to personal_info unless clearly a contact line vs headline.
+            flush()
+            start = offset
+            block.append(line)
+            flush()
+        elif CONTACT_LINE.search(line):
+            flush()
+            units.append({'section': 'personal_info', 'text': line, 'start': offset})
         elif section == 'projects':
             numbered_title = re.match(r'^(?:\d{1,2}[.)]?\s+|project\s+\d)', line, re.I)
             # PDF extractors may insert blank lines between each visible line.

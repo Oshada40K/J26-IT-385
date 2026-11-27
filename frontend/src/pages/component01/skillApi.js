@@ -31,11 +31,15 @@ async function session() {
   return sessionPromise
 }
 
-export async function uploadCV(file) {
+export async function uploadCV(file, options = {}) {
   const current = await session()
   const body = new FormData()
   body.append('candidate_id', current.candidate_id)
   body.append('file', file)
+  if (options.githubUsername) body.append('github_username', options.githubUsername)
+  if (options.linkedinUsername) body.append('linkedin_username', options.linkedinUsername)
+  if (options.analyzeGithub) body.append('analyze_github', 'true')
+  if (options.linkedinText) body.append('linkedin_text', options.linkedinText)
   try {
     return await request('/upload', { method: 'POST', headers: { Authorization: `Bearer ${current.access_token}` }, body })
   } catch (error) {

@@ -2,6 +2,7 @@
 from .. import repository
 from ..config import METHOD_VERSION
 from .category_classifier import classify_skill_category
+from .cross_source_comparator import compare_sources
 from .cv_parser import parse_cv_document
 from .domain_detector import detect_domain
 from .github_analyzer import analyze_github as analyze_github_profile
@@ -9,6 +10,7 @@ from .github_usage import assess_github_usage
 from .linkedin_evidence import analyze_linkedin
 from .profile_evidence import combine_evidence
 from .profile_identifier import detect_identifiers
+from .recommendation_engine import build_recommendations
 from .skill_assessor import LEVEL_LABELS, SCORE_DISCLAIMER, assess_skills
 from .skill_extractor import extract_skills, get_skill_metadata
 
@@ -60,7 +62,7 @@ def _independent_external_skills(records: list[dict], source_name: str, detected
     return items
 
 
-def process_cv(candidate_id, filename, content, github_username=None, linkedin_username=None, analyze_github=False):
+def process_cv(candidate_id, filename, content, github_username=None, linkedin_username=None, analyze_github=False, linkedin_text=None):
     text, links = parse_cv_document(filename, content)
     extracted, model_version, warnings = extract_skills(text)
     detected_domain = detect_domain(text, extracted)
@@ -85,7 +87,7 @@ def process_cv(candidate_id, filename, content, github_username=None, linkedin_u
             github_status = status
             github_records.extend(records)
         elif profile['platform'] == 'linkedin':
-            records, status, messages = analyze_linkedin(candidate_id, profile)
+            records, status, messages = analyze_linkedin(candidate_id, profile, candidate_text=linkedin_text) if linkedin_text else analyze_linkedin(candidate_id, profile)
             linkedin_status = status
             linkedin_records.extend(records)
         else:
@@ -99,6 +101,14 @@ def process_cv(candidate_id, filename, content, github_username=None, linkedin_u
                 github_assessments.append(assessed)
             elif status == 'completed':
                 warnings.append('Insufficient attributable GitHub activity for a proficiency estimate; no GitHub rating was added.')
+
+    # Handle candidate-provided LinkedIn text even if no LinkedIn handle/URL was supplied.
+    if isinstance(linkedin_text, str) and linkedin_text.strip() and linkedin_status == 'not_provided':
+        li_recs, li_status, li_msgs = analyze_linkedin(candidate_id, None, candidate_text=linkedin_text)
+        linkedin_status = li_status
+        linkedin_records.extend(li_recs)
+        profile_records.extend(li_recs)
+        warnings.extend(li_msgs)
 
     # Independent Source 2 & 3: GitHub and LinkedIn profiles
     github_only_skills = _independent_external_skills(github_records, 'github', detected_domain)
@@ -133,12 +143,17 @@ def process_cv(candidate_id, filename, content, github_username=None, linkedin_u
         skills = [skill for skill in skills if skill['name'] != 'GitHub'] + [github_skill]
         skills.sort(key=lambda skill: skill['name'].casefold())
 
+    cross_source_comparison = compare_sources(source_profiles, skills)
+    recommendations = build_recommendations(skills, detected_domain)
+
     details = {
         'assessment_method': METHOD_VERSION,
         'model_version': model_version,
         'detected_domain': detected_domain,
         'skills': skills,
         'source_profiles': source_profiles,
+        'cross_source_comparison': cross_source_comparison,
+        'recommendations': recommendations,
         'external_profiles': profiles,
         'warnings': warnings,
         'limitations': 'Estimated levels and percentages from available evidence, not verified competency. Missing external profiles do not reduce levels.',

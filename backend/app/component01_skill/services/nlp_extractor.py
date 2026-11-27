@@ -1,11 +1,20 @@
 """Domain-independent dynamic NLP candidate extraction from CV sections."""
 import re
 
+NON_SKILL_PREFIX = re.compile(
+    r'^(?:languages?|spoken\s+languages?|professional\s+interests?|interests?|hobbies|'
+    r'nationality|citizenship|date\s+of\s+birth|dob|address|location|references?|'
+    r'relevant\s+areas|professional\s+affiliations?)\s*[:\-–—]',
+    re.I,
+)
+
 SECTION_LABEL_PREFIX = re.compile(
     r'^(?:technical\s+skills?|skills?|core\s+competencies|competencies|tools?(?:\s*&\s*|\s+and\s+platforms?)?|'
-    r'technologies|languages?|programming\s+languages?|frameworks?|databases?|certifications?|'
-    r'clinical\s+skills?|financial\s+skills?|marketing\s+skills?|design\s+tools?|software|frontend|backend(?:\s*&\s*data)?|'
-    r'testing(?:\s*/\s*qa)?|other)\s*[:\-–—]\s*',
+    r'technologies|programming\s+languages?|frameworks?|databases?|certifications?|'
+    r'clinical(?:\s+skills?)?|patient\s+care|emergency(?:\s*&\s*procedures?)?|procedures?|digital|'
+    r'medical(?:\s+skills?)?|financial(?:\s+skills?)?|marketing(?:\s+skills?)?|design\s+tools?|'
+    r'teaching|research|operations|management|analytical|laboratory|'
+    r'software|frontend|backend(?:\s*&\s*data)?|testing(?:\s*/\s*qa)?|other)\s*[:\-–—]\s*',
     re.I,
 )
 
@@ -30,7 +39,7 @@ STOP_CANDIDATES = {
     'students', 'employees', 'staff', 'members', 'github', 'linkedin',
 }
 
-GENERIC_START_WORDS = {'a', 'an', 'the', 'my', 'our', 'their', 'this', 'that', 'these', 'those', 'some', 'any', 'all', 'various', 'multiple', 'several', 'new', 'existing', 'key', 'good', 'strong', 'excellent', 'basic', 'advanced'}
+GENERIC_START_WORDS = {'a', 'an', 'the', 'my', 'our', 'their', 'this', 'that', 'these', 'those', 'some', 'any', 'all', 'various', 'multiple', 'several', 'new', 'existing', 'key', 'good', 'strong', 'excellent'}
 
 # Action-object and tool-preposition patterns that work across IT, Finance, Healthcare, Education, Engineering, Marketing, Design.
 TOOL_PREP_PATTERN = re.compile(
@@ -47,10 +56,13 @@ PROPER_PHRASE_PATTERN = re.compile(
 
 
 def _clean_candidate(raw: str) -> str:
-    text = re.sub(r'\s+', ' ', (raw or '').strip(' \t\r\n•●▪-–—.,;:()[]{}"\'')).strip()
-    # Strip trailing parenthetical qualifiers like "Epic (EHR)" -> keep main if clean, or split.
-    text = re.sub(r'\([^)]{0,40}\)$', '', text).strip()
-    return text
+    text = re.sub(r'\s+', ' ', (raw or '').strip(' \t\r\n•●▪-–—.,;:[]"\'')).strip()
+    # Clean descriptive qualifiers first so trailing parentheticals like "(BLS)" are exposed and stripped cleanly.
+    text = re.sub(r'\s+(?:familiarity|observation|under supervision|practice on manikins|training)$', '', text, flags=re.I).strip()
+    text = re.sub(r'\s*\([^)]*\)?$', '', text).strip()
+    if '(' in text and ')' not in text:
+        text = text.split('(', 1)[0].strip()
+    return text.strip('() ').strip()
 
 
 def is_valid_skill_candidate(phrase: str) -> bool:
@@ -103,11 +115,15 @@ def extract_nlp_candidates(units: list[dict], positive_context_fn) -> list[dict]
     for unit in units:
         section = unit.get('section', 'other')
         text = unit.get('text', '')
-        if not text:
+        if not text or section == 'personal_info' or NON_SKILL_PREFIX.match(text):
             continue
 
         # 1. Structured lists in skills or certifications sections (or inline "Tools: A, B, C").
         if section in {'skills', 'certifications'} or SECTION_LABEL_PREFIX.match(text):
+            if section == 'certifications' and ':' in text and not SECTION_LABEL_PREFIX.match(text):
+                cert_name = text.split(':', 1)[0].strip()
+                add_candidate(cert_name, unit, 0, 'structured_list')
+                continue
             stripped = SECTION_LABEL_PREFIX.sub('', text)
             for part in re.split(r'\s*[,|;•●▪]\s*|\s+/\s+', stripped):
                 # Also handle "and" inside short lists, e.g. "GAAP and IFRS"

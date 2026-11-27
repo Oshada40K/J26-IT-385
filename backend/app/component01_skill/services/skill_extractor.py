@@ -34,8 +34,8 @@ NEGATIVE = re.compile(
 
 # Short or ambiguous single tokens requiring explicit context or skills section.
 CONTEXT_GUARDED_SKILLS = {'Go', 'R', 'C', 'React'}
-# Skip profile platform names as explicit CV skills because GitHub/LinkedIn have dedicated analyzers.
-EXCLUDED_CV_EXPLICIT = {'github', 'linkedin'}
+# Skip profile platform names and generic English words as explicit CV skills.
+EXCLUDED_CV_EXPLICIT = {'github', 'linkedin', 'review'}
 
 _INDEX_CACHE = {}
 _INDEX_LOCK = Lock()
@@ -236,6 +236,8 @@ def extract_skills(text: str):
 
         # 1. Explicit boundary-aware matching against DB skills & aliases (ESCO + O*NET + discovered).
         for unit in units:
+            if unit.get('section') == 'personal_info':
+                continue
             unit_key = (unit['section'], unit['start'])
             spans = matched_spans_by_unit.setdefault(unit_key, [])
             for item, patterns in index['compiled']:
@@ -371,6 +373,32 @@ def extract_skills(text: str):
                     },
                 )
 
+        # 2e. Link any newly discovered skills to matching sentences in experience/projects/education/certifications.
+        discovered_names = [name for name, recs in skills.items() if any(r.get('is_discovered') for r in recs)]
+        if discovered_names:
+            for name in discovered_names:
+                pat = alias_pattern(name, case_sensitive=False)
+                for unit in units:
+                    if unit.get('section') in {'personal_info', 'skills'}:
+                        continue
+                    m = pat.search(unit['text'])
+                    if m and positive_context(unit['text'], m.start()):
+                        _add_evidence(
+                            skills,
+                            name,
+                            {
+                                'source': 'cv_' + unit['section'],
+                                'section': unit['section'],
+                                'text': unit['text'],
+                                'unit_start': unit['start'],
+                                'match_start': m.start(),
+                                'match_method': 'nlp_discovered',
+                                'taxonomy_source': 'discovered',
+                                'category': skills[name][0].get('category', 'Domain-specific skills'),
+                                'is_discovered': True,
+                            },
+                        )
+
         # 3. Contextual semantic evidence scoring (SBERT when enabled, or cosine similarity).
         model_version = 'dynamic_nlp_taxonomy_v2'
         if os.getenv('SKILL_ENABLE_SBERT', 'false').lower() == 'true':
@@ -405,4 +433,29 @@ def extract_skills(text: str):
                     record.setdefault('semantic_similarity', score)
             warnings.append('SBERT disabled; database taxonomy, NLP discovery, and cosine fallback were used.')
 
+    # 4. Deduplicate overlapping skill names (e.g. "Electronic medical record" vs "Electronic medical record EMR software").
+    skills = _deduplicate_overlapping_skills(skills)
     return skills, model_version, warnings
+
+
+def _deduplicate_overlapping_skills(skills: dict) -> dict:
+    if len(skills) <= 1:
+        return skills
+    names = sorted(skills.keys(), key=lambda s: (len(s), s.casefold()))
+    merged = {}
+    for name in names:
+        records = skills[name]
+        low = name.casefold()
+        # Check if a shorter canonical skill already covers this O*NET "... software" suffix variant.
+        target = None
+        for existing in merged:
+            elow = existing.casefold()
+            if low.startswith(elow + ' ') and any(suf in low for suf in ('software', 'emr', 'ehr', 'system')):
+                target = existing
+                break
+        if target:
+            for ev in records:
+                _add_evidence(merged, target, ev)
+        else:
+            merged[name] = list(records)
+    return merged

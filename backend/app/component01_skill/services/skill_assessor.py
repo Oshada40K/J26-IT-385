@@ -1,4 +1,4 @@
-"""Transparent 5-level + percentage proficiency estimation and XAI explanation generator."""
+"""Evidence-tiered proficiency scoring (1-5 + percentage) and XAI generator."""
 import re
 from .skill_extractor import ACTION, get_skill_metadata
 
@@ -10,163 +10,154 @@ LEVEL_LABELS = {
     5: 'Expert (Review Required)',
 }
 
-SCORE_DISCLAIMER = 'Estimated proficiency from available evidence, not verified ability.'
+EVIDENCE_TIER_LABELS = {
+    'practical_implementation': 'Practical implementation',
+    'observational': 'Observational / supervised exposure',
+    'training_certification': 'Training & certification',
+    'self_reported': 'Self-reported claim',
+}
+
+SCORE_DISCLAIMER = 'Estimated proficiency from CV evidence, not verified competency.'
+
+OBSERVATIONAL_PATTERN = re.compile(
+    r'\b(?:observed|observation|shadowed|assisted|under\s+supervision|under\s+the\s+supervision|'
+    r'under\s+guidance|practice\s+on\s+manikins|familiarity|within\s+student\s+scope)\b',
+    re.I,
+)
+TRAINING_PATTERN = re.compile(
+    r'\b(?:training|workshop|course|coursework|certificate|certification|module|bootcamp)\b',
+    re.I,
+)
 
 
-def _proficiency_percentage(level: int, records: list[dict], implemented: list[dict],
-                            foundational: bool, complex_records: list[dict]) -> tuple[int, list[dict]]:
-    """Compute a deterministic, factorized 0-100 estimated proficiency score with XAI factors."""
+def classify_evidence_tier(record: dict) -> str:
+    """Differentiate practical implementation, observational exposure, training/certs, and self-reported claims."""
+    section = record.get('section', 'other')
+    text = record.get('text', '')
+    if section in {'education', 'certifications'}:
+        return 'training_certification'
+    if OBSERVATIONAL_PATTERN.search(text):
+        return 'observational'
+    if section in {'projects', 'experience'} and ACTION.search(text):
+        return 'practical_implementation'
+    if TRAINING_PATTERN.search(text):
+        return 'training_certification'
+    return 'self_reported'
+
+
+def _proficiency_score(level: int, primary_tier: str, practical: list[dict], observational: list[dict],
+                       training: list[dict], complex_records: list[dict], records: list[dict]) -> tuple[int, list[dict]]:
+    """Compute a consistent, factorized 0-100 score aligned with evidence tiers and 1-5 levels."""
     factors = []
-    sections = {e.get('section', 'other') for e in records}
-    has_skills_decl = 'skills' in sections
-    has_edu_cert = bool(sections & {'education', 'certifications'})
     has_external = any(e.get('section') == 'external' for e in records)
 
-    if foundational:
+    if level == 1:
         score = 22
-        factors.append({'factor': 'Introductory / learning context', 'points': 22, 'detail': 'Mentioned in introductory or learning context.'})
+        factors.append({'factor': 'Introductory / foundational mention', 'points': 22, 'detail': 'Mentioned as basic or introductory learning.'})
+    elif primary_tier == 'practical_implementation':
+        base = 34
+        factors.append({'factor': 'Skill presence / baseline', 'points': base, 'detail': 'Skill identified in CV.'})
+        impl_pts = 24
+        factors.append({
+            'factor': 'Practical implementation',
+            'points': impl_pts,
+            'detail': f'{len(practical)} hands-on record(s) in experience, clinical rotations, internships, or projects.',
+        })
+        score = base + impl_pts
+        if len(practical) >= 2:
+            rep_pts = min(12, (len(practical) - 1) * 6)
+            factors.append({'factor': 'Repeated application', 'points': rep_pts, 'detail': 'Demonstrated across multiple distinct activities.'})
+            score += rep_pts
+        if training:
+            tr_pts = 5
+            factors.append({'factor': 'Training / certification support', 'points': tr_pts, 'detail': 'Backed by formal training, education, or certification.'})
+            score += tr_pts
+        if complex_records:
+            comp_pts = 18
+            factors.append({'factor': 'Ownership & complexity', 'points': comp_pts, 'detail': 'Named with production, architectural, or leadership scope.'})
+            score += comp_pts
+    elif primary_tier == 'observational':
+        score = 44 if len(observational) >= 2 else 42
+        factors.append({'factor': 'Observational / supervised exposure', 'points': score, 'detail': 'Assisted or observed under supervision; capped below independent proficiency.'})
+    elif primary_tier == 'training_certification':
+        score = 40 if len(training) >= 2 else 38
+        factors.append({'factor': 'Training & certification', 'points': score, 'detail': 'Supported by coursework, workshop, or certification without independent work proof.'})
     else:
-        score = 34 if has_skills_decl else 28
-        factors.append({
-            'factor': 'Skill presence / claim',
-            'points': score,
-            'detail': 'Explicitly listed in Skills section.' if has_skills_decl else 'Referenced in CV text.',
-        })
+        score = 34
+        factors.append({'factor': 'Self-reported claim', 'points': score, 'detail': 'Listed in skills/summary without supporting practical implementation.'})
 
-    if implemented:
-        impl_points = 26
-        factors.append({
-            'factor': 'Practical implementation evidence',
-            'points': impl_points,
-            'detail': f'{len(implemented)} concrete project/experience implementation record(s) with action verbs.',
-        })
-        score += impl_points
+    if has_external and level >= 2:
+        ext_pts = 4
+        factors.append({'factor': 'External profile corroboration', 'points': ext_pts, 'detail': 'Corroborated in linked external profile metadata.'})
+        score += ext_pts
 
-        if len(implemented) >= 2:
-            corrob_points = min(14, (len(implemented) - 1) * 7)
-            factors.append({
-                'factor': 'Repeated practical application',
-                'points': corrob_points,
-                'detail': 'Demonstrated across multiple distinct projects or work responsibilities.',
-            })
-            score += corrob_points
-
-    if has_edu_cert and not foundational:
-        edu_points = 6
-        factors.append({
-            'factor': 'Supporting education / certification',
-            'points': edu_points,
-            'detail': 'Corroborated by formal education or certifications.',
-        })
-        score += edu_points
-
-    if complex_records:
-        comp_points = 18
-        factors.append({
-            'factor': 'Production ownership & complexity',
-            'points': comp_points,
-            'detail': 'Skill named alongside architecture, leadership, production, or scale responsibilities.',
-        })
-        score += comp_points
-
-    if has_external:
-        ext_points = 4
-        factors.append({
-            'factor': 'External source corroboration',
-            'points': ext_points,
-            'detail': 'Supporting metadata found in external profile (capped to avoid inflating CV level).',
-        })
-        score += ext_points
-
-    # Keep percentage strictly aligned with the 1-5 ordinal band.
     bands = {1: (10, 29), 2: (30, 49), 3: (50, 74), 4: (75, 92), 5: (93, 100)}
     low_b, high_b = bands[level]
     bounded = max(low_b, min(high_b, score))
     return bounded, factors
 
 
-def _build_xai(name: str, level: int, percentage: int, confidence: str, records: list[dict],
-               implemented: list[dict], factors: list[dict], meta: dict) -> dict:
-    methods = sorted({e.get('match_method', 'explicit_taxonomy') for e in records})
-    sections = sorted({e.get('section', 'other') for e in records})
-    self_reported_only = not implemented and any(s in {'skills', 'other', 'summary'} for s in sections)
-    evidence_types = []
-    if 'skills' in sections:
-        evidence_types.append('self_reported')
-    if implemented:
-        evidence_types.append('practical_evidence')
-    if set(sections) & {'education', 'certifications'}:
-        evidence_types.append('foundational_learning')
-    if 'external' in sections:
-        evidence_types.append('external_corroboration')
-    if not evidence_types:
-        evidence_types.append('self_reported')
-
-    if 'nlp_discovered' in methods:
-        why = f"Identified dynamically via NLP extraction as a newly discovered skill in {', '.join(sections)}."
-    elif 'esco_api_dynamic' in methods:
-        why = f"Matched dynamically against the official ESCO taxonomy from {', '.join(sections)}."
-    elif 'semantic_similarity' in methods:
-        sims = [e.get('semantic_similarity') for e in records if isinstance(e.get('semantic_similarity'), (int, float))]
-        best_sim = max(sims) if sims else None
-        why = f"Matched semantically (cosine similarity {best_sim:.2f}) to reference taxonomy from {', '.join(sections)}." if best_sim is not None else f"Matched semantically from {', '.join(sections)}."
-    else:
-        why = f"Identified explicitly against the {meta.get('source', 'taxonomy').upper()} reference taxonomy in {', '.join(sections)}."
-
-    limitations = []
-    if self_reported_only:
-        limitations.append('Only self-reported presence was found; no project or work implementation evidence yet.')
-    if confidence == 'low':
-        limitations.append('Low evidence confidence; verify through technical screening or portfolio review.')
-    if level < 5:
-        limitations.append('Level 5 (Expert) requires independent human/expert review and is never assigned automatically.')
-
-    return {
-        'why_identified': why,
-        'match_methods': methods,
-        'evidence_types': evidence_types,
-        'self_reported_only': self_reported_only,
-        'practical_evidence_count': len(implemented),
-        'score_factors': factors,
-        'confidence': confidence,
-        'evidence_limitations': limitations,
-        'score_disclaimer': SCORE_DISCLAIMER,
-    }
-
-
 def assess_skills(extracted, detected_domain=None):
     primary_domain = (detected_domain or {}).get('primary_domain')
     career_field = (detected_domain or {}).get('career_field')
     primary_occ = (detected_domain or {}).get('primary_occupation')
+    is_student = (detected_domain or {}).get('career_stage', {}).get('stage') == 'student_trainee'
     results = []
 
     for name in sorted(extracted, key=str.casefold):
-        records = extracted[name]
-        implemented = [e for e in records if e['section'] in {'projects', 'experience'} and ACTION.search(e['text'])]
-        foundational = all(re.search(r'\b(?:basic|beginner|introductory|learning|introduction)\b', e['text'], re.I) for e in records)
+        records = []
+        for raw_rec in extracted[name]:
+            rec = dict(raw_rec)
+            rec['evidence_tier'] = classify_evidence_tier(rec)
+            records.append(rec)
 
-        level = 1 if foundational else 2
-        reason = 'Introductory evidence.' if foundational else 'Self-reported presence; insufficient implementation evidence.'
-        confidence = 'low'
-
-        if implemented:
-            level = 3
-            confidence = 'medium'
-            reason = 'Named skill accompanies concrete implementation in project/work evidence.'
+        practical = [e for e in records if e['evidence_tier'] == 'practical_implementation']
+        observational = [e for e in records if e['evidence_tier'] == 'observational']
+        training = [e for e in records if e['evidence_tier'] == 'training_certification']
+        foundational = all(
+            re.search(r'\b(?:basic\s+(?:knowledge|understanding|familiarity|skills?|level|exposure)|beginner|introductory|learning|introduction)\b', e['text'], re.I)
+            for e in records
+        )
 
         complex_records = [
-            e for e in implemented
-            if e['section'] == 'experience'
+            e for e in practical
+            if not is_student
+            and e['section'] == 'experience'
             and re.search(r'\b(?:owned|led|architected|directed|spearheaded|managed)\b', e['text'], re.I)
             and re.search(r'\b(?:production|enterprise|hospital|financial|organization|organisation|company-wide|regulatory)\b', e['text'], re.I)
             and re.search(r'\b(?:distributed|scalable|architecture|performance|security|compliance|audit|clinical|strategy|budget)\b', e['text'], re.I)
         ]
-        if len(implemented) >= 2 and complex_records:
+
+        if foundational and not practical and not observational:
+            level = 1
+            primary_tier = 'training_certification' if training else 'self_reported'
+            confidence = 'low'
+            reason = 'Introductory or foundational mention only.'
+        elif len(practical) >= 2 and complex_records:
             level = 4
+            primary_tier = 'practical_implementation'
             confidence = 'high'
-            reason = 'Repeated implementation and explicit ownership with complex responsibilities; review required.'
-        elif len(implemented) >= 3:
-            confidence = 'high'
+            reason = 'Repeated practical implementation with ownership and complex responsibilities; review required.'
+        elif practical:
+            level = 3
+            primary_tier = 'practical_implementation'
+            confidence = 'high' if len(practical) >= 3 else 'medium'
+            reason = 'Supported by practical implementation in work experience, rotations, internships, or projects.'
+        elif observational:
+            level = 2
+            primary_tier = 'observational'
+            confidence = 'low'
+            reason = 'Observational or supervised exposure; independent implementation not yet evidenced.'
+        elif training:
+            level = 2
+            primary_tier = 'training_certification'
+            confidence = 'low'
+            reason = 'Training or certification evidence; practical implementation not yet demonstrated.'
+        else:
+            level = 2
+            primary_tier = 'self_reported'
+            confidence = 'low'
+            reason = 'Self-reported in CV without supporting practical implementation evidence.'
 
         meta = get_skill_metadata(name)
         category = records[0].get('category') or meta.get('category') or 'Domain-specific skills'
@@ -175,10 +166,44 @@ def assess_skills(extracted, detected_domain=None):
         occupations = meta.get('occupations', [])
         career_fields = meta.get('career_fields', [])
 
-        percentage, factors = _proficiency_percentage(level, records, implemented, foundational, complex_records)
-        xai = _build_xai(name, level, percentage, confidence, records, implemented, factors, meta)
+        percentage, factors = _proficiency_score(level, primary_tier, practical, observational, training, complex_records, records)
+        methods = sorted({e.get('match_method', 'explicit_taxonomy') for e in records})
+        sections = sorted({e.get('section', 'other') for e in records})
+        evidence_types = sorted({e['evidence_tier'] for e in records})
 
-        # Relevant if domain is undetermined, newly discovered, or matches occupation/career field.
+        if 'nlp_discovered' in methods:
+            why = f"Identified dynamically via NLP extraction as a newly discovered skill in {', '.join(sections)}."
+        elif 'esco_api_dynamic' in methods:
+            why = f"Matched dynamically against the official ESCO taxonomy from {', '.join(sections)}."
+        elif 'semantic_similarity' in methods:
+            sims = [e.get('semantic_similarity') for e in records if isinstance(e.get('semantic_similarity'), (int, float))]
+            best_sim = max(sims) if sims else None
+            why = f"Matched semantically (cosine similarity {best_sim:.2f}) to reference taxonomy from {', '.join(sections)}." if best_sim is not None else f"Matched semantically from {', '.join(sections)}."
+        else:
+            why = f"Identified against the {taxonomy_source.upper()} reference taxonomy in {', '.join(sections)}."
+
+        limitations = []
+        if primary_tier != 'practical_implementation':
+            limitations.append(f"No independent practical implementation evidence found ({EVIDENCE_TIER_LABELS[primary_tier].lower()} only).")
+        if confidence == 'low':
+            limitations.append('Low evidence confidence; verify through portfolio, practical assessment, or supervisor feedback.')
+        if level < 5:
+            limitations.append('Level 5 (Expert) requires independent human review and is never assigned automatically.')
+
+        xai = {
+            'why_identified': why,
+            'match_methods': methods,
+            'evidence_types': evidence_types,
+            'primary_evidence_tier': primary_tier,
+            'primary_evidence_label': EVIDENCE_TIER_LABELS[primary_tier],
+            'self_reported_only': primary_tier == 'self_reported',
+            'practical_evidence_count': len(practical),
+            'score_factors': factors,
+            'confidence': confidence,
+            'evidence_limitations': limitations,
+            'score_disclaimer': SCORE_DISCLAIMER,
+        }
+
         if not primary_domain and not primary_occ:
             relevant = True
         elif is_discovered:
@@ -205,6 +230,7 @@ def assess_skills(extracted, detected_domain=None):
             'relevant_to_domain': relevant,
             'confidence': confidence,
             'status': 'needs_review' if level == 4 else 'provisional',
+            'evidence_tier': primary_tier,
             'reason': reason,
             'evidence': records,
             'xai': xai,

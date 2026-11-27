@@ -211,3 +211,26 @@ def test_independent_source_profiles_and_taxonomy_endpoints(tmp_path, monkeypatc
         assert details['source_profiles']['linkedin']['status'] == 'not_provided'
         assert details['skills'][0]['percentage'] >= 30
         assert 'score_factors' in details['skills'][0]['xai']
+
+
+def test_medical_student_cv_detects_healthcare_and_skips_spoken_languages():
+    cv = (
+        'DR. MAYA PERERA\n'
+        'Medical Student | Clinical Training | Patient Care & Community Health\n'
+        'PROFESSIONAL SUMMARY\n'
+        'Final-year medical student with supervised clinical exposure across internal medicine and emergency care.\n'
+        'CLINICAL SKILLS\n'
+        'Clinical: Patient history taking, vital-sign assessment, general physical examination\n'
+        'Emergency & procedures: Basic Life Support (BLS) training, CPR practice on manikins, ECG recording under supervision\n'
+        'Digital: Electronic medical record familiarity, Microsoft Word, Excel, PowerPoint\n'
+        'CERTIFICATIONS & ADDITIONAL INFORMATION\n'
+        'Languages: Sinhala (native), English (professional working proficiency), Tamil (basic)\n'
+        'Professional interests: Internal medicine, primary care\n'
+    )
+    extracted, _, _ = extract_skills(cv)
+    assert not any('sinhala' in k.lower() or 'english' in k.lower() or 'tamil' in k.lower() or '(' in k for k in extracted)
+    assert {'CPR', 'ECG recording', 'Patient history taking'} <= set(extracted)
+    detected = detect_domain(cv, extracted)
+    assert detected['status'] == 'detected'
+    assert detected['primary_domain'] == 'Healthcare'
+    assert detected['career_field'] == 'Healthcare'

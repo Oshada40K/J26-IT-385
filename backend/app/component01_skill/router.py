@@ -52,6 +52,7 @@ async def upload_cv(
     github_username: Annotated[str | None, Form(max_length=200)] = None,
     linkedin_username: Annotated[str | None, Form(max_length=200)] = None,
     analyze_github: Annotated[bool, Form()] = False,
+    linkedin_text: Annotated[str | None, Form(max_length=20000)] = None,
 ):
     try:
         authorize(candidate_id, owner)
@@ -59,7 +60,8 @@ async def upload_cv(
         if len(content) > MAX_FILE_BYTES:
             raise HTTPException(413, 'CV must be no larger than 10 MB.')
         try:
-            return await run_in_threadpool(process_cv, candidate_id, file.filename or '', content, github_username, linkedin_username, analyze_github)
+            kwargs = {'linkedin_text': linkedin_text} if linkedin_text else {}
+            return await run_in_threadpool(process_cv, candidate_id, file.filename or '', content, github_username, linkedin_username, analyze_github, **kwargs)
         except CVError as exc:
             raise HTTPException(422, str(exc)) from exc
     finally:
