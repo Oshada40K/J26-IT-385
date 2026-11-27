@@ -285,7 +285,8 @@ class TutorScenarios(unittest.TestCase):
                     learning.generate_lessons(rec, "l", other["skill_id"])
             valid = [dict(t, id=f"ai-{t['id']}", requires=[f"ai-{r}" for r in t["requires"]],
                           quiz=[dict(q, id=f"ai-{q['id']}") for q in t["quiz"]],
-                          diagnostic=[dict(q, id=f"ai-{q['id']}") for q in t["diagnostic"]]) for t in BANK[GIT]]
+                          diagnostic=[dict(q, id=f"ai-{q['id']}") for q in t["diagnostic"]],
+                          exercises=[dict(e, id=f"ai-{e['id']}") for e in t["exercises"]]) for t in BANK[GIT]]
             with patch.object(lesson_provider, "call_model", return_value=json.dumps(valid)):
                 plan = learning.generate_lessons(rec, "l", other["skill_id"])
         self.assertEqual(self.skill(plan, other["skill_id"])["lessons"], "ai")
@@ -389,6 +390,130 @@ class TutorScenarios(unittest.TestCase):
         self.assertNotIn("video", kinds)
         self.assertIn("Video first: you prefer video tutorials.", lesson["personalised"])
 
+    # ---------------------------------------------------------------- interactive exercises (practice only)
+    INTERACTIVE_NOTE = "Interactive practice first: you prefer interactive coding exercises."
+
+    def lesson_kinds(self, cid, methods, topic_id="pf-b1"):
+        rec = self.student(cid, [], {PF: 1}, methods=methods)
+        lesson = learning.open_activity(rec, cid, PF, topic_id)
+        return rec, lesson, [s["kind"] for s in lesson["sections"]]
+
+    # A student who chose interactive exercises gets them right after "How it works", with their own note
+    def test_interactive_learner_gets_exercises_after_how_it_works(self):
+        _, lesson, kinds = self.lesson_kinds("ix", ("interactive_exercises",))
+        self.assertEqual(kinds.count("exercises"), 1)
+        self.assertEqual(kinds.index("exercises"), kinds.index("explanation") + 1)
+        self.assertIn(self.INTERACTIVE_NOTE, lesson["personalised"])
+        self.assertFalse(any("hands-on" in n for n in lesson["personalised"]))     # no longer treated as hands-on
+        self.assertLess(kinds.index("practice"), kinds.index("practical"))           # practical task not moved first
+        section = lesson["sections"][kinds.index("exercises")]
+        self.assertEqual(section["title"], "Practice: interactive exercises")
+        self.assertEqual([e["id"] for e in section["exercises"]], [e["id"] for e in topic(PF, "pf-b1")["exercises"]])
+
+    # Without that preference the exercises follow the worked example and the note is absent
+    def test_other_learners_get_exercises_after_the_worked_example(self):
+        hands_on_note = "Practical task first: you prefer hands-on learning."
+        for cid, methods in (("rx", ("reading",)), ("hx", ("hands_on_projects",)), ("vx", ("video_tutorials",))):
+            _, lesson, kinds = self.lesson_kinds(cid, methods)
+            self.assertEqual(kinds.index("exercises"), kinds.index("worked_example") + 1, methods)
+            self.assertNotIn(self.INTERACTIVE_NOTE, lesson["personalised"])
+            hands_on = methods == ("hands_on_projects",)                 # the hands-on rule is kept for hands-on only
+            self.assertEqual(hands_on_note in lesson["personalised"], hands_on, methods)
+            self.assertEqual(kinds.index("practical") < kinds.index("practice"), hands_on, methods)
+
+    # Dewmi's own case: video tutorials AND interactive exercises
+    def test_video_and_interactive_learner(self):
+        _, lesson, kinds = self.lesson_kinds("vix", ("video_tutorials", "interactive_exercises"))
+        self.assertEqual(kinds[:2], ["objective", "video"])                          # curated video first
+        self.assertEqual(kinds.index("exercises"), kinds.index("explanation") + 1)   # exercises right after "How it works"
+        self.assertIn("Video first: you prefer video tutorials.", lesson["personalised"])
+        self.assertIn(self.INTERACTIVE_NOTE, lesson["personalised"])
+        self.assertFalse(any("hands-on" in n for n in lesson["personalised"]))
+        self.assertEqual(kinds.count("video"), 1)
+        self.assertEqual(kinds.count("exercises"), 1)
+
+    # interactive_exercises plus reading: the reading still comes after "How it works", the exercises come first
+    def test_interactive_and_reading_learner(self):
+        docs = dict(title="Docs", type="documentation", level="Beginner", url="https://example.com/d")
+        rec = self.student("irx", [], {PF: 1}, methods=("reading", "interactive_exercises"))
+        with patch.object(service.engine(), "recommend_resources", return_value=[docs]):
+            kinds = [s["kind"] for s in learning.open_activity(rec, "irx", PF, "pf-b1")["sections"]]
+        at = kinds.index("explanation")
+        self.assertEqual(kinds[at + 1], "exercises")
+        self.assertIn("read_more", kinds)
+
+    # Answers, explanations and fixed lines are never sent with the lesson; order_steps lines arrive shuffled
+    def test_exercise_answers_not_sent_before_an_attempt(self):
+        for sid, topics in BANK.items():
+            for t in topics:
+                section = next(s for s in tutor.compose_lesson(t, "standard", "software")["sections"] if s["kind"] == "exercises")
+                full = {e["id"]: e for e in t["exercises"]}
+                for pub in section["exercises"]:
+                    self.assertFalse(set(tutor.EXERCISE_SECRET_KEYS) & set(pub), pub["id"])
+                    if pub["type"] == "order_steps":
+                        self.assertNotEqual(pub["lines"], full[pub["id"]]["lines"], pub["id"])
+                        self.assertEqual(sorted(pub["lines"]), sorted(full[pub["id"]]["lines"]))
+        _, lesson, _ = self.lesson_kinds("hide", ("interactive_exercises",))
+        sent = json.dumps(lesson)
+        for e in topic(PF, "pf-b1")["exercises"]:
+            self.assertNotIn(e["explanation"], sent)
+
+    # Checks, wrong answers and reveals are stored for history but never change progress, evidence or readiness
+    def test_exercise_attempts_are_practice_only(self):
+        rec = self.student("prx", [], {PF: 2}, methods=("interactive_exercises",))
+        learning.open_activity(rec, "prx", PF, "pf-b1")
+        before = dict(progress=repository.topic_progress("prx"), skills=repository.skill_learning("prx"),
+                      events=repository.learning_events("prx", limit=500), analysis=service.analysis(rec)["readiness"],
+                      plan=self.skill(learning.plan(rec, "prx"), PF))
+        e1, e2, e3 = topic(PF, "pf-b1")["exercises"]
+        wrong = learning.check_exercise(rec, "prx", PF, "pf-b1", e1["id"], (e1["answer"] + 1) % len(e1["options"]))
+        self.assertEqual((wrong["correct"], wrong["attempt_number"], wrong["practice_only"]), (False, 1, True))
+        self.assertTrue(wrong["can_reveal"])
+        self.assertFalse({"explanation", "correct_answer"} & set(wrong))                 # wrong: "Not quite" only
+        right = learning.check_exercise(rec, "prx", PF, "pf-b1", e1["id"], e1["answer"])
+        self.assertEqual((right["correct"], right["attempt_number"], right["solved_without_reveal"]), (True, 2, True))
+        self.assertEqual(right["explanation"], e1["explanation"])
+        self.assertEqual(right["correct_answer"], e1["options"][e1["answer"]])
+        shown = learning.check_exercise(rec, "prx", PF, "pf-b1", e2["id"], reveal=True)
+        self.assertEqual((shown["correct"], shown["revealed"], shown["attempt_number"]), (None, True, 0))
+        self.assertEqual(shown["correct_answer"], e2["answers"][0])
+        after_reveal = learning.check_exercise(rec, "prx", PF, "pf-b1", e2["id"], e2["answers"][0])
+        self.assertEqual((after_reveal["correct"], after_reveal["attempt_number"]), (True, 1))
+        self.assertTrue(after_reveal["revealed_before"])
+        self.assertFalse(after_reveal["solved_without_reveal"])
+        for _ in range(5):                                                               # repeated practice
+            learning.check_exercise(rec, "prx", PF, "pf-b1", e3["id"], e3["answer"])
+        after = dict(progress=repository.topic_progress("prx"), skills=repository.skill_learning("prx"),
+                     events=repository.learning_events("prx", limit=500), analysis=service.analysis(rec)["readiness"],
+                     plan=self.skill(learning.plan(rec, "prx"), PF))
+        self.assertEqual(after, before)
+        self.assertEqual(after["progress"][PF]["pf-b1"]["state"], "learning")
+        self.assertEqual(after["plan"]["demonstrated_level"], 0)
+        hist = learning.history(rec, "prx")
+        self.assertEqual(hist["attempts"], [])                                           # quiz history is not crowded
+        self.assertEqual(len(hist["exercise_attempts"]), 9)
+        self.assertTrue(all(a["kind"] == "exercise" for a in hist["exercise_attempts"]))
+        self.assertEqual(hist["exercise_summary"], dict(tried=3, checks=8, solved=3, solved_without_reveal=2, revealed=1))
+        stored = hist["exercise_attempts"][-1]                                           # oldest first at the end
+        self.assertEqual(stored["answers"], dict(exercise_id=e1["id"], answer=(e1["answer"] + 1) % len(e1["options"]),
+                                                 reveal=False))
+        self.assertEqual(stored["score"], 0.0)
+
+    def test_exercise_check_ownership_and_errors(self):
+        rec = self.student("own", [], {PF: 2})
+        ex = topic(PF, "pf-b1")["exercises"][0]
+        for owner, status in (("someone-else", 403), (None, 401)):
+            with self.assertRaises(LearningError) as ctx:
+                learning.check_exercise(rec, owner, PF, "pf-b1", ex["id"], 0)
+            self.assertEqual(ctx.exception.status_code, status)
+        for args, status in (((PF, "pf-b1", "pf-b1-e9", 0), 404), ((PF, "nope", ex["id"], 0), 404),
+                             (("SK999", "pf-b1", ex["id"], 0), 404), ((PF, "pf-b1", ex["id"], None), 400),
+                             ((PF, "pf-b1", ex["id"], 99), 400), ((PF, "pf-b1", ex["id"], "text"), 400)):
+            with self.assertRaises(LearningError) as ctx:
+                learning.check_exercise(rec, "own", *args)
+            self.assertEqual(ctx.exception.status_code, status, args)
+        self.assertEqual(repository.attempts_for("own", kind="exercise"), [])
+
 
 class ModelLoading(unittest.TestCase):
     # Page load sends the analysis and the lesson plan at the same time; the second must not see half-loaded models.
@@ -463,6 +588,98 @@ class CurriculumAndRules(unittest.TestCase):
         video = dict(youtube_id="abcDEF12_-x", title="A title", channel="A channel", why="What it covers.")
         lesson = tutor.compose_lesson(dict(topic(PF, "pf-b1"), video=video, ai_generated=True), "standard", "software")
         self.assertNotIn("video", [s["kind"] for s in lesson["sections"]])
+
+    # ---------------------------------------------------------------- interactive exercises
+    def all_exercises(self):
+        return [(t, e) for topics in BANK.values() for t in topics for e in t["exercises"]]
+
+    def test_every_topic_has_three_valid_exercises(self):
+        topics = [t for ts in BANK.values() for t in ts]
+        self.assertEqual(len(topics), 27)
+        for t in topics:
+            self.assertEqual(len(t["exercises"]), 3, t["id"])
+            self.assertGreaterEqual(len({e["type"] for e in t["exercises"]}), 2, t["id"])
+            curriculum.validate_exercises(t["exercises"], f"x/{t['id']}")
+        for skill_id, topics in BANK.items():                  # every skill practises all four types
+            self.assertEqual({e["type"] for t in topics for e in t["exercises"]}, set(curriculum.EXERCISE_TYPES), skill_id)
+        ids = [e["id"] for _, e in self.all_exercises()]
+        self.assertEqual(len(ids), 81)
+        self.assertEqual(len(set(ids)), 81)
+        for t, e in self.all_exercises():                       # code exercises use the topic's language
+            if e["language"] in curriculum.RUNNABLE_LANGUAGES:
+                self.assertEqual(e["language"], t["example"]["language"], e["id"])
+
+    def test_malformed_exercises_are_rejected(self):
+        good = {e["id"]: e for _, e in self.all_exercises()}
+        where = lambda e: f"x/{e['id'].rsplit('-e', 1)[0]}"
+        broken = [
+            dict(good["pf-b1-e1"], type="quiz"), dict(good["pf-b1-e1"], language="java"), dict(good["pf-b1-e1"], hint=" "),
+            {k: v for k, v in good["pf-b1-e1"].items() if k != "explanation"},
+            dict(good["pf-b1-e1"], answer=4), dict(good["pf-b1-e1"], answer=True), dict(good["pf-b1-e1"], options=["1", "1", "2"]),
+            dict(good["pf-b1-e1"], options=["1", "2"]), {k: v for k, v in good["pf-b1-e1"].items() if k != "code"},
+            dict(good["pf-b1-e2"], code="for n in range(7): print(n)"), dict(good["pf-b1-e2"], code="____ = ____"),
+            dict(good["pf-b1-e2"], answers=[]), dict(good["pf-b1-e2"], answers=["x" * 81]),
+            {k: v for k, v in good["pf-b1-e2"].items() if k != "expected_output"},
+            dict(good["pf-b1-e3"], answer=9), {k: v for k, v in good["pf-b1-e3"].items() if k != "fix"},
+            dict(good["pf-b1-e3"], fix=good["pf-b1-e3"]["lines"][3]),
+            dict(good["oop-a1-e2"], answer=1),                   # "    def move(self):" appears twice: ambiguous
+            dict(good["pf-b2-e3"], lines=["a", "a", "b"]), dict(good["pf-b2-e3"], lines=["a", "b"]),
+            {k: v for k, v in good["sql-b1-e1"].items() if k != "setup"}, dict(good["sql-b1-e2"], ignore_case="yes"),
+            "not an exercise",
+        ]
+        for bad in broken:
+            with self.assertRaises(curriculum.CurriculumError, msg=str(bad)[:80]):
+                curriculum.validate_exercise(bad, where(good["pf-b1-e1"]) if isinstance(bad, str) else where(bad))
+        three = topic(PF, "pf-b1")["exercises"]
+        for exercises in ([three[0]], three + [dict(three[0], id="pf-b1-e4")], [three[0], three[0]],
+                          [dict(e, id=e["id"].replace("pf-b1", "pf-b2")) for e in three], "pf-b1-e1"):
+            with self.assertRaises(curriculum.CurriculumError):
+                curriculum.validate_exercises(exercises, "SK001/pf-b1")
+        with self.assertRaises(curriculum.CurriculumError):    # and through the topic validator used by load()
+            curriculum.validate_topic(dict(topic(PF, "pf-b1"), exercises=[dict(three[0], answer=7)] + three[1:]), PF)
+
+    # Every python and sql answer is checked by running the code (exercise_runner); bash/text by structure only
+    def test_exercise_answers_are_checked_by_running_the_code(self):
+        from .exercise_runner import is_runnable, verify
+        runnable = [e for _, e in self.all_exercises() if is_runnable(e)]
+        self.assertEqual(len(runnable), 68)
+        for e in runnable:
+            with self.subTest(exercise=e["id"]):
+                self.assertEqual(verify(e), [])
+        structure_only = sorted(e["id"] for _, e in self.all_exercises() if not is_runnable(e))
+        self.assertEqual(structure_only, sorted(["pf-i1-e3"] + [f"git-{t}-e{i}" for t in ("b1", "b2", "i1", "a1") for i in (1, 2, 3)]))
+
+    # The runner really catches wrong answers (so a passing run means something)
+    def test_exercise_runner_detects_wrong_answers(self):
+        from .exercise_runner import verify
+        good = {e["id"]: e for _, e in self.all_exercises()}
+        for bad in (dict(good["pf-b1-e1"], answer=0), dict(good["sql-b1-e1"], answer=1),
+                    dict(good["pf-b1-e2"], answers=["n % 2 == 1"]), dict(good["sql-b2-e2"], answers=["WHERE"]),
+                    dict(good["py-b2-e3"], fix="for i in range(2, len(prices)):"),
+                    dict(good["pf-b2-e3"], lines=["a = 1", "b = 2", "print(a + b)"], expected_output="3"),
+                    dict(good["sql-i2-e3"], expected_output="Pen; Lamp; Desk")):
+            self.assertNotEqual(verify(bad), [], bad["id"])
+
+    def test_exercise_grading_and_normalisation(self):
+        for _, e in self.all_exercises():
+            right = (e["answers"][0] if e["type"] == "fill_blank" else list(e["lines"]) if e["type"] == "order_steps"
+                     else e["answer"])
+            wrong = ("no idea" if e["type"] == "fill_blank" else tutor.shuffled_lines(e) if e["type"] == "order_steps"
+                     else (e["answer"] + 1) % len(e.get("options") or e["lines"]))
+            self.assertTrue(tutor.check_exercise(e, right)["correct"], e["id"])
+            self.assertFalse(tutor.check_exercise(e, wrong)["correct"], e["id"])
+            self.assertTrue(tutor.exercise_answer_ok(e, right) and tutor.exercise_answer_ok(e, wrong), e["id"])
+        ex = {e["id"]: e for _, e in self.all_exercises()}
+        for eid, given, ok in (("pf-b1-e2", "n%2==0", True), ("pf-b1-e2", "  n % 2  ==  0 ", True), ("pf-b1-e2", "n % 2 == 1", False),
+                               ("py-i1-e2", 'greeting="Hi"', True), ("py-i1-e2", "greeting = 'Hi'", True),
+                               ("py-b1-e3", "Int(year)", False), ("sql-b1-e2", "is null;", True), ("sql-i1-e2", "left outer", True),
+                               ("dsa-i1-e2", "target-n", True), ("dsa-i1-e2", "n - target", False), ("pf-b1-e1", "1", True)):
+            self.assertEqual(tutor.check_exercise(ex[eid], given)["correct"], ok, (eid, given))
+        self.assertFalse(tutor.exercise_answer_ok(ex["pf-b2-e3"], ["only one line"]))
+        self.assertFalse(tutor.exercise_answer_ok(ex["pf-b1-e1"], True))
+        shown = tutor.check_exercise(ex["pf-b1-e3"], None, reveal=True)
+        self.assertEqual(shown["correct_answer"], "Line 4: if m > 50:")
+        self.assertEqual(shown["fixed_line"], "if m >= 50:")
 
     def test_short_answer_grading_uses_keywords(self):
         q = next(q for t in BANK.values() for tp in t for q in tp["quiz"] if q["type"] == "short")

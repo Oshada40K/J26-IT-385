@@ -21,15 +21,14 @@ async function openForm(page) {
   return { name, rank: Number(rank), score }
 }
 
-async function fillForm(page) {
+async function fillForm(page, methods = ['Online courses', 'Hands-on projects']) {
   const skills = await skillGroups(page).all()
   expect(skills.length).toBeGreaterThan(0)
   for (const [index, skill] of skills.entries()) {
     // Mix real ratings with "Not studied" so both paths are submitted.
     await skill.getByRole('radio', index % 3 === 2 ? { name: 'Not studied' } : { name: /Moderately confident/ }).check()
   }
-  await page.getByRole('checkbox', { name: 'Online courses' }).check()
-  await page.getByRole('checkbox', { name: 'Hands-on projects' }).check()
+  for (const method of methods) await page.getByRole('checkbox', { name: method }).check()
   await page.getByRole('radio', { name: '4–6 hours' }).check()
   await page.getByLabel(/relevant projects/).fill('2')
   await page.getByLabel(/professional certifications/).fill('0')
@@ -170,5 +169,88 @@ test.describe('Component 04 - Learning roadmap', () => {
     await expect(careerCard(page).getByText(`${career.name} — rank ${career.rank}, match score ${career.score}`)).toBeVisible()
     await expect(page.getByRole('combobox')).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Back to my results' })).toBeVisible()
+  })
+
+  // Interactive exercises: a student who chose "Interactive coding exercises" gets them right after "How it works";
+  // answers stay on the server until an attempt; a wrong check shows only "Not quite" until "Show answer".
+  test('interactive exercises come right after "How it works" and are checked on the server', async ({ page }) => {
+    await uploadCv(page)
+    const career = await openForm(page)
+    await fillForm(page, ['Interactive coding exercises'])
+    await submitAndExpectRoadmap(page, career.name)
+    await page.getByRole('tab', { name: 'Adaptive Roadmap', exact: true }).click()
+    await expect(page.getByText('Loading your lessons…')).toHaveCount(0, { timeout: ANALYSIS_TIMEOUT })
+    await page.locator('details.c4r-step').evaluateAll(steps => steps.forEach(step => { step.open = true }))
+    const openLesson = page.getByRole('button', { name: 'Open lesson' })
+    if (await openLesson.count() === 0) {
+      const reason = `No curated lesson is open in the roadmap Component 03 decided for this CV (${career.name}); ` +
+        'the exercise UI could not be reached, so this test was skipped (not passed).'
+      console.log(`SKIPPED: ${reason}`)
+      test.skip(true, reason)
+    }
+    const activity = page.waitForResponse(r => r.url().includes('/activity?') && r.request().method() === 'GET')
+    await openLesson.first().click()
+    const lesson = await (await activity).json()
+
+    // The lesson JSON never carries the exercise answers, explanations or fixed lines.
+    const exercisesSection = lesson.sections.find(s => s.kind === 'exercises')
+    expect(exercisesSection, 'curated lessons have an exercises section').toBeTruthy()
+    for (const exercise of exercisesSection.exercises) {
+      expect(Object.keys(exercise).filter(k => ['answer', 'answers', 'explanation', 'fix'].includes(k))).toEqual([])
+    }
+
+    // Order and the personalisation note.
+    await expect(page.getByText('Interactive practice first: you prefer interactive coding exercises.')).toBeVisible()
+    await expect(page.getByText('Practical task first: you prefer hands-on learning.')).toHaveCount(0)
+    const kinds = await page.locator('.c4l-lesson > .c4l-part').evaluateAll(parts =>   // parts without a kind (extra resources) are skipped
+      parts.map(p => [...p.classList].find(c => c.startsWith('c4l-part-'))?.replace('c4l-part-', '')).filter(Boolean))
+    expect(kinds.indexOf('exercises')).toBe(kinds.indexOf('explanation') + 1)
+    const section = page.locator('.c4l-part-exercises')
+    await expect(section.getByRole('heading', { name: /Practice: interactive exercises/ })).toBeVisible()
+    await expect(section.locator('li.c4x')).toHaveCount(exercisesSection.exercises.length)
+
+    // One exercise end to end: a deliberately wrong answer -> "Not quite" only -> hint -> show answer -> try again.
+    const first = section.locator('li.c4x').first()
+    const type = exercisesSection.exercises[0].type
+    if (type === 'fill_blank') await first.getByLabel('Your answer for ____').fill('certainly not the answer')
+    else if (type !== 'order_steps') await first.getByRole('radio').last().check()   // order_steps starts shuffled (never correct)
+    const check = page.waitForResponse(r => r.url().includes('/exercises/check'))
+    await first.getByRole('button', { name: 'Check' }).click()
+    const checked = await (await check).json()
+    console.log(`Exercises checked in lesson ${lesson.topic_id} (${exercisesSection.exercises.map(e => e.type).join(', ')}); ` +
+      `first check correct=${checked.correct}, attempt ${checked.attempt_number}`)
+    await expect(first.getByRole('status')).toContainText(checked.correct ? 'Correct!' : 'Not quite.')
+    if (!checked.correct) {
+      expect(checked.explanation).toBeUndefined()
+      await expect(first.locator('.c4x-solution')).toHaveCount(0)
+      await first.getByRole('button', { name: 'Show hint' }).click()
+      await expect(first.locator('.c4x-hint')).toHaveText(`💡 ${exercisesSection.exercises[0].hint}`)
+      await first.getByRole('button', { name: 'Show answer' }).click()
+      await expect(first.getByRole('status')).toContainText('Here is the answer.')
+    }
+    await expect(first.locator('.c4x-solution')).toBeVisible()
+    await first.getByRole('button', { name: 'Try again' }).click()
+    await expect(first.getByRole('button', { name: 'Check' })).toBeVisible()
+
+    // Keyboard: an order_steps line moves with the arrow buttons (Enter on a focused button).
+    const order = section.locator('li.c4x').filter({ has: page.locator('.c4x-order') }).first()
+    if (await order.count()) {
+      const before = await order.locator('.c4x-order code').allInnerTexts()
+      await order.getByRole('button', { name: 'Move line 2 up' }).focus()
+      await page.keyboard.press('Enter')
+      const after = await order.locator('.c4x-order code').allInnerTexts()
+      expect(after.slice(0, 2)).toEqual([before[1], before[0]])
+    }
+
+    // 390 px wide, light and dark: no horizontal page scroll, and the exercise card follows the theme tokens.
+    await page.setViewportSize({ width: 390, height: 844 })
+    const backgrounds = []
+    for (const theme of ['light', 'dark']) {
+      await page.evaluate(t => { document.documentElement.dataset.theme = t }, theme)
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
+      expect(overflow, `horizontal scroll in ${theme} theme at 390 px`).toBeLessThanOrEqual(0)
+      backgrounds.push(await first.evaluate(el => getComputedStyle(el).backgroundColor))
+    }
+    expect(backgrounds[0]).not.toBe(backgrounds[1])
   })
 })

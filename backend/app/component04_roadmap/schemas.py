@@ -249,3 +249,22 @@ class LearningAttempt(BaseModel):
         if len(self.answers) > 60 or any(isinstance(v, str) and len(v) > 2000 for v in self.answers.values()):
             raise ValueError("Too many or too long answers")
         return self
+
+
+class ExerciseCheck(BaseModel):
+    """POST /api/roadmap/learning/{assessment_id}/exercises/check - one interactive practice exercise (practice only).
+    answer: option / line index (predict_output, find_bug), text (fill_blank) or the lines in the chosen order
+    (order_steps). reveal=true asks for the answer and explanation instead of checking."""
+    skill_id: str = Field(min_length=1, max_length=20)
+    topic_id: str = Field(min_length=1, max_length=40)
+    exercise_id: str = Field(min_length=1, max_length=60)
+    answer: int | str | list[str] | None = None
+    reveal: bool = False
+
+    @model_validator(mode="after")
+    def _check(self):
+        if isinstance(self.answer, str) and len(self.answer) > 300:
+            raise ValueError("The answer is too long")
+        if isinstance(self.answer, list) and (len(self.answer) > 20 or any(len(x) > 300 for x in self.answer)):
+            raise ValueError("Too many or too long lines")
+        return self

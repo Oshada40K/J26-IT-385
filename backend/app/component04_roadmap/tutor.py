@@ -15,6 +15,7 @@ Topic states
 """
 import json
 import os
+import random
 import re
 
 STAGES = ("Beginner", "Intermediate", "Advanced")
@@ -250,6 +251,100 @@ def grade(questions, answers):
                 results=results, missed_concepts=sorted(set(missed)))
 
 
+# ---------------------------------------------------------------------------------------------- interactive exercises
+# Practice only: checked instantly on the server so answers never reach the browser before an attempt, and never used
+# for mastery, placement, evidence, roadmap or readiness (see learning.check_exercise).
+EXERCISE_SECRET_KEYS = ("answer", "answers", "explanation", "fix")
+EXERCISE_PUBLIC_KEYS = ("id", "type", "language", "prompt", "hint", "code", "setup", "options", "expected_output")
+
+
+def shuffled_lines(ex):
+    """order_steps lines in a fixed shuffled order (seeded by the exercise id) that is never the correct order."""
+    lines = list(ex["lines"])
+    rng = random.Random(ex["id"])
+    for _ in range(20):
+        rng.shuffle(lines)
+        if lines != ex["lines"]:
+            return lines
+    return ex["lines"][1:] + ex["lines"][:1]                  # rotation: always different for 3+ distinct lines
+
+
+def public_exercise(ex):
+    """An exercise as sent with the lesson: never the answer(s), explanation or fixed line."""
+    out = {k: ex[k] for k in EXERCISE_PUBLIC_KEYS if k in ex}
+    if ex["type"] == "find_bug":
+        out["lines"] = list(ex["lines"])
+    elif ex["type"] == "order_steps":
+        out["lines"] = shuffled_lines(ex)
+    return out
+
+
+def _norm_code(text, ignore_case=False):
+    """Normalised short code answer: outer and repeated spaces, spaces around operators and punctuation, quote style
+    (' or ") and a trailing ';' do not matter. Case matters unless ignore_case (SQL keywords)."""
+    t = re.sub(r"\s+", " ", str(text or "").replace('"', "'")).strip()
+    t = re.sub(r"\s*([^\w\s'])\s*", r"\1", t).rstrip(";").strip()
+    return t.lower() if ignore_case else t
+
+
+def _index(given):
+    if isinstance(given, bool):
+        return None
+    if isinstance(given, int):
+        return given
+    if isinstance(given, str) and given.strip().isdigit():
+        return int(given.strip())
+    return None
+
+
+def exercise_answer_ok(ex, given):
+    """True when `given` has the right shape for the exercise type (an option / line index, a text, or the lines)."""
+    if ex["type"] in ("predict_output", "find_bug"):
+        size = len(ex["options"] if ex["type"] == "predict_output" else ex["lines"])
+        i = _index(given)
+        return i is not None and 0 <= i < size
+    if ex["type"] == "fill_blank":
+        return isinstance(given, str) and bool(given.strip())
+    return isinstance(given, list) and sorted(map(str, given)) == sorted(ex["lines"])
+
+
+def exercise_solution(ex):
+    """What the student sees after a correct answer or after "Show answer": the explanation and the correct answer."""
+    out = dict(explanation=ex["explanation"])
+    if ex["type"] == "predict_output":
+        out["correct_answer"] = ex["options"][ex["answer"]]
+    elif ex["type"] == "find_bug":
+        out["correct_answer"] = f"Line {ex['answer'] + 1}: {ex['lines'][ex['answer']].strip()}"
+        if ex.get("fix"):
+            out["fixed_line"] = ex["fix"].strip()
+    elif ex["type"] == "fill_blank":
+        out["correct_answer"] = ex["answers"][0]
+        if len(ex["answers"]) > 1:
+            out["also_accepted"] = list(ex["answers"][1:])
+    else:
+        out["correct_answer"] = list(ex["lines"])
+    return out
+
+
+def check_exercise(ex, given, reveal=False):
+    """Check one exercise. reveal=True shows the solution without checking an answer (correct is None).
+    A wrong answer gets only "Not quite" (plus the hint in the lesson); the solution comes with a correct answer or a reveal."""
+    if reveal:
+        return dict(id=ex["id"], type=ex["type"], correct=None, revealed=True, message="Here is the answer.",
+                    **exercise_solution(ex))
+    if ex["type"] in ("predict_output", "find_bug"):
+        correct = _index(given) == ex["answer"]
+    elif ex["type"] == "fill_blank":
+        case = bool(ex.get("ignore_case"))
+        correct = _norm_code(given, case) in {_norm_code(a, case) for a in ex["answers"]}
+    else:
+        correct = isinstance(given, list) and [str(x) for x in given] == list(ex["lines"])
+    if correct:
+        return dict(id=ex["id"], type=ex["type"], correct=True, revealed=False, message="Correct!", **exercise_solution(ex))
+    return dict(id=ex["id"], type=ex["type"], correct=False, revealed=False,
+                message="Not quite. Use the hint or try again.", can_reveal=True)
+
+
 # ---------------------------------------------------------------------------------------------- adaptive decisions
 def decide_after_quiz(topic, topics, graded, prev, cfg):
     """Adaptive decision after a topic quiz (Cases A-F of the design). prev: saved progress row for the topic (or {}).
@@ -358,8 +453,8 @@ MODE_LABELS = {
 
 def compose_lesson(topic, mode, family, prev=None, style_types=(), skill_name="", career_name=""):
     """The lesson the student sees, in a lecture-notes layout (main idea, explain from zero, real-life example, how it
-    works, curated video, visual, worked example, key ideas, memory trick, interview hack, common mistakes, practice,
-    summary, memory test, next).
+    works, curated video, visual, worked example, interactive exercises, key ideas, memory trick, interview hack, common
+    mistakes, practice, summary, memory test, next).
     Content changes with the mode (not only the label): foundation opens the step-by-step part and all common mistakes;
     focused puts the missed ideas first; challenge folds the beginner support away and adds a harder task.
     Learning-style changes that need resources (video first, reading) are added by learning.open_activity."""
@@ -383,6 +478,10 @@ def compose_lesson(topic, mode, family, prev=None, style_types=(), skill_name=""
     if topic.get("visual") and mode != "challenge":
         sections.append(dict(kind="visual", title=topic["visual"]["caption"], visual=topic["visual"]))
     sections.append(dict(kind="worked_example", title=f"Worked example: {topic['example']['title']}", example=topic["example"]))
+    if topic.get("exercises"):
+        sections.append(dict(kind="exercises", title="Practice: interactive exercises",
+                             exercises=[public_exercise(e) for e in topic["exercises"]],
+                             note="Practice only: checked instantly, but never graded and never counted as evidence of mastery."))
     sections.append(dict(kind="key_ideas", title="Key ideas to remember", items=list(topic["key_ideas"])))
     if topic.get("memory_trick"):
         sections.append(dict(kind="memory_trick", title="Memory trick", text=topic["memory_trick"]))
@@ -390,7 +489,7 @@ def compose_lesson(topic, mode, family, prev=None, style_types=(), skill_name=""
         sections.append(dict(kind="career_hack", title="Interview and job hack", text=topic["career_hack"]))
     if mode != "challenge" or missed:
         sections.append(dict(kind="mistakes", title="Common mistakes", items=list(topic["mistakes"])))
-    hands_on = "project" in style_types                    # chose hands-on projects or interactive exercises
+    hands_on = "project" in style_types                    # only "hands_on_projects" maps to "project" (analysis.METHOD_RESOURCE_TYPES)
     practice = [dict(kind="practice", title="Try it yourself", text=topic["practice"]),
                 dict(kind="practical", title="Practical task (self-check)", text=topic["practical"]["task"],
                      items=list(topic["practical"]["rubric"]),

@@ -79,6 +79,36 @@ class LearningApiTests(unittest.TestCase):
         history = self.client.get(f"/api/roadmap/learning/{aid}/history", headers=headers).json()
         self.assertEqual(history["attempts"][0]["topic_id"], nxt["topic_id"])
 
+    # Interactive exercises: no answers in the lesson, server-side check, practice only, private
+    def test_exercise_check_endpoint(self):
+        aid, headers = self.student([])
+        nxt = self.client.get(f"/api/roadmap/learning/{aid}", headers=headers).json()["next_activity"]
+        lesson = self.client.get(f"/api/roadmap/learning/{aid}/activity", headers=headers,
+                                 params={"skill_id": nxt["skill_id"], "topic_id": nxt["topic_id"]}).json()
+        section = next(s for s in lesson["sections"] if s["kind"] == "exercises")
+        full = {e["id"]: e for t in BANK[nxt["skill_id"]] for e in t["exercises"]}
+        for pub in section["exercises"]:
+            self.assertFalse({"answer", "answers", "explanation", "fix"} & set(pub))
+        pub = section["exercises"][0]
+        ex = full[pub["id"]]
+        right = ex["answers"][0] if ex["type"] == "fill_blank" else ex["lines"] if ex["type"] == "order_steps" else ex["answer"]
+        url = f"/api/roadmap/learning/{aid}/exercises/check"
+        body = {"skill_id": nxt["skill_id"], "topic_id": nxt["topic_id"], "exercise_id": pub["id"], "answer": right}
+        readiness = self.client.get(f"/api/roadmap/analysis/{aid}", headers=headers).json()["readiness"]
+        checked = self.client.post(url, headers=headers, json=body)
+        self.assertEqual(checked.status_code, 200, checked.text)
+        self.assertEqual((checked.json()["correct"], checked.json()["attempt_number"]), (True, 1))
+        self.assertEqual(checked.json()["explanation"], ex["explanation"])
+        self.assertEqual(self.client.get(f"/api/roadmap/analysis/{aid}", headers=headers).json()["readiness"], readiness)
+        history = self.client.get(f"/api/roadmap/learning/{aid}/history", headers=headers).json()
+        self.assertEqual(history["exercise_attempts"][0]["answers"]["exercise_id"], pub["id"])
+        self.assertEqual(history["exercise_summary"]["solved_without_reveal"], 1)
+        _, other = self.student([])
+        self.assertEqual(self.client.post(url, headers=other, json=body).status_code, 403)
+        self.assertEqual(self.client.post(url, headers=headers, json=dict(body, exercise_id="nope")).status_code, 404)
+        self.assertEqual(self.client.post(url, headers=headers, json=dict(body, answer=None)).status_code, 400)
+        self.assertEqual(self.client.post(url, headers=headers, json=dict(body, answer="x" * 301)).status_code, 422)
+
     def test_learning_progress_is_private(self):
         aid, _ = self.student([])
         _, other = self.student([])

@@ -328,10 +328,20 @@ def save_attempt(record):
                     json.dumps(record.get("result") or {}), record["created_at"]))
 
 
-def attempts_for(candidate_id, limit=50):
+def attempts_for(candidate_id, limit=50, kind=None, exclude_kind=None, topic_id=None):
+    """Newest first. kind / exclude_kind / topic_id filter the rows; limit=None returns them all.
+    Interactive exercise checks are stored with kind 'exercise' (practice only)."""
+    sql, args = "SELECT * FROM c4_learning_attempts WHERE candidate_id=?", [candidate_id]
+    for column, op, value in (("kind", "=", kind), ("kind", "<>", exclude_kind), ("topic_id", "=", topic_id)):
+        if value is not None:
+            sql += f" AND {column} {op} ?"
+            args.append(value)
+    sql += " ORDER BY id DESC"
+    if limit is not None:
+        sql += " LIMIT ?"
+        args.append(limit)
     with connection() as db:
-        rows = db.execute("SELECT * FROM c4_learning_attempts WHERE candidate_id=? ORDER BY id DESC LIMIT ?",
-                          (candidate_id, limit)).fetchall()
+        rows = db.execute(sql, args).fetchall()
     out = []
     for r in rows:
         item = dict(r)

@@ -160,6 +160,15 @@ export function submitLearningAttempt(assessmentId, body) {
   }, ROOT)
 }
 
+// Interactive practice exercise: the server checks the answer (answers are never sent to the browser before an
+// attempt). reveal=true asks for the answer and explanation. Practice only: no plan or roadmap refresh is needed.
+export function checkExercise(assessmentId, { skillId, topicId, exerciseId, answer = null, reveal = false }) {
+  return request(`${LEARN(assessmentId)}/exercises/check`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ skill_id: skillId, topic_id: topicId, exercise_id: exerciseId, answer, reveal }),
+  }, ROOT)
+}
+
 export function getLearningHistory(assessmentId) {
   return request(`${LEARN(assessmentId)}/history`, { headers: authHeaders() }, ROOT)
 }

@@ -38,8 +38,7 @@ def topics_for(skill_id):
 
 
 # ---------------------------------------------------------------------------------------------- context
-def _context(record, owner):
-    """Ownership check, then the student's current analysis and the facts the tutor needs."""
+def _check_owner(record, owner):
     if not owner:
         raise LearningError("Upload your CV in Component 01 to use the learning tutor, so your progress can be saved.", 401)
     if not record.get("candidate_id"):
@@ -47,6 +46,11 @@ def _context(record, owner):
                             "Submit the assessment again to unlock the lessons.", 409)
     if record.get("candidate_id") != owner:
         raise LearningError("You can only see your own learning progress.", 403)
+
+
+def _context(record, owner):
+    """Ownership check, then the student's current analysis and the facts the tutor needs."""
+    _check_owner(record, owner)
     analysis = service.analysis(record)
     steps = [s for stage in analysis["roadmap"]["stages"] for s in stage["steps"]]
     ratings = {s["skill_id"]: s.get("self_rating") for s in analysis["skill_gaps"]["skills"]}
@@ -223,8 +227,9 @@ def _mode_reason(mode, prev, level):
 
 def _personalise(lesson, ctx, prev, topics, topic):
     """Arrange the lesson for this student and say how: lesson version (profile and last result), video first (the
-    topic's curated video, else a level-matched video from the dataset), extra reading (dataset), practical first,
-    career examples."""
+    topic's curated video, else a level-matched video from the dataset), extra reading (dataset), interactive
+    exercises right after "How it works" (prefers interactive coding exercises), practical first (prefers hands-on
+    projects), career examples."""
     methods = ctx["analysis"]["inputs"].get("learning_methods") or []
     resources = lesson.get("supplementary_resources") or []
     sections = lesson["sections"]
@@ -248,7 +253,13 @@ def _personalise(lesson, ctx, prev, topics, topic):
         sections.insert(at, dict(kind="read_more", title="Read more", resource=docs,
                                  text="Documentation at this level for a deeper read."))
         notes.append("Further reading added: you prefer reading documentation.")
-    if "project" in (ctx["style"] or []):
+    exercises = next((x for x in sections if x["kind"] == "exercises"), None)
+    if "interactive_exercises" in methods and exercises:         # after the other moves, so nothing ends up between them
+        sections.remove(exercises)
+        at = next((i for i, x in enumerate(sections) if x["kind"] == "explanation"), len(sections) - 1) + 1
+        sections.insert(at, exercises)
+        notes.append("Interactive practice first: you prefer interactive coding exercises.")
+    if "project" in (ctx["style"] or []):                        # only hands_on_projects maps to "project"
         notes.append("Practical task first: you prefer hands-on learning.")
     notes.append(f"Examples chosen for {ctx['career']['career_name']}.")
     lesson["personalised"] = notes
@@ -351,13 +362,61 @@ def _roadmap_update(step, after_step, before, level_after, after_ctx):
                 demonstrated_level_before=before["demonstrated"], demonstrated_level_after=level_after)
 
 
+def check_exercise(record, owner, skill_id, topic_id, exercise_id, answer=None, reveal=False):
+    """Check one interactive exercise (or reveal its answer) and store the attempt for history. PRACTICE ONLY: this
+    never reads or writes topic progress, skill placement, demonstrated level or learning events, and never runs the
+    analysis, so it cannot change mastery, evidence, the roadmap or readiness. Deliberately light (no lock check):
+    an exercise's answer is practice material, never a quiz or diagnostic answer.
+    Stored per attempt: the answer, whether it was a reveal, the attempt number for this exercise (checks only),
+    whether the answer had been revealed before, and solved_without_reveal."""
+    _check_owner(record, owner)
+    topics, _ = topics_for(skill_id)
+    if not topics:
+        raise LearningError("There are no lessons for this skill.", 404)
+    topic = _topic(topics, topic_id)
+    ex = next((e for e in topic.get("exercises") or [] if e["id"] == exercise_id), None)
+    if not ex:
+        raise LearningError("Unknown exercise for this topic.", 404)
+    reveal = bool(reveal)
+    if not reveal and not tutor.exercise_answer_ok(ex, answer):
+        raise LearningError("Choose or type an answer before checking.", 400)
+    earlier = [a for a in repository.attempts_for(owner, limit=None, kind="exercise", topic_id=topic["id"])
+               if (a.get("answers") or {}).get("exercise_id") == exercise_id]
+    checks_before = sum(1 for a in earlier if not a["answers"].get("reveal"))
+    revealed_before = any(a["answers"].get("reveal") for a in earlier)
+    feedback = tutor.check_exercise(ex, answer, reveal)
+    feedback.update(exercise_id=exercise_id, attempt_number=checks_before + (0 if reveal else 1),
+                    revealed_before=revealed_before,
+                    solved_without_reveal=bool(feedback["correct"]) and not revealed_before,
+                    practice_only=True)
+    attempt_id = uuid4().hex
+    repository.save_attempt(dict(attempt_id=attempt_id, candidate_id=owner, assessment_id=record["assessment_id"],
+                                 skill_id=skill_id, topic_id=topic["id"], kind="exercise",
+                                 score=None if reveal else float(feedback["correct"]),
+                                 answers=dict(exercise_id=exercise_id, answer=answer, reveal=reveal),
+                                 result=feedback, created_at=_now()))
+    return dict(feedback, attempt_id=attempt_id)
+
+
+def _exercise_summary(rows):
+    """Per student: exercises tried, solved, solved without revealing the answer, and revealed."""
+    ids = lambda pred: sorted({a["answers"].get("exercise_id") for a in rows if pred(a)})
+    return dict(tried=len(ids(lambda a: True)), checks=sum(1 for a in rows if not a["answers"].get("reveal")),
+                solved=len(ids(lambda a: (a.get("result") or {}).get("correct") is True)),
+                solved_without_reveal=len(ids(lambda a: (a.get("result") or {}).get("solved_without_reveal") is True)),
+                revealed=len(ids(lambda a: a["answers"].get("reveal"))))
+
+
 def history(record, owner):
     ctx_owner = owner
     if not ctx_owner:
         raise LearningError("Upload your CV in Component 01 to see your learning history.", 401)
     if record.get("candidate_id") != ctx_owner:
         raise LearningError("You can only see your own learning progress.", 403)
-    return dict(attempts=repository.attempts_for(owner), events=repository.learning_events(owner, limit=50))
+    exercise_rows = repository.attempts_for(owner, limit=None, kind="exercise")
+    return dict(attempts=repository.attempts_for(owner, exclude_kind="exercise"),        # quizzes, diagnostics, self-checks
+                exercise_attempts=exercise_rows[:50], exercise_summary=_exercise_summary(exercise_rows),
+                events=repository.learning_events(owner, limit=50))
 
 
 def generate_lessons(record, owner, skill_id):

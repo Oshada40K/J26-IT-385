@@ -3,7 +3,7 @@
 // tutor's decision (advance / targeted practice / re-teach / prerequisite) -> the regenerated roadmap and readiness.
 import { useEffect, useState } from 'react'
 import Icon from '../../components/Icon.jsx'
-import { getLearningPlan, hasCvSession, openActivity, submitLearningAttempt } from './assessmentApi.js'
+import { checkExercise, getLearningPlan, hasCvSession, openActivity, submitLearningAttempt } from './assessmentApi.js'
 import './LearningCoach.css'
 
 const TOPIC_STATE = {
@@ -47,7 +47,7 @@ function Visual({ visual }) {
 // Lecture-notes headings: the same icon always means the same kind of part.
 const PART_ICON = {
   objective: '🎯', watch_first: '▶️', video: '🎬', focus: '🔁', main_idea: '💡', from_zero: '🧠', career: '🌍', explanation: '📖', read_more: '📚',
-  visual: '📊', worked_example: '💻', key_ideas: '🔑', memory_trick: '🧩', career_hack: '⚡', mistakes: '⚠️', practice: '✍️',
+  visual: '📊', worked_example: '💻', exercises: '🧪', key_ideas: '🔑', memory_trick: '🧩', career_hack: '⚡', mistakes: '⚠️', practice: '✍️',
   practical: '🛠️', challenge: '🚀', summary: '📌', recall: '🧠', next: '➡️',
 }
 
@@ -86,7 +86,132 @@ function RecallItem({ item, index }) {
   </li>
 }
 
-function Section({ section, rubric, onRubric }) {
+// ------------------------------------------------------------------ interactive exercises (practice only)
+// The server checks every answer (the browser never receives the answers before an attempt). A wrong answer shows
+// only "Not quite" with "Show hint", "Try again" and "Show answer"; the explanation comes with a correct answer or a reveal.
+const EXERCISE_LABEL = {
+  predict_output: 'Predict the output', fill_blank: 'Fill in the blank', find_bug: 'Find the bug', order_steps: 'Put the lines in order',
+}
+
+function Solution({ result }) {
+  const answer = result.correct_answer
+  return <div className="c4x-solution">
+    {Array.isArray(answer)
+      ? <><p><strong>Correct order:</strong></p><ol className="c4x-solution-lines">{answer.map(line => <li key={line}><code>{line}</code></li>)}</ol></>
+      : <p><strong>Answer:</strong> <code>{answer}</code></p>}
+    {result.fixed_line && <p><strong>Fixed line:</strong> <code>{result.fixed_line}</code></p>}
+    {result.also_accepted?.length > 0 && <p className="muted">Also accepted: {result.also_accepted.map(a => <code key={a}>{a}</code>)}</p>}
+    <p>{result.explanation}</p>
+  </div>
+}
+
+function Exercise({ exercise, index, onCheck }) {
+  const initial = exercise.type === 'order_steps' ? exercise.lines : exercise.type === 'fill_blank' ? '' : null
+  const [answer, setAnswer] = useState(initial)
+  const [result, setResult] = useState(null)
+  const [hint, setHint] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [moveNote, setMoveNote] = useState('')
+  const name = `c4x-${exercise.id}`
+  const done = result && (result.correct || result.revealed)
+  const ready = exercise.type === 'fill_blank' ? answer.trim() !== '' : answer !== null
+
+  async function send(reveal) {
+    setBusy(true)
+    setError('')
+    try { setResult(await onCheck(exercise.id, reveal ? null : answer, reveal)) }
+    catch (err) { setError(err.message) }
+    finally { setBusy(false) }
+  }
+  function change(value) {
+    setAnswer(value)
+    if (result && !done) setResult(null)                    // editing after "Not quite" starts a new try
+  }
+  function move(i, step) {
+    const lines = [...answer]
+    const j = i + step;
+    [lines[i], lines[j]] = [lines[j], lines[i]]
+    change(lines)
+    setMoveNote(`Moved line ${i + 1} to position ${j + 1} of ${lines.length}.`)
+  }
+  function tryAgain() {
+    if (done) setAnswer(initial)                             // practise again from the start
+    setResult(null)
+    setMoveNote('')
+  }
+
+  return <li className="c4x">
+    <form onSubmit={event => { event.preventDefault(); if (ready && !busy && !done) send(false) }}>
+      <p className="c4x-type">{index + 1}. {EXERCISE_LABEL[exercise.type]}</p>
+      <p className="c4x-prompt" id={`${name}-prompt`}>{exercise.prompt}</p>
+      {exercise.setup && <details className="c4x-setup">
+        <summary>{exercise.language === 'sql' ? 'Show the table data' : 'Show the code that is already given'}</summary>
+        <pre className="c4l-code"><code>{exercise.setup}</code></pre>
+      </details>}
+      {exercise.code && <pre className="c4l-code"><code>{exercise.code}</code></pre>}
+      {exercise.expected_output != null && exercise.type !== 'predict_output' &&
+        <p className="c4x-expected"><strong>{exercise.type === 'find_bug' ? 'It should print:' : 'When it is right, it prints:'}</strong>{' '}
+          <code>{exercise.expected_output}</code></p>}
+
+      {['predict_output', 'find_bug'].includes(exercise.type) && <fieldset className="c4x-choices" aria-labelledby={`${name}-prompt`} disabled={done}>
+        <legend className="c4x-legend">{exercise.type === 'find_bug' ? 'Choose the wrong line' : 'Choose the output'}</legend>
+        {(exercise.type === 'find_bug' ? exercise.lines : exercise.options).map((text, i) => <label key={i}>
+          <input type="radio" name={name} checked={answer === i} onChange={() => change(i)} />
+          {exercise.type === 'find_bug' && <span className="c4x-line-no">{i + 1}</span>}
+          <code className="c4x-line">{text}</code>
+        </label>)}
+      </fieldset>}
+
+      {exercise.type === 'fill_blank' && <label className="c4x-blank">Your answer for ____
+        <input type="text" value={answer} onChange={event => change(event.target.value)} disabled={done} maxLength={300}
+          autoComplete="off" autoCapitalize="off" spellCheck={false} />
+      </label>}
+
+      {exercise.type === 'order_steps' && <>
+        <p className="c4x-legend" id={`${name}-order`}>Use the arrow buttons to move each line.</p>
+        <ol className="c4x-order" aria-labelledby={`${name}-order`}>
+          {answer.map((line, i) => <li key={line}>
+            <code className="c4x-line">{line}</code>
+            <span className="c4x-move">
+              <button type="button" className="button-secondary" disabled={i === 0 || done}
+                aria-label={`Move line ${i + 1} up`} onClick={() => move(i, -1)}>↑</button>
+              <button type="button" className="button-secondary" disabled={i === answer.length - 1 || done}
+                aria-label={`Move line ${i + 1} down`} onClick={() => move(i, 1)}>↓</button>
+            </span>
+          </li>)}
+        </ol>
+        <p className="c4x-sr" aria-live="polite">{moveNote}</p>
+      </>}
+
+      <div className="c4x-actions">
+        {!done && <button type="submit" disabled={!ready || busy}>{busy ? 'Checking…' : 'Check'}</button>}
+        <button type="button" className="button-secondary" aria-expanded={hint} onClick={() => setHint(h => !h)}>
+          {hint ? 'Hide hint' : 'Show hint'}</button>
+        {result && <button type="button" className="button-secondary" onClick={tryAgain}>Try again</button>}
+        {result && !done && <button type="button" className="button-secondary" disabled={busy} onClick={() => send(true)}>Show answer</button>}
+      </div>
+      {hint && <p className="c4x-hint">💡 {exercise.hint}</p>}
+      <div role="status" aria-live="polite">
+        {result && <div className={`c4x-result ${result.correct ? 'is-correct' : result.revealed ? 'is-revealed' : 'is-wrong'}`}>
+          <p className="c4x-verdict">{result.correct ? '✅ Correct!' : result.revealed ? '👀 Here is the answer.' : '❌ Not quite.'}
+            {!result.correct && !result.revealed && <span> Use the hint, or change your answer and try again.</span>}</p>
+          {done && <Solution result={result} />}
+        </div>}
+      </div>
+      {error && <p className="error-message" role="alert">{error}</p>}
+    </form>
+  </li>
+}
+
+function Exercises({ section, onCheck }) {
+  return <>
+    <ol className="c4x-list">{section.exercises.map((exercise, i) => <Exercise key={exercise.id} exercise={exercise} index={i} onCheck={onCheck} />)}</ol>
+    <p className="muted">{section.note}</p>
+  </>
+}
+
+function Section({ section, rubric, onRubric, onExercise }) {
   const list = items => <ul>{items.map(item => <li key={item}>{item}</li>)}</ul>
   const title = <h4><span className="c4l-part-icon" aria-hidden="true">{PART_ICON[section.kind] || '•'}</span>{section.title}</h4>
   if (section.kind === 'from_zero') return <details className="c4l-part c4l-part-from_zero" open={!section.collapsed}>
@@ -106,6 +231,7 @@ function Section({ section, rubric, onRubric }) {
       <pre className="c4l-code"><code>{section.example.code}</code></pre>
       <ol>{section.example.steps.map(step => <li key={step}>{step}</li>)}</ol>
     </>}
+    {section.kind === 'exercises' && <Exercises section={section} onCheck={onExercise} />}
     {section.kind === 'recall' && <><ol className="c4l-recall">{section.recall.map((item, i) => <RecallItem key={item.q} item={item} index={i} />)}</ol>
       <p className="muted">{section.note}</p></>}
     {section.kind === 'practical' && <>
@@ -260,7 +386,9 @@ export function Activity({ assessmentId, request, onDone, onClose }) {
       : <>
         {isLesson && <div className="c4l-lesson">
           {activity.sections.filter(x => x.kind !== 'next').map(section => <Section key={section.kind + section.title} section={section} rubric={rubric}
-            onRubric={i => setRubric(r => r.includes(i) ? r.filter(x => x !== i) : [...r, i])} />)}
+            onRubric={i => setRubric(r => r.includes(i) ? r.filter(x => x !== i) : [...r, i])}
+            onExercise={(exerciseId, answer, reveal) => checkExercise(assessmentId,
+              { skillId: request.skillId, topicId: activity.topic_id, exerciseId, answer, reveal })} />)}
           <div className="c4r-actions">
             <button type="button" className="button-secondary" disabled={state.busy || rubric.length === 0}
               onClick={() => submit('practical', { rubric })}>Record my self-check</button>

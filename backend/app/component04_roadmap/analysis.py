@@ -40,7 +40,10 @@ PREREQ_TARGET = 0.5            # c4_engine adds a prerequisite to the roadmap wh
 # Form learning methods -> resource_type values in learning_resources.csv.
 METHOD_RESOURCE_TYPES = {
     "online_courses": ["course", "certification"], "video_tutorials": ["video"], "reading": ["documentation"],
-    "hands_on_projects": ["project"], "interactive_exercises": ["project", "course"],
+    # interactive_exercises -> course only: the dataset has no "interactive" type, its interactive lessons are typed
+    # "course", and projects are long self-directed builds (not instant-feedback exercises). The lessons' own
+    # interactive exercises answer this preference (learning._personalise).
+    "hands_on_projects": ["project"], "interactive_exercises": ["course"],
     "instructor_led": ["course"], "group_learning": ["course"], "other": [],
 }
 RESOURCE_TYPE_LABELS = {"course": "online course", "certification": "certification course", "video": "video",

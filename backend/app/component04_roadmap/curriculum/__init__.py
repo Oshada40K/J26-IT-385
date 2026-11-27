@@ -91,12 +91,93 @@ def validate_skill(skill_id, topics):
     return topics
 
 
-ENRICHMENT_KEYS = ("from_zero", "memory_trick", "career_hack", "recall", "video")
+ENRICHMENT_KEYS = ("from_zero", "memory_trick", "career_hack", "recall", "video", "exercises")
 YOUTUBE_ID = re.compile(r"[A-Za-z0-9_-]{11}")
+EXERCISE_TYPES = ("predict_output", "fill_blank", "find_bug", "order_steps")
+EXERCISE_LANGUAGES = ("python", "sql", "bash", "text")
+RUNNABLE_LANGUAGES = ("python", "sql")        # checked by running the code in the tests; bash/text by structure only
+BLANK = "____"
+
+
+def _text(value):
+    return isinstance(value, str) and bool(value.strip())
+
+
+def validate_exercise(ex, where):
+    """One interactive practice exercise (practice only: never graded as evidence). Raises CurriculumError."""
+    if not isinstance(ex, dict):
+        raise CurriculumError(f"{where}: each exercise must be an object")
+    eid = ex.get("id")
+    if not _text(eid):
+        raise CurriculumError(f"{where}: an exercise is missing its 'id'")
+    at = f"{where}/{eid}"
+    kind, language = ex.get("type"), ex.get("language")
+    if kind not in EXERCISE_TYPES:
+        raise CurriculumError(f"{at}: type must be one of {EXERCISE_TYPES}")
+    if language not in EXERCISE_LANGUAGES:
+        raise CurriculumError(f"{at}: language must be one of {EXERCISE_LANGUAGES}")
+    for key in ("prompt", "explanation", "hint"):
+        if not _text(ex.get(key)):
+            raise CurriculumError(f"{at}: '{key}' must be a non-empty text")
+    runnable = language in RUNNABLE_LANGUAGES
+    if language == "sql" and not _text(ex.get("setup")):
+        raise CurriculumError(f"{at}: SQL exercises need a 'setup' script (tables and rows)")
+    if "setup" in ex and not _text(ex["setup"]):
+        raise CurriculumError(f"{at}: 'setup' must be a non-empty text")
+    if "ignore_case" in ex and not isinstance(ex["ignore_case"], bool):
+        raise CurriculumError(f"{at}: 'ignore_case' must be true or false")
+    if kind == "predict_output":
+        options = ex.get("options")
+        if not _text(ex.get("code")):
+            raise CurriculumError(f"{at}: predict_output needs 'code'")
+        if (not isinstance(options, list) or len(options) < 3 or not all(_text(o) for o in options)
+                or len(set(options)) != len(options)):
+            raise CurriculumError(f"{at}: predict_output needs three or more distinct text options")
+        if not isinstance(ex.get("answer"), int) or isinstance(ex["answer"], bool) or not 0 <= ex["answer"] < len(options):
+            raise CurriculumError(f"{at}: answer must be the index of the correct option")
+    elif kind == "fill_blank":
+        code, answers = ex.get("code"), ex.get("answers")
+        if not _text(code) or code.count(BLANK) != 1:
+            raise CurriculumError(f"{at}: fill_blank code must contain exactly one {BLANK}")
+        if (not isinstance(answers, list) or not 1 <= len(answers) <= 5
+                or not all(_text(a) and len(a) <= 80 and BLANK not in a for a in answers)):
+            raise CurriculumError(f"{at}: fill_blank needs 1-5 accepted answers (short texts)")
+    else:
+        lines = ex.get("lines")
+        low, high = (3, 16) if kind == "find_bug" else (3, 8)
+        if not isinstance(lines, list) or not low <= len(lines) <= high or not all(_text(x) for x in lines):
+            raise CurriculumError(f"{at}: {kind} needs {low}-{high} non-empty lines")
+        if kind == "order_steps" and len(set(lines)) != len(lines):   # the student's order is sent back as line texts
+            raise CurriculumError(f"{at}: order_steps lines must be distinct")
+        if kind == "find_bug":
+            if not isinstance(ex.get("answer"), int) or isinstance(ex["answer"], bool) or not 0 <= ex["answer"] < len(lines):
+                raise CurriculumError(f"{at}: answer must be the index of the wrong line")
+            if lines.count(lines[ex["answer"]]) != 1:
+                raise CurriculumError(f"{at}: the wrong line must appear only once, so the answer is not ambiguous")
+            if runnable and (not _text(ex.get("fix")) or ex["fix"] == lines[ex["answer"]]):
+                raise CurriculumError(f"{at}: runnable find_bug needs a 'fix' that differs from the wrong line")
+    if runnable and kind != "predict_output" and not isinstance(ex.get("expected_output"), str):
+        raise CurriculumError(f"{at}: runnable {kind} exercises need 'expected_output' so the answer can be checked by running it")
+    return ex
+
+
+def validate_exercises(exercises, where):
+    if not isinstance(exercises, list) or not 2 <= len(exercises) <= 3:
+        raise CurriculumError(f"{where}: 'exercises' must be a list of 2-3 exercises")
+    for ex in exercises:
+        validate_exercise(ex, where)
+    ids = [ex["id"] for ex in exercises]
+    if len(set(ids)) != len(ids):
+        raise CurriculumError(f"{where}: duplicate exercise ids")
+    topic_id = where.rsplit("/", 1)[-1]
+    if any(not i.startswith(f"{topic_id}-e") for i in ids):
+        raise CurriculumError(f"{where}: exercise ids must start with '{topic_id}-e'")
 
 
 def validate_enrichment(topic, where):
-    """Optional lecture-style parts (from_zero, memory_trick, career_hack, recall, video). Checked when present."""
+    """Optional lecture-style parts (from_zero, memory_trick, career_hack, recall, video, exercises). Checked when present."""
+    if "exercises" in topic:
+        validate_exercises(topic["exercises"], where)
     for key in ("from_zero", "memory_trick", "career_hack"):
         if key in topic and (not isinstance(topic[key], str) or not topic[key].strip()):
             raise CurriculumError(f"{where}: '{key}' must be a non-empty text")

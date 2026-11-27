@@ -9,7 +9,7 @@ from . import c3_link, repository, service
 from .errors import EvidenceError, LearningError, ModelsUnavailable
 from .evidence_check import MAX_FILE_BYTES
 from .schemas import (AnalysisResponse, AssessmentRecord, AssessmentSaved, AssessmentSubmission, Career, CareerCheck,
-                      EvidenceDeleted, EvidenceRecord, EvidenceReview, EvidenceSubmission, LearningAttempt,
+                      EvidenceDeleted, EvidenceRecord, EvidenceReview, EvidenceSubmission, ExerciseCheck, LearningAttempt,
                       QuestionRequest, QuestionResponse, RecommendedCareer)
 
 router = APIRouter(prefix="/api/roadmap", tags=["Learning Roadmap & Skill Gap"])
@@ -327,7 +327,16 @@ async def learning_attempt(assessment_id: str, body: LearningAttempt, owner: Ann
                            body.topic_id, body.scope)
 
 
-@router.get("/learning/{assessment_id}/history", summary="The student's quiz attempts and roadmap-change events")
+@router.post("/learning/{assessment_id}/exercises/check",
+             summary="Check one interactive practice exercise (or reveal its answer). Practice only: never changes mastery, "
+                     "evidence, the roadmap or readiness")
+async def learning_exercise_check(assessment_id: str, body: ExerciseCheck, owner: Annotated[str | None, Depends(_candidate)]):
+    return await _learning("check_exercise", assessment_id, owner, body.skill_id, body.topic_id, body.exercise_id,
+                           body.answer, body.reveal)
+
+
+@router.get("/learning/{assessment_id}/history",
+            summary="The student's quiz attempts, practice exercise attempts and roadmap-change events")
 async def learning_history(assessment_id: str, owner: Annotated[str | None, Depends(_candidate)]):
     return await _learning("history", assessment_id, owner)
 
