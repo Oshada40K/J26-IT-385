@@ -127,6 +127,24 @@ class TutorScenarios(unittest.TestCase):
         self.assertEqual(repository.topic_progress("d", PF)["pf-b1"]["state"], "mastered")
         self.assertEqual(self.skill(out["plan"], PF)["next"]["topic_id"], "pf-b2")
 
+    # Batch 1 of the "Lessons coming soon" skills: a Software Developers student with no CV evidence now gets curated
+    # lessons (not self-study) for HTML and CSS, JavaScript and Java, up to the Advanced target the career needs
+    def test_software_developer_without_cv_gets_html_js_and_java_lessons(self):
+        rec = self.student("sd", [], {})
+        plan = learning.plan(rec, "sd")
+        for skill_id, first, count in (("SK017", "html-b1", 5), ("SK004", "js-b1", 5), ("SK003", "java-b1", 6)):
+            s = self.skill(plan, skill_id)
+            self.assertEqual(s["lessons"], "curated", skill_id)
+            self.assertNotEqual(s["status"], "self_study", skill_id)
+            self.assertEqual((s["entry_stage"], s["target_stage"]), ("Beginner", "Advanced"), skill_id)
+            self.assertEqual(len(s["topics"]), count, skill_id)
+            self.assertEqual(s["next"]["topic_id"], first, skill_id)
+            lesson = learning.open_activity(rec, "sd", skill_id, first)
+            self.assertIn("exercises", [sec["kind"] for sec in lesson["sections"]])
+            out = self.quiz(rec, "sd", skill_id, first)
+            self.assertEqual((out["graded"]["score"], out["decision"]["case"]), (1.0, "advance"), skill_id)
+        self.assertEqual(self.skill(out["plan"], "SK003")["next"]["topic_id"], "java-b2")
+
     # E - a partial score gives targeted practice on the missed concepts
     def test_E_partial_score_targets_missed_concepts(self):
         rec = self.student("e", [], {PF: 2})
@@ -554,7 +572,7 @@ class ModelLoading(unittest.TestCase):
 
 class CurriculumAndRules(unittest.TestCase):
     def test_bank_is_valid(self):
-        self.assertEqual(set(BANK), {"SK001", "SK002", "SK008", "SK009", "SK010", "SK014"})
+        self.assertEqual(set(BANK), {"SK001", "SK002", "SK008", "SK009", "SK010", "SK014", "SK017", "SK004", "SK003"})
         for skill_id, topics in BANK.items():
             curriculum.validate_skill(skill_id, topics)
 
@@ -595,7 +613,7 @@ class CurriculumAndRules(unittest.TestCase):
 
     def test_every_topic_has_three_valid_exercises(self):
         topics = [t for ts in BANK.values() for t in ts]
-        self.assertEqual(len(topics), 27)
+        self.assertEqual(len(topics), 43)
         for t in topics:
             self.assertEqual(len(t["exercises"]), 3, t["id"])
             self.assertGreaterEqual(len({e["type"] for e in t["exercises"]}), 2, t["id"])
@@ -603,8 +621,8 @@ class CurriculumAndRules(unittest.TestCase):
         for skill_id, topics in BANK.items():                  # every skill practises all four types
             self.assertEqual({e["type"] for t in topics for e in t["exercises"]}, set(curriculum.EXERCISE_TYPES), skill_id)
         ids = [e["id"] for _, e in self.all_exercises()]
-        self.assertEqual(len(ids), 81)
-        self.assertEqual(len(set(ids)), 81)
+        self.assertEqual(len(ids), 129)
+        self.assertEqual(len(set(ids)), 129)
         for t, e in self.all_exercises():                       # code exercises use the topic's language
             if e["language"] in curriculum.RUNNABLE_LANGUAGES:
                 self.assertEqual(e["language"], t["example"]["language"], e["id"])
@@ -613,7 +631,7 @@ class CurriculumAndRules(unittest.TestCase):
         good = {e["id"]: e for _, e in self.all_exercises()}
         where = lambda e: f"x/{e['id'].rsplit('-e', 1)[0]}"
         broken = [
-            dict(good["pf-b1-e1"], type="quiz"), dict(good["pf-b1-e1"], language="java"), dict(good["pf-b1-e1"], hint=" "),
+            dict(good["pf-b1-e1"], type="quiz"), dict(good["pf-b1-e1"], language="cobol"), dict(good["pf-b1-e1"], hint=" "),
             {k: v for k, v in good["pf-b1-e1"].items() if k != "explanation"},
             dict(good["pf-b1-e1"], answer=4), dict(good["pf-b1-e1"], answer=True), dict(good["pf-b1-e1"], options=["1", "1", "2"]),
             dict(good["pf-b1-e1"], options=["1", "2"]), {k: v for k, v in good["pf-b1-e1"].items() if k != "code"},
@@ -638,16 +656,22 @@ class CurriculumAndRules(unittest.TestCase):
         with self.assertRaises(curriculum.CurriculumError):    # and through the topic validator used by load()
             curriculum.validate_topic(dict(topic(PF, "pf-b1"), exercises=[dict(three[0], answer=7)] + three[1:]), PF)
 
-    # Every python and sql answer is checked by running the code (exercise_runner); bash/text by structure only
+    # Every python, sql, javascript (node) and java answer is checked by running the code (exercise_runner);
+    # bash/text/html/css by structure only. JavaScript/Java checks are skipped, and say so, when node/java is not installed.
     def test_exercise_answers_are_checked_by_running_the_code(self):
-        from .exercise_runner import is_runnable, verify
+        from .exercise_runner import is_runnable, missing_tool, verify
         runnable = [e for _, e in self.all_exercises() if is_runnable(e)]
-        self.assertEqual(len(runnable), 68)
+        self.assertEqual(len(runnable), 101)
+        self.assertEqual(len([e for e in runnable if e["language"] in ("javascript", "java")]), 33)
         for e in runnable:
             with self.subTest(exercise=e["id"]):
+                tool = missing_tool(e["language"])
+                if tool:
+                    self.skipTest(f"not verified: {tool} not installed")
                 self.assertEqual(verify(e), [])
         structure_only = sorted(e["id"] for _, e in self.all_exercises() if not is_runnable(e))
-        self.assertEqual(structure_only, sorted(["pf-i1-e3"] + [f"git-{t}-e{i}" for t in ("b1", "b2", "i1", "a1") for i in (1, 2, 3)]))
+        self.assertEqual(structure_only, sorted(["pf-i1-e3"] + [f"git-{t}-e{i}" for t in ("b1", "b2", "i1", "a1") for i in (1, 2, 3)]
+                                                + [f"html-{t}-e{i}" for t in ("b1", "b2", "i1", "i2", "a1") for i in (1, 2, 3)]))
 
     # The runner really catches wrong answers (so a passing run means something)
     def test_exercise_runner_detects_wrong_answers(self):
@@ -659,6 +683,53 @@ class CurriculumAndRules(unittest.TestCase):
                     dict(good["pf-b2-e3"], lines=["a = 1", "b = 2", "print(a + b)"], expected_output="3"),
                     dict(good["sql-i2-e3"], expected_output="Pen; Lamp; Desk")):
             self.assertNotEqual(verify(bad), [], bad["id"])
+
+    # ... also for JavaScript (node) and Java: a wrong option, blank answer, fix or expected output is reported
+    def test_exercise_runner_detects_wrong_javascript_and_java_answers(self):
+        from .exercise_runner import missing_tool, verify
+        good = {e["id"]: e for _, e in self.all_exercises()}
+        cases = {"javascript": (dict(good["js-b1-e1"], answer=1), dict(good["js-b2-e2"], answers=["sum - line.price"]),
+                                dict(good["js-a1-e3"], fix="for (var i = 0; i < 3; i++) {"), dict(good["js-b2-e3"], expected_output="80"),
+                                dict(good["js-a1-e2"], answers=["withTax"])),
+                 "java": (dict(good["java-b1-e1"], answer=1), dict(good["java-b1-e2"], answers=["(int)"]),
+                          dict(good["java-b2-e3"], fix="for (int i = 0; i < prices.length - 1; i++) {"),
+                          dict(good["java-a2-e3"], expected_output="40"), dict(good["java-i1-e2"], answers=["extends"]))}
+        for language, bad_cases in cases.items():
+            with self.subTest(language=language):
+                tool = missing_tool(language)
+                if tool:
+                    self.skipTest(f"not verified: {tool} not installed")
+                for bad in bad_cases:
+                    self.assertNotEqual(verify(bad), [], bad["id"])
+
+    # The three batch-1 skills meet the same standard as the first six: stages up to Advanced, every lecture part, a
+    # checked video and three exercises per topic; CSS exercises show the HTML they style
+    def test_batch_one_skills_meet_the_curated_standard(self):
+        for skill_id, prefix, count in (("SK017", "html", 5), ("SK004", "js", 5), ("SK003", "java", 6)):
+            topics = BANK[skill_id]
+            self.assertEqual(len(topics), count, skill_id)
+            self.assertEqual([t["stage"] for t in topics][0], "Beginner")
+            self.assertEqual({t["stage"] for t in topics}, set(tutor.STAGES), skill_id)
+            self.assertEqual(len(tutor.topics_in_scope(topics, "Advanced")), count)
+            for t in topics:
+                self.assertTrue(t["id"].startswith(f"{prefix}-"), t["id"])
+                for key in curriculum.ENRICHMENT_KEYS:
+                    self.assertIn(key, t, (t["id"], key))
+                self.assertEqual(len(t["recall"]), 2, t["id"])
+                self.assertRegex(t["video"]["checked_on"], r"^\d{4}-\d{2}-\d{2}$")
+                self.assertIsInstance(t["video"]["minutes"], int)
+                self.assertEqual(len(t["exercises"]), 3, t["id"])
+                for e in t["exercises"]:
+                    if e["language"] == "css":
+                        self.assertTrue(e.get("setup", "").lstrip().startswith("<"), e["id"])
+
+    # Every short answer in the bank is accepted in its sample form and rejected for "no idea" (what answers() sends as wrong)
+    def test_every_short_answer_accepts_its_sample(self):
+        shorts = [q for ts in BANK.values() for t in ts for q in t["quiz"] + t["diagnostic"] if q["type"] == "short"]
+        self.assertTrue(shorts)
+        for q in shorts:
+            self.assertTrue(tutor.grade_question(q, q["sample_answer"])[0], q["id"])
+            self.assertFalse(tutor.grade_question(q, "no idea")[0], q["id"])
 
     def test_exercise_grading_and_normalisation(self):
         for _, e in self.all_exercises():

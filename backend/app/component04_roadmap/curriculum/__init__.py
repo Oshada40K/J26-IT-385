@@ -10,14 +10,14 @@ lessons can be checked with the same rules.
 """
 import re
 
-from . import dsa, git, oop, programming_fundamentals, python, sql
+from . import dsa, git, html_css, java, javascript, oop, programming_fundamentals, python, sql
 from .enrichment import ENRICHMENT
 
 STAGES = ("Beginner", "Intermediate", "Advanced")
 QUESTION_TYPES = ("single", "multi", "short")
 REQUIRED_TOPIC_KEYS = ("id", "title", "stage", "requires", "objective", "main_idea", "explanation", "foundation", "challenge",
                        "example", "key_ideas", "mistakes", "practice", "practical", "next_link", "quiz", "diagnostic")
-MODULES = (programming_fundamentals, python, sql, git, oop, dsa)
+MODULES = (programming_fundamentals, python, sql, git, oop, dsa, html_css, javascript, java)
 
 
 class CurriculumError(ValueError):
@@ -94,8 +94,9 @@ def validate_skill(skill_id, topics):
 ENRICHMENT_KEYS = ("from_zero", "memory_trick", "career_hack", "recall", "video", "exercises")
 YOUTUBE_ID = re.compile(r"[A-Za-z0-9_-]{11}")
 EXERCISE_TYPES = ("predict_output", "fill_blank", "find_bug", "order_steps")
-EXERCISE_LANGUAGES = ("python", "sql", "bash", "text")
-RUNNABLE_LANGUAGES = ("python", "sql")        # checked by running the code in the tests; bash/text by structure only
+EXERCISE_LANGUAGES = ("python", "sql", "javascript", "java", "html", "css", "bash", "text")
+RUNNABLE_LANGUAGES = ("python", "sql", "javascript", "java")   # checked by running the code in the tests (node / java for
+                                                                # JavaScript / Java); html, css, bash, text by structure only
 BLANK = "____"
 
 

@@ -291,6 +291,200 @@ ENRICHMENT = {
         video=dict(youtube_id="kyUpc_5705s", title="BFS DFS - Simplified",
                    channel="Abdul Bari", minutes=19, checked_on="2026-11-06",
                    why="Explains breadth-first and depth-first search traversal of a graph, with valid and invalid examples.")),
+
+    # ------------------------------------------------------------------ HTML and CSS (SK017)
+    # Batch 1 of the new skills (HTML and CSS, JavaScript, Java): drafted with an AI assistant, checked by the curriculum
+    # validator and tests, and reviewed by the C4 author. Videos: title and channel copied from YouTube oEmbed on checked_on;
+    # minutes from the video page's length, rounded.
+    "html-b1": dict(
+        from_zero="A newspaper has a masthead, a contents bar, the main stories and small print at the bottom. Readers find their "
+                  "way because each part looks and works like what it is. Semantic HTML labels the parts of a page the same "
+                  "way, so browsers and screen readers know which part is the menu and which is the story.",
+        memory_trick="H-N-M-F from top to bottom: Header, Nav, Main, Footer. One main, one h1.",
+        career_hack="In a portfolio review, open DevTools and show that your page has landmarks and ordered headings. Few junior "
+                    "candidates do this, and accessibility is checked in many front-end interviews.",
+        recall=[dict(q="Which element wraps the content that is unique to a page?", a="<main> (only one per page)."),
+                dict(q="What should the alt text of a meaningful image say?", a="What the image shows or means, for people who cannot see it.")],
+        video=dict(youtube_id="5zeGvCkqbW8", title="HTML Structure Tags: header, nav, main, section, article, aside, footer",
+                   channel="AltCampus", minutes=6, checked_on="2026-11-28",
+                   why="Goes through the structure tags header, nav, main, section, article, aside and footer.")),
+    "html-b2": dict(
+        from_zero="A paper form at a bank has a printed label next to each box: 'Name', 'Date of birth'. Without the labels "
+                  "nobody knows what to write. A <label> is that printed word, linked to its box, and the input type is like "
+                  "a box made only for dates or only for numbers.",
+        memory_trick="for = id. The label's for must point at the input's id.",
+        career_hack="Fill in your own form using only the keyboard before you show it to anyone. It is a quick accessibility test "
+                    "that QA teams and interviewers also use.",
+        recall=[dict(q="How do you link a label to an input?", a="Give the label for=\"x\" and the input id=\"x\"."),
+                dict(q="Why must the server still validate the data?", a="Browser checks can be bypassed, so they are only a convenience for users.")],
+        video=dict(youtube_id="lcA-yVUh-S8", title="How to build a form with HTML",
+                   channel="Nick Basile", minutes=14, checked_on="2026-11-28",
+                   why="Builds an HTML form step by step.")),
+    "html-i1": dict(
+        from_zero="A framed photo has the picture (content), a white mount around it (padding), the frame (border) and the space "
+                  "on the wall to the next frame (margin). If you order a '30 cm' frame, you need to know whether 30 cm means "
+                  "the picture only (content-box) or the outside of the frame (border-box).",
+        memory_trick="Inside out: Content, Padding, Border, Margin - 'Cats Prefer Big Mats'. Conflicts: id beats class beats element, then last wins.",
+        career_hack="When a style does not apply, open DevTools, find the crossed-out rule and explain which rule beats it and "
+                    "why. Debugging CSS this way is a skill interviewers like to see.",
+        recall=[dict(q="With content-box, what is added to width to get the size on screen?", a="Padding and border on both sides."),
+                dict(q="Two rules with the same specificity conflict. Which one wins?", a="The one written later.")],
+        video=dict(youtube_id="WlGQdgy-M6w", title="box-sizing: border-box explained",
+                   channel="Kevin Powell", minutes=5, checked_on="2026-11-28",
+                   why="Explains box-sizing: border-box and how it changes the way an element's width is calculated.")),
+    "html-i2": dict(
+        from_zero="Flexbox is like people standing in a queue: they line up in one direction and you decide how they spread out. "
+                  "Grid is like a car park with painted bays: the rows and columns exist first, and each car goes into a bay.",
+        memory_trick="Flex = a line. Grid = a table of cells. justify = along the line, align = across it.",
+        career_hack="When you build a layout in an interview, say why you picked flex or grid ('the content decides the size, so "
+                    "flex'). Explaining the choice shows you understand layout, not just syntax.",
+        recall=[dict(q="Which property centres flex items along the main axis?", a="justify-content: center."),
+                dict(q="What does 1fr mean in grid-template-columns?", a="One share of the free space in the grid container.")],
+        video=dict(youtube_id="3elGSZSWTbM", title="Flexbox or grid - How to decide?",
+                   channel="Kevin Powell", minutes=19, checked_on="2026-11-28",
+                   why="Explains how to decide between flexbox and grid for a layout.")),
+    "html-a1": dict(
+        from_zero="Water takes the shape of the glass it is poured into. A responsive page does the same with the screen: one "
+                  "column on a narrow phone, more columns on a wide monitor, always readable.",
+        memory_trick="Meta first, mobile first, min-width up: small rules first, bigger screens later.",
+        career_hack="Show your portfolio on your phone during an interview. A page that works well on a small screen is noticed "
+                    "immediately; one that needs zooming is too.",
+        recall=[dict(q="What happens on a phone without the viewport meta tag?", a="It uses a desktop width (often 980px) and zooms out, so small-screen media queries do not apply."),
+                dict(q="Why must min-width media queries go from small to large?", a="On a wide screen several queries match, and the later rule wins.")],
+        video=dict(youtube_id="2KL-z9A56SQ", title="Tutorial: Learn how to use CSS Media Queries in less than 5 minutes",
+                   channel="Kevin Powell", minutes=5, checked_on="2026-11-28",
+                   why="A short introduction to writing CSS media queries.")),
+
+    # ------------------------------------------------------------------ JavaScript (SK004)
+    "js-b1": dict(
+        from_zero="Labelled boxes again: const is a box that is sealed after you put something in; let is a box you can empty "
+                  "and refill. The type is what is inside: a number, a piece of text, true or false.",
+        memory_trick="const first, let if it changes, never var. Three equals signs: no surprises.",
+        career_hack="'What is the difference between == and ===?' and 'let vs const vs var' are common first JavaScript interview "
+                    "questions. Answer with an example such as \"5\" == 5.",
+        recall=[dict(q="What is \"4\" + 2 in JavaScript?", a="\"42\": + with a string joins text."),
+                dict(q="Why use === instead of ==?", a="=== compares value and type without converting types, so there are no hidden conversions.")],
+        video=dict(youtube_id="9WIJQDvt4Us", title="Differences Between Var, Let, and Const",
+                   channel="Web Dev Simplified", minutes=9, checked_on="2026-11-28",
+                   why="Compares var, let and const in JavaScript.")),
+    "js-b2": dict(
+        from_zero="A factory line of fruit: filter is the worker who removes bruised fruit, map is the machine that peels each "
+                  "one, and reduce is the juicer that turns them all into one glass of juice.",
+        memory_trick="filter keeps, map changes, reduce combines.",
+        career_hack="Interviewers often ask you to rewrite a for loop with map, filter or reduce. Practise saying what each step "
+                    "returns as you chain them.",
+        recall=[dict(q="Does map change the original array?", a="No, it returns a new array."),
+                dict(q="What is the second argument of reduce for?", a="The starting value of the accumulator, for example 0 for a sum.")],
+        video=dict(youtube_id="R8rmfD9Y5-c", title="8 Must Know JavaScript Array Methods",
+                   channel="Web Dev Simplified", minutes=10, checked_on="2026-11-28",
+                   why="Shows the most used JavaScript array methods, including filter, map and reduce.")),
+    "js-i1": dict(
+        from_zero="The DOM is the page's family tree: html is the grandparent, body and head are its children, and every "
+                  "paragraph and button is a node in the tree. An event listener is a doorbell: nothing happens until someone "
+                  "presses it, and then your function answers.",
+        memory_trick="Find it (querySelector), change it (textContent, classList), listen to it (addEventListener).",
+        career_hack="Mention that you use textContent instead of innerHTML for user input to prevent XSS. Security awareness is "
+                    "valued even in junior front-end roles.",
+        recall=[dict(q="Why addEventListener(\"click\", save) and not save()?", a="save() would run immediately; the listener needs the function itself."),
+                dict(q="What does event.preventDefault() do on a form submit?", a="It stops the browser from sending the form and reloading the page.")],
+        video=dict(youtube_id="ndz6iH6o1ms", title="JavaScript DOM Tutorial #9 - Events",
+                   channel="Net Ninja", minutes=11, checked_on="2026-11-28",
+                   why="Part of a DOM tutorial series; this episode is about events and event listeners.")),
+    "js-i2": dict(
+        from_zero="Ordering food at a busy restaurant: you get a buzzer (a promise) and sit down, and you can talk to friends "
+                  "meanwhile. When the food is ready the buzzer goes off (resolved), or the waiter says it is sold out (rejected). "
+                  "await is waiting for the buzzer without blocking the whole restaurant.",
+        memory_trick="Sync code first, then promises, then timers. fetch: await, check ok, await json.",
+        career_hack="Event-loop questions (in which order do these lines print?) are common in JavaScript interviews. Explain it "
+                    "as: current code, then microtasks (promises), then timers.",
+        recall=[dict(q="Does fetch reject when the server answers 404?", a="No. It fulfils with a Response whose ok is false, so you must check response.ok."),
+                dict(q="What does an async function return?", a="A promise.")],
+        video=dict(youtube_id="V_Kr9OSfDeU", title="JavaScript Async Await",
+                   channel="Web Dev Simplified", minutes=8, checked_on="2026-11-28",
+                   why="Explains async/await in JavaScript and how it makes promise-based code easier to read.")),
+    "js-a1": dict(
+        from_zero="A backpack: when a function is created, it packs the variables around it into its backpack and carries them "
+                  "wherever it goes (a closure). Modules are separate rooms: what happens in one room stays there unless you "
+                  "hand it out through the door (export).",
+        memory_trick="Block = { }. Closure = a function plus its backpack. Default: no braces; named: braces.",
+        career_hack="'What is a closure?' is one of the most common JavaScript interview questions. Answer with the makeCounter "
+                    "example and say where you use closures (event handlers, private state).",
+        recall=[dict(q="Why does a var loop variable cause bugs with callbacks?", a="var creates one variable for the whole function, so all callbacks see its last value."),
+                dict(q="How do you import a default export and a named export together?", a="import withTax, { TAX_RATE } from \"./prices.js\";")],
+        video=dict(youtube_id="3a0I8ICR1Vg", title="Learn Closures In 7 Minutes",
+                   channel="Web Dev Simplified", minutes=7, checked_on="2026-11-28",
+                   why="A short explanation of what closures are and how they work in JavaScript.")),
+
+    # ------------------------------------------------------------------ Java (SK003)
+    "java-b1": dict(
+        from_zero="Java is a strict librarian: every shelf (variable) has a label saying what may go on it, such as 'whole "
+                  "numbers only'. Try to put a decimal on the whole-number shelf and the librarian stops you before the library "
+                  "opens (a compile error).",
+        memory_trick="Type, name, value: int age = 20;  int / int drops the decimals.",
+        career_hack="Java interviews often start with output questions such as 7 / 2 or 7 % 2. Say the rule out loud: two ints "
+                    "give integer division.",
+        recall=[dict(q="What is 7 / 2 in Java with two ints?", a="3 (integer division)."),
+                dict(q="How do you get 3.5 from 7 and 2?", a="Make one side a double first, for example (double) 7 / 2.")],
+        video=dict(youtube_id="WQ7mvQFSmYc", title="Primitives Data Types In Java - All the Primitives And What They Do",
+                   channel="Coding with John", minutes=10, checked_on="2026-11-28",
+                   why="Covers all eight primitive data types in Java and what each one can store.")),
+    "java-b2": dict(
+        from_zero="A method is a kitchen appliance: a toaster takes bread (parameter) and gives toast (return value). An array is "
+                  "an egg box with a fixed number of numbered cups, starting at cup 0.",
+        memory_trick="Arrays start at 0 and end at length - 1. Text: equals, never ==.",
+        career_hack="When you write a method in an interview, say its signature first: 'it takes an int array and returns a "
+                    "double'. It shows you think about inputs and outputs before the details.",
+        recall=[dict(q="What is the last valid index of an array with length 5?", a="4."),
+                dict(q="How do you compare two Strings' text in Java?", a="With a.equals(b) (or equalsIgnoreCase), not ==.")],
+        video=dict(youtube_id="v5p_SUfi710", title="Java methods explained in 10+ minutes! 📞",
+                   channel="Bro Code", minutes=11, checked_on="2026-11-28",
+                   why="Explains how to write and call methods in Java.")),
+    "java-i1": dict(
+        from_zero="A class is the design of a phone model; each phone made from it is an object with its own owner and battery "
+                  "level. An interface is like a charging standard: any phone that 'implements USB-C' can be charged by any "
+                  "USB-C charger, whoever made it.",
+        memory_trick="private data, public behaviour. implements = a promise; extends = a family tree.",
+        career_hack="Interviewers often ask you to design a small class (BankAccount, ParkingLot). Start with private fields, a "
+                    "constructor and methods that protect the rules.",
+        recall=[dict(q="What does this.name = name; do in a constructor?", a="It copies the parameter name into the object's field name."),
+                dict(q="What must a class do when it implements an interface?", a="Provide all the interface's methods (unless the class is abstract).")],
+        video=dict(youtube_id="c2sTQk9opO8", title="Learn INTERFACES in 6 minutes! 📋",
+                   channel="Bro Code", minutes=6, checked_on="2026-11-28",
+                   why="A short introduction to interfaces in Java and how classes implement them.")),
+    "java-i2": dict(
+        from_zero="A List is a numbered queue of people: order matters and the same name can appear twice. A Map is a phone book: "
+                  "you look up a name (the key) and get a number (the value), and each name appears once.",
+        memory_trick="List = order, Map = lookup, Set = unique. Generics in angle brackets say what is inside.",
+        career_hack="Many coding interview problems (counting, grouping, finding duplicates) become easy with a HashMap. Say "
+                    "'I will use a map from X to Y' early in your answer.",
+        recall=[dict(q="What does map.put(key, value) do when the key already exists?", a="It replaces the old value."),
+                dict(q="How do you safely remove items while going through a list?", a="Use removeIf(...) or an Iterator's remove(), not remove inside a for-each loop.")],
+        video=dict(youtube_id="H62Jfv1DJlU", title="Map and HashMap in Java - Full Tutorial",
+                   channel="Coding with John", minutes=10, checked_on="2026-11-28",
+                   why="Explains Map and HashMap in Java: adding, reading and looping over key-value pairs.")),
+    "java-a1": dict(
+        from_zero="A fire alarm: when something goes wrong, the alarm (exception) stops normal work and the building looks for "
+                  "someone trained to handle it (a catch). finally is locking the doors on the way out, whatever happened.",
+        memory_trick="Checked = the compiler checks you handled it. Specific catch first. Resources in try ( ) close themselves.",
+        career_hack="'Checked vs unchecked exceptions' is a classic Java interview question. Give one example of each and say "
+                    "when you would create a custom exception.",
+        recall=[dict(q="Is IOException checked or unchecked?", a="Checked: it must be caught or declared with throws."),
+                dict(q="What does try-with-resources guarantee?", a="The resource is closed automatically, even if an exception is thrown.")],
+        video=dict(youtube_id="XPi_5jLYUOY", title="Exceptions in Java - Checked vs Unchecked",
+                   channel="Maaike Bright Boost", minutes=14, checked_on="2026-11-28",
+                   why="Explains exceptions in Java and the difference between checked and unchecked exceptions.")),
+    "java-a2": dict(
+        from_zero="A stream is a conveyor belt in a sorting centre: one station throws out damaged parcels (filter), the next "
+                  "relabels each parcel (map), and at the end they are packed into a box (collect). Nothing moves until the "
+                  "packing station asks for parcels.",
+        memory_trick="Source, steps, finish: stream() ... filter/map ... collect. Optional: open with orElse.",
+        career_hack="Being able to turn a loop into a readable stream (and to say when a loop is clearer) is expected in modern "
+                    "Java and Spring Boot roles.",
+        recall=[dict(q="When does a stream pipeline actually run?", a="When a terminal operation such as collect, count or findFirst is called."),
+                dict(q="How should you read an Optional safely?", a="With orElse, orElseThrow or ifPresent, not get() without a check.")],
+        video=dict(youtube_id="tj5sLSFjVj4", title="Lambda Expressions in Java - Full Simple Tutorial",
+                   channel="Coding with John", minutes=13, checked_on="2026-11-28",
+                   why="A full tutorial on lambda expressions in Java, which the Stream API is built on.")),
 }
 
 # ---------------------------------------------------------------------------------------------- interactive exercises
@@ -310,7 +504,13 @@ ENRICHMENT = {
 # must equal the real output; every accepted blank must produce expected_output; the fixed line must produce
 # expected_output while the original does not; the correct order must produce expected_output and no other order may.
 # SQL runs on an in-memory sqlite3 database; result rows are written as "value, value; value, value".
-# bash and text exercises cannot be run safely in a test, so they are checked by structure only.
+# JavaScript runs with node and Java with java (see tests/component04_roadmap/exercise_runner.py for the conventions: Java
+# snippets run inside main, a JavaScript setup starting with "// file: name.mjs" is an ES module); these checks are skipped
+# with "not verified" when node or java is not installed.
+# bash, text, html and css exercises cannot be run in a unit test, so they are checked by structure only. The HTML/CSS
+# exercises (SK017) were also checked once in headless Chromium by the C4 author (computed sizes and colours, landmarks,
+# labels, form validation, media queries); html-b1-e3 (page skeleton order) cannot be checked by rendering.
+# A CSS exercise's setup is the HTML it styles, shown to the student.
 
 _SQL_CUSTOMERS = """CREATE TABLE customers (id INTEGER, name TEXT, city TEXT, status TEXT, joined_on TEXT);
 INSERT INTO customers VALUES
@@ -366,6 +566,45 @@ _PY_ACCOUNT = """class Account:
         self.balance -= amount"""
 
 ROWS_NOTE = " Rows are separated by ';' and columns by ','."
+
+_JS_FAKE_FETCH = """// A stand-in for the browser's fetch, so this exercise runs without a network.
+const fetch = async (url) => ({
+  ok: true,
+  status: 200,
+  json: async () => ({ name: "Ama", skills: ["HTML", "CSS"] }),
+});"""
+
+_JS_PRICES_MODULE = """// file: ./prices.mjs
+export const TAX_RATE = 0.1;
+export default function withTax(amount) {
+  return amount + amount * TAX_RATE;
+}"""
+
+_JAVA_ACCOUNT = """class Account {
+    private final String owner;
+    private int balance;
+
+    Account(String owner, int opening) {
+        this.owner = owner;
+        this.balance = opening;
+    }
+
+    void deposit(int amount) {
+        if (amount > 0) {
+            balance += amount;
+        }
+    }
+
+    int getBalance() {
+        return balance;
+    }
+}"""
+
+_JAVA_CONNECTION = """class Connection implements AutoCloseable {
+    Connection() { System.out.println("open"); }
+    void query() { System.out.println("query"); }
+    @Override public void close() { System.out.println("close"); }
+}"""
 
 EXERCISES = {
     # ------------------------------------------------------------------ Programming Fundamentals (SK001)
@@ -950,6 +1189,401 @@ EXERCISES = {
              answer=5, fix="        node, dist = queue.popleft()", expected_output="2",
              hint="BFS needs a queue (first in, first out). What does pop() take from a deque?",
              explanation="pop() takes the newest item, which turns BFS into DFS and finds a longer path. popleft() keeps it level by level."),
+    ],
+
+    # ------------------------------------------------------------------ HTML and CSS (SK017)
+    "html-b1": [
+        dict(id="html-b1-e1", type="predict_output", language="html",
+             prompt="A screen reader user jumps to the navigation landmark of this page. Which links are inside it?",
+             code='<body>\n  <header>\n    <h1>Ama\'s Portfolio</h1>\n    <nav>\n      <a href="#projects">Projects</a>\n'
+                  '      <a href="#contact">Contact</a>\n    </nav>\n  </header>\n  <main>\n    <section id="projects">\n'
+                  '      <h2>Projects</h2>\n    </section>\n  </main>\n  <footer>\n    <a href="mailto:ama@example.com">Email me</a>\n'
+                  "  </footer>\n</body>",
+             options=["Projects and Contact", "Projects, Contact and Email me", "Email me only", "None: nav is not a landmark"], answer=0,
+             hint="Only the links written between <nav> and </nav> belong to the navigation landmark.",
+             explanation="<nav> marks the navigation landmark, and only Projects and Contact are inside it. The footer link is in the "
+                         "footer (contentinfo) landmark. Assistive technology lets users jump between landmarks like these."),
+        dict(id="html-b1-e2", type="fill_blank", language="html",
+             prompt="Complete the element that wraps the content that is unique to this page (there is one per page).",
+             code="<header>\n  <h1>Ama's Portfolio</h1>\n</header>\n<____>\n  <h2>Projects</h2>\n  <p>A weather app built with JavaScript.</p>\n"
+                  "</main>\n<footer>\n  <p>Contact: ama@example.com</p>\n</footer>",
+             answers=["main"],
+             hint="Its closing tag is already written further down.",
+             explanation="<main> holds the page's main content and becomes the 'main' landmark. Header and footer content repeats "
+                         "on every page; main does not."),
+        dict(id="html-b1-e3", type="order_steps", language="html", prompt="Put the lines in order to make a minimal, valid HTML page.",
+             lines=["<!DOCTYPE html>", '<html lang="en">', "<head>", "<title>My portfolio</title>", "</head>", "<body>", "</body>", "</html>"],
+             hint="The doctype comes first; head (information about the page) comes before body (what is shown).",
+             explanation="<!DOCTYPE html> tells the browser to use standards mode. <html lang> wraps everything, <head> holds the "
+                         "title, and <body> holds the visible content. Every tag is closed in the reverse order it was opened."),
+    ],
+    "html-b2": [
+        dict(id="html-b2-e1", type="find_bug", language="html",
+             prompt="The user types an email and clicks Subscribe, but the form is never sent. Which line is wrong?",
+             lines=['<form action="/subscribe" method="post">', '  <label for="email">Email</label>',
+                    '  <input id="email" name="email" type="email" required>', '  <button type="button">Subscribe</button>', "</form>"],
+             answer=3, fix='  <button type="submit">Subscribe</button>',
+             hint="Which button type sends the form?",
+             explanation='type="button" makes a button that does nothing by itself. A button with type="submit" (the default inside '
+                         "a form) sends the form."),
+        dict(id="html-b2-e2", type="fill_blank", language="html",
+             prompt="Connect the label to the input, so clicking the label focuses the field and a screen reader reads its name.",
+             code='<label ____="phone">Phone number</label>\n<input id="phone" name="phone" type="tel">',
+             answers=["for"],
+             hint="The attribute's value must match the input's id.",
+             explanation='<label for="phone"> is linked to the input with id="phone". Clicking the label focuses the input, and the '
+                         "label text becomes the input's accessible name."),
+        dict(id="html-b2-e3", type="predict_output", language="html",
+             prompt="The user types 12 in the Age field and clicks Join. What happens?",
+             code='<form action="/join">\n  <label for="age">Age</label>\n  <input id="age" name="age" type="number" min="16" required>\n'
+                  "  <button>Join</button>\n</form>",
+             options=["The form is sent with age=12", "The browser does not send the form and shows that the value must be 16 or more",
+                      "The page shows a 404 error", "The browser changes the value to 16 and sends it"], answer=1,
+             hint="What does min=\"16\" tell the browser?",
+             explanation='min="16" is a built-in validation rule. The browser checks it before sending and shows a message instead. '
+                         "The server must still check the value as well, because browser checks can be bypassed."),
+    ],
+    "html-i1": [
+        dict(id="html-i1-e1", type="predict_output", language="css",
+             prompt="How wide is the card on screen, border included? (The HTML is in the given code.)",
+             setup='<div class="card">Ama Perera - Junior Developer</div>',
+             code=".card {\n  box-sizing: content-box;\n  width: 200px;\n  padding: 20px;\n  border: 5px solid black;\n}",
+             options=["200px", "240px", "250px", "210px"], answer=2,
+             hint="With content-box, width is only the content. Padding and border are added on both sides.",
+             explanation="content-box: 200 (content) + 2 x 20 (padding) + 2 x 5 (border) = 250px."),
+        dict(id="html-i1-e2", type="fill_blank", language="css",
+             prompt="Make padding and border fit inside the width, so the card is exactly 200px wide on screen. (The HTML is in the given code.)",
+             setup='<div class="card">Ama Perera - Junior Developer</div>',
+             code=".card {\n  box-sizing: ____;\n  width: 200px;\n  padding: 20px;\n  border: 5px solid black;\n}",
+             answers=["border-box"],
+             hint="Which box-sizing value counts padding and border inside the width?",
+             explanation="box-sizing: border-box makes width include padding and border, so the card is 200px wide and the content "
+                         "area shrinks to 150px. Many projects set it for every element."),
+        dict(id="html-i1-e3", type="predict_output", language="html", prompt="What colour is the text Hello?",
+             code='<style>\n  #intro { color: green; }\n  .note { color: red; }\n  p { color: blue; }\n</style>\n'
+                  '<p id="intro" class="note">Hello</p>',
+             options=["green", "red", "blue", "black"], answer=0,
+             hint="When rules conflict, the more specific selector wins: id > class > element.",
+             explanation="All three rules match the paragraph. #intro (an id) is the most specific, so the text is green, whatever "
+                         "the order of the rules."),
+    ],
+    "html-i2": [
+        dict(id="html-i2-e1", type="predict_output", language="css", prompt="How are A, B and C placed? (The HTML is in the given code.)",
+             setup='<div class="row">\n  <div>A</div>\n  <div>B</div>\n  <div>C</div>\n</div>',
+             code=".row {\n  display: flex;\n  flex-direction: column;\n}",
+             options=["Side by side in one row: A B C", "Stacked from top to bottom: A, then B, then C", "Stacked with C on top",
+                      "Only A is visible"], answer=1,
+             hint="flex-direction sets the main axis.",
+             explanation="flex-direction: column makes the main axis vertical, so the items are stacked in source order from top to "
+                         "bottom. The default, row, would place them side by side."),
+        dict(id="html-i2-e2", type="fill_blank", language="css",
+             prompt="Make the gallery three equal columns (each photo 100px wide in this 300px gallery). (The HTML is in the given code.)",
+             setup='<div class="gallery">\n  <div>Photo 1</div>\n  <div>Photo 2</div>\n  <div>Photo 3</div>\n</div>',
+             code=".gallery {\n  display: grid;\n  grid-template-columns: ____;\n  width: 300px;\n}",
+             answers=["1fr 1fr 1fr", "repeat(3, 1fr)"],
+             hint="fr means 'one share of the free space'.",
+             explanation="1fr 1fr 1fr (or repeat(3, 1fr)) creates three columns that share the width equally: 100px each."),
+        dict(id="html-i2-e3", type="find_bug", language="css",
+             prompt="The toolbar's buttons should be centred left to right, but they stay on the left. Which line is wrong? "
+                    "(The HTML is in the given code.)",
+             setup='<div class="toolbar">\n  <button>Save</button>\n  <button>Share</button>\n</div>',
+             lines=[".toolbar {", "  display: flex;", "  align-items: center;", "  justify-items: center;", "  height: 60px;", "}"],
+             answer=3, fix="  justify-content: center;",
+             hint="In flexbox, which property places items along the main axis (left to right in a row)?",
+             explanation="justify-items is ignored by flexbox. justify-content: center centres the items along the main axis. "
+                         "align-items already centres them vertically."),
+    ],
+    "html-a1": [
+        dict(id="html-a1-e1", type="predict_output", language="css",
+             prompt="The page has the viewport meta tag. Is .menu shown on a phone 375px wide? (The HTML is in the given code.)",
+             setup='<nav class="menu">\n  <a href="/">Home</a>\n  <a href="/jobs">Jobs</a>\n</nav>',
+             code=".menu {\n  display: none;\n}\n\n@media (min-width: 768px) {\n  .menu {\n    display: block;\n  }\n}",
+             options=["No, it is hidden", "Yes, it is shown", "Yes, but it is empty", "Only when the page is printed"], answer=0,
+             hint="min-width: 768px means 'at least 768px wide'.",
+             explanation="At 375px the media query does not match, so only display: none applies. From 768px up, the menu is shown."),
+        dict(id="html-a1-e2", type="fill_blank", language="html",
+             prompt="Complete the tag that makes phones use the real screen width, so the media queries work.",
+             code='<head>\n  <meta charset="utf-8">\n  <meta name="____" content="width=device-width, initial-scale=1">\n'
+                  "  <title>Jobs</title>\n</head>",
+             answers=["viewport"],
+             hint="The tag is named after the visible area of the page.",
+             explanation='Without <meta name="viewport" ...>, phones draw the page at a desktop width (often 980px) and zoom out, '
+                         "so media queries for small screens do not apply."),
+        dict(id="html-a1-e3", type="order_steps", language="css",
+             prompt="Put the rules in mobile-first order: 1 column on phones, 2 columns from 600px, 3 columns from 1000px. "
+                    "(The HTML is in the given code.)",
+             setup='<div class="cards">\n  <div>Job 1</div>\n  <div>Job 2</div>\n  <div>Job 3</div>\n</div>',
+             lines=[".cards { display: grid; grid-template-columns: 1fr; }",
+                    "@media (min-width: 600px) { .cards { grid-template-columns: 1fr 1fr; } }",
+                    "@media (min-width: 1000px) { .cards { grid-template-columns: 1fr 1fr 1fr; } }"],
+             hint="Start with the phone layout. When two rules match, the later one wins.",
+             explanation="Mobile first: the base rule is for phones, and each min-width query that follows adds columns for wider "
+                         "screens. On a wide screen both queries match, so the 1000px rule must come last."),
+    ],
+
+    # ------------------------------------------------------------------ JavaScript (SK004)
+    "js-b1": [
+        dict(id="js-b1-e1", type="predict_output", language="javascript", prompt="What does this print?",
+             code='console.log("4" + 2, "4" - 2);',
+             options=["42 2", "6 2", "42 42", "6 6"], answer=0,
+             hint="+ with a string joins text; - only works on numbers, so JavaScript converts the string.",
+             explanation='"4" + 2 joins the text and gives "42"; "4" - 2 converts "4" to the number 4 and gives 2.'),
+        dict(id="js-b1-e2", type="fill_blank", language="javascript",
+             prompt="Complete the line so it prints Lamp costs 1500. Use a template literal (backticks).",
+             code='const price = 1500;\nconst item = "Lamp";\nconsole.log(____);',
+             expected_output="Lamp costs 1500", answers=["`${item} costs ${price}`", "item + ' costs ' + price"],
+             hint="A template literal is written in backticks and puts values in with ${...}.",
+             explanation="`${item} costs ${price}` puts both values into the text. Joining with + also works, but template literals are easier to read."),
+        dict(id="js-b1-e3", type="find_bug", language="javascript",
+             prompt="score should be 15, but the program prints 105. Which line is wrong?",
+             lines=['const bonus = "5"; // read from a form field, so it is always a string', "let score = 10;",
+                    "score = score + bonus;", "console.log(score);"],
+             answer=2, fix="score = score + Number(bonus);", expected_output="15",
+             hint="What does + do when one side is a string?",
+             explanation='10 + "5" joins text and gives "105". Convert the form value first: score + Number(bonus) gives 15.'),
+    ],
+    "js-b2": [
+        dict(id="js-b2-e1", type="predict_output", language="javascript", prompt="What does this print?",
+             code="const prices = [100, 250, 40];\nconst cheap = prices.filter(p => p < 200).map(p => p * 2);\nconsole.log(cheap.join(\", \"));",
+             options=["200, 80", "200, 500, 80", "100, 40", "280"], answer=0,
+             hint="filter runs first and keeps only the prices under 200; map then doubles each one.",
+             explanation="filter keeps 100 and 40; map doubles them to 200 and 80. 250 is removed before map runs."),
+        dict(id="js-b2-e2", type="fill_blank", language="javascript", prompt="Complete the reducer so it adds up the prices in the cart.",
+             code='const cart = [{ item: "Pen", price: 100 }, { item: "Book", price: 1200 }, { item: "Bag", price: 2500 }];\n'
+                  "const total = cart.reduce((sum, line) => ____, 0);\nconsole.log(total);",
+             expected_output="3800", answers=["sum + line.price", "line.price + sum"],
+             hint="The function gets the running total so far and one cart line; return the new running total.",
+             explanation="reduce starts at 0 and, for each line, returns sum + line.price: 0 + 100 + 1200 + 2500 = 3800."),
+        dict(id="js-b2-e3", type="order_steps", language="javascript",
+             prompt="Put the lines in order so the program prints the average of 60 and 80 (70).",
+             lines=["const average = (marks) => {", "  const total = marks.reduce((sum, m) => sum + m, 0);",
+                    "  return total / marks.length;", "};", "console.log(average([60, 80]));"],
+             expected_output="70",
+             hint="A const function must be defined before it is called, and total must exist before it is used.",
+             explanation="The arrow function is stored in a const, so it must be defined before console.log calls it; "
+                         "inside it, total is calculated before it is returned."),
+    ],
+    "js-i1": [
+        dict(id="js-i1-e1", type="predict_output", language="javascript",
+             prompt="Two listeners are added to the same button, then it is clicked twice. What is printed? "
+                    "(EventTarget is the part of every DOM element that handles events; it also exists in Node.js.)",
+             code='const button = new EventTarget();   // in the browser: document.querySelector("#like")\nlet clicks = 0;\n'
+                  'button.addEventListener("click", () => { clicks = clicks + 1; });\n'
+                  'button.addEventListener("click", () => { clicks = clicks + 10; });\n'
+                  'button.dispatchEvent(new Event("click"));\nbutton.dispatchEvent(new Event("click"));\nconsole.log(clicks);',
+             options=["22", "11", "2", "20"], answer=0,
+             hint="Every listener runs on every click, in the order they were added.",
+             explanation="Each click runs both listeners (+1 and +10), so two clicks give 11 + 11 = 22. A second listener does not replace the first."),
+        dict(id="js-i1-e2", type="fill_blank", language="javascript",
+             prompt="Stop the browser from sending the form and reloading the page, so JavaScript can check it first.",
+             code='const form = new EventTarget();   // in the browser: document.querySelector("form")\n'
+                  'form.addEventListener("submit", (event) => {\n  event.____();\n  console.log("checked in JavaScript");\n});\n'
+                  'const submit = new Event("submit", { cancelable: true });\nform.dispatchEvent(submit);\nconsole.log(submit.defaultPrevented);',
+             expected_output="checked in JavaScript\ntrue", answers=["preventDefault"],
+             hint="The method name says 'stop the default action'.",
+             explanation="event.preventDefault() cancels the browser's default action (sending the form), so defaultPrevented becomes true."),
+        dict(id="js-i1-e3", type="find_bug", language="javascript",
+             prompt='"Hello!" should appear only when the button is clicked, but it appears before "page ready" and never on the click. Which line is wrong?',
+             lines=['const button = new EventTarget(); // in the browser: document.querySelector("#hello")', "function showMessage() {",
+                    '  console.log("Hello!");', "}", 'button.addEventListener("click", showMessage());', 'console.log("page ready");',
+                    'button.dispatchEvent(new Event("click"));'],
+             answer=4, fix='button.addEventListener("click", showMessage);', expected_output="page ready\nHello!",
+             hint="Look at the brackets: are you giving addEventListener the function, or calling it?",
+             explanation="showMessage() calls the function at once and registers its result (undefined). Pass the function itself: showMessage without ()."),
+    ],
+    "js-i2": [
+        dict(id="js-i2-e1", type="predict_output", language="javascript", prompt="In which order are the letters added?",
+             code='const order = [];\norder.push("A");\nsetTimeout(() => { order.push("B"); console.log(order.join(" ")); }, 0);\n'
+                  'Promise.resolve().then(() => order.push("C"));\norder.push("D");',
+             options=["A D C B", "A B C D", "A D B C", "A C D B"], answer=0,
+             hint="Normal code finishes first; then promise callbacks run; timers (even 0 ms) run after that.",
+             explanation="A and D run straight away. The promise callback (C) runs as soon as the current code ends, "
+                         "before the timer callback (B), even with a 0 ms timer."),
+        dict(id="js-i2-e2", type="fill_blank", language="javascript",
+             prompt="response.json() returns a promise. Complete the line so data holds the parsed object.",
+             setup=_JS_FAKE_FETCH,
+             code='async function loadProfile() {\n  const response = await fetch("/api/profile");\n  const data = ____ response.json();\n'
+                  "  console.log(data.skills.length);\n}\nloadProfile();",
+             expected_output="2", answers=["await"],
+             hint="Inside an async function, which keyword waits for a promise and gives you its value?",
+             explanation="await waits for the promise from response.json() and gives the object. Without it, data is a "
+                         "Promise and data.skills is undefined, which causes a TypeError."),
+        dict(id="js-i2-e3", type="find_bug", language="javascript",
+             prompt='getJobs fails, so the program should print "Could not load jobs". Instead it prints "jobs loaded" and then crashes. Which line is wrong?',
+             lines=["async function getJobs() {", '  throw new Error("Network down");', "}", "async function main() {", "  try {",
+                    "    const jobs = getJobs();", '    console.log("jobs loaded");', "  } catch (err) {",
+                    '    console.log("Could not load jobs");', "  }", "}", "main();"],
+             answer=5, fix="    const jobs = await getJobs();", expected_output="Could not load jobs",
+             hint="try/catch can only catch an async error if you wait for the promise.",
+             explanation="Without await, getJobs() just returns a rejected promise; try finishes and the rejection is never caught. "
+                         "await makes the error happen inside try, so catch handles it."),
+    ],
+    "js-a1": [
+        dict(id="js-a1-e1", type="predict_output", language="javascript", prompt="What does this print?",
+             code="function makeCounter() {\n  let count = 0;\n  return () => {\n    count = count + 1;\n    return count;\n  };\n}\n"
+                  "const a = makeCounter();\nconst b = makeCounter();\na();\na();\nconsole.log(a(), b());",
+             options=["3 1", "3 3", "1 1", "4 2"], answer=0,
+             hint="Each call of makeCounter() creates a new count that only its own returned function can see.",
+             explanation="a remembers its own count (it is called three times: 3); b has a separate count, so its first call returns 1."),
+        dict(id="js-a1-e2", type="fill_blank", language="javascript",
+             prompt="main.mjs imports from prices.mjs (shown in the given code). Complete the import so main.mjs can use TAX_RATE.",
+             setup=_JS_PRICES_MODULE,
+             code='import withTax, { ____ } from "./prices.mjs";\nconsole.log(withTax(100), TAX_RATE);',
+             expected_output="110 0.1", answers=["TAX_RATE"],
+             hint="A named export is imported inside { } with exactly the same name.",
+             explanation="The default export can be imported with any name (withTax); a named export must be listed in { } with its "
+                         "exported name: { TAX_RATE }."),
+        dict(id="js-a1-e3", type="find_bug", language="javascript",
+             prompt="Each function should return its own number, so the program should print 1 2 3. It prints 4 4 4. Which line is wrong?",
+             lines=["const getters = [];", "for (var i = 1; i <= 3; i++) {", "  getters.push(() => i);", "}",
+                    'console.log(getters.map(get => get()).join(" "));'],
+             answer=1, fix="for (let i = 1; i <= 3; i++) {", expected_output="1 2 3",
+             hint="Is there one i for the whole loop, or a new i for each round?",
+             explanation="var creates one i for the whole function, so all three closures see its last value (4). let creates a new i "
+                         "for each loop round, so each closure keeps its own value."),
+    ],
+
+    # ------------------------------------------------------------------ Java (SK003)
+    "java-b1": [
+        dict(id="java-b1-e1", type="predict_output", language="java", prompt="These lines run inside main. What do they print?",
+             code='int apples = 10;\nint children = 4;\nSystem.out.println(apples / children + " each, " + apples % children + " left");',
+             options=["2 each, 2 left", "2.5 each, 0 left", "2 each, 0 left", "2.5 each, 2 left"], answer=0,
+             hint="int / int gives a whole number; % gives the remainder.",
+             explanation="10 / 4 with two ints is 2 (the decimal part is dropped) and 10 % 4 is the remainder 2."),
+        dict(id="java-b1-e2", type="fill_blank", language="java",
+             prompt="These lines run inside main. Complete the line so the average is 3.5, not 3.0.",
+             code="int sum = 7;\nint count = 2;\ndouble average = ____ sum / count;\nSystem.out.println(average);",
+             expected_output="3.5", answers=["(double)"],
+             hint="Make one side of the division a double before dividing.",
+             explanation="(double) sum turns 7 into 7.0 before the division, so 7.0 / 2 = 3.5. Without it, 7 / 2 is int division (3), "
+                         "which is then stored as 3.0."),
+        dict(id="java-b1-e3", type="order_steps", language="java",
+             prompt="These lines run inside main. Put them in order so the program adds 1 + 2 + 3 + 4 and prints 10.",
+             lines=["int total = 0;", "for (int i = 1; i <= 4; i++) {", "    total += i;", "}", "System.out.println(total);"],
+             expected_output="10",
+             hint="Declare the variable, loop, close the loop, then print.",
+             explanation="total must be declared before the loop uses it; the loop adds each i; the result is printed after the loop ends."),
+    ],
+    "java-b2": [
+        dict(id="java-b2-e1", type="predict_output", language="java", prompt="These lines run inside main. What do they print?",
+             code='String a = "java";\nString b = new String("java");\nSystem.out.println((a == b) + " " + a.equals(b));',
+             options=["false true", "true true", "true false", "false false"], answer=0,
+             hint="== compares whether two variables point to the same object; equals compares the text.",
+             explanation="new String creates a second object, so a == b is false, but both hold the same text, so a.equals(b) is true."),
+        dict(id="java-b2-e2", type="fill_blank", language="java", prompt="Complete the return type of average.",
+             code="public class Main {\n    static ____ average(int[] marks) {\n        int total = 0;\n        for (int m : marks) {\n"
+                  "            total += m;\n        }\n        return (double) total / marks.length;\n    }\n\n"
+                  "    public static void main(String[] args) {\n        System.out.println(average(new int[] {60, 75}));\n    }\n}",
+             expected_output="67.5", answers=["double"],
+             hint="Look at the type of the value after return.",
+             explanation="The method returns (double) total / marks.length, a double, so its return type is double."),
+        dict(id="java-b2-e3", type="find_bug", language="java",
+             prompt="These lines run inside main and should print the highest price (200), but they crash. Which line is wrong?",
+             lines=["int[] prices = {120, 80, 200};", "int max = prices[0];", "for (int i = 1; i <= prices.length; i++) {",
+                    "    if (prices[i] > max) {", "        max = prices[i];", "    }", "}", "System.out.println(max);"],
+             answer=2, fix="for (int i = 1; i < prices.length; i++) {", expected_output="200",
+             hint="An array of 3 items has indexes 0, 1 and 2.",
+             explanation="With i <= prices.length the loop reaches prices[3], which does not exist (ArrayIndexOutOfBoundsException). Use i < prices.length."),
+    ],
+    "java-i1": [
+        dict(id="java-i1-e1", type="predict_output", language="java",
+             prompt="The Account class is in the given code. These lines run inside main. What do they print?",
+             setup=_JAVA_ACCOUNT,
+             code='Account a = new Account("Ama", 100);\na.deposit(50);\na.deposit(-30);\nSystem.out.println(a.getBalance());',
+             options=["150", "120", "100", "compile error"], answer=0,
+             hint="Read deposit: what does it do with a negative amount?",
+             explanation="The constructor sets 100, deposit(50) adds 50, and deposit(-30) is ignored by the check amount > 0. "
+                         "Because balance is private, this method is the only way to change it."),
+        dict(id="java-i1-e2", type="fill_blank", language="java", prompt="Complete the class header so Square can be used as a Shape.",
+             code="interface Shape {\n    double area();\n}\n\nclass Square ____ Shape {\n    private final double side;\n\n"
+                  "    Square(double side) {\n        this.side = side;\n    }\n\n    public double area() {\n        return side * side;\n    }\n}\n\n"
+                  "public class Main {\n    public static void main(String[] args) {\n        Shape s = new Square(3);\n"
+                  "        System.out.println(s.area());\n    }\n}",
+             expected_output="9.0", answers=["implements"],
+             hint="A class extends another class but ... an interface.",
+             explanation="class Square implements Shape promises to provide every method of Shape; then a Square can be stored in a Shape variable."),
+        dict(id="java-i1-e3", type="find_bug", language="java",
+             prompt="This should print Ama, but it prints null. Which line is wrong?",
+             lines=["class Student {", "    private String name;", "    Student(String name) {", "        name = name;", "    }",
+                    "    String getName() {", "        return name;", "    }", "}", "public class Main {",
+                    "    public static void main(String[] args) {", '        System.out.println(new Student("Ama").getName());', "    }", "}"],
+             answer=3, fix="        this.name = name;", expected_output="Ama",
+             hint="Inside the constructor, the parameter has the same name as the field. Which one does name mean?",
+             explanation="name = name assigns the parameter to itself, so the field stays null. this.name = name sets the object's field."),
+    ],
+    "java-i2": [
+        dict(id="java-i2-e1", type="predict_output", language="java", prompt="These lines run inside main. What do they print?",
+             code='Map<String, Integer> counts = new HashMap<>();\nString[] words = {"java", "sql", "java", "git", "java"};\n'
+                  "for (String w : words) {\n    counts.put(w, counts.getOrDefault(w, 0) + 1);\n}\n"
+                  'System.out.println(counts.get("java") + " " + counts.size());',
+             options=["3 3", "3 5", "1 3", "5 3"], answer=0,
+             hint="put with an existing key replaces its value; keys are unique.",
+             explanation='"java" is counted three times; the map has three different keys (java, sql, git), so size() is 3.'),
+        dict(id="java-i2-e2", type="fill_blank", language="java", prompt="These lines run inside main. Complete the type of the list.",
+             code='List<____> skills = new ArrayList<>();\nskills.add("Java");\nskills.add("SQL");\n'
+                  'System.out.println(skills.size() + " " + skills.get(1));',
+             expected_output="2 SQL", answers=["String"],
+             hint="What type are the values added to the list?",
+             explanation="List<String> says the list holds Strings, so the compiler checks every add and get(1) returns a String without a cast."),
+        dict(id="java-i2-e3", type="find_bug", language="java",
+             prompt="These lines run inside main and should remove the marks below 50 and print [80, 90]. They crash. Which line is wrong?",
+             lines=["List<Integer> marks = new ArrayList<>(List.of(45, 80, 30, 90));",
+                    "for (Integer m : marks) { if (m < 50) marks.remove(m); }", "System.out.println(marks);"],
+             answer=1, fix="marks.removeIf(m -> m < 50);", expected_output="[80, 90]",
+             hint="Can you change a list while a for-each loop is walking through it?",
+             explanation="Removing from an ArrayList during a for-each loop over it throws ConcurrentModificationException. removeIf removes safely."),
+    ],
+    "java-a1": [
+        dict(id="java-a1-e1", type="predict_output", language="java", prompt="These lines run inside main. What do they print?",
+             code='try {\n    System.out.print("start; ");\n    int result = 10 / 0;\n    System.out.print("result " + result + "; ");\n'
+                  '} catch (ArithmeticException e) {\n    System.out.print("cannot divide; ");\n} finally {\n    System.out.print("done");\n}',
+             options=["start; cannot divide; done", "start; result 0; done", "start; cannot divide;", "start; done"], answer=0,
+             hint="After the exception, the rest of try is skipped. finally always runs.",
+             explanation="10 / 0 throws ArithmeticException, so the result line is skipped, catch prints its message, and finally runs last."),
+        dict(id="java-a1-e2", type="fill_blank", language="java",
+             prompt="The Connection class is in the given code. These lines run inside main. Complete the try-with-resources header so the "
+                    "connection is closed automatically.",
+             setup=_JAVA_CONNECTION,
+             code="try (____) {\n    c.query();\n}",
+             expected_output="open\nquery\nclose", answers=["Connection c = new Connection()", "var c = new Connection()"],
+             hint="Declare and create the resource inside the brackets after try.",
+             explanation="A resource declared in try ( ... ) is closed automatically when the block ends, even if an exception is thrown."),
+        dict(id="java-a1-e3", type="find_bug", language="java",
+             prompt="This should print Error: Not enough money, but it does not compile. Which line is wrong?",
+             lines=["class InsufficientFundsException extends Exception {",
+                    "    InsufficientFundsException(String message) { super(message); }", "}", "public class Main {",
+                    "    static void withdraw(int balance, int amount) throws InsufficientFundsException {",
+                    '        if (amount > balance) throw new InsufficientFundsException("Not enough money");',
+                    '        System.out.println("Withdrew " + amount);', "    }", "    public static void main(String[] args) {",
+                    "        try {", "            withdraw(100, 500);", "        } catch (RuntimeException e) {",
+                    '            System.out.println("Error: " + e.getMessage());', "        }", "    }", "}"],
+             answer=11, fix="        } catch (InsufficientFundsException e) {", expected_output="Error: Not enough money",
+             hint="InsufficientFundsException extends Exception, not RuntimeException. Is it a checked exception?",
+             explanation="A checked exception must be caught or declared. catch (RuntimeException e) does not catch it, so javac reports "
+                         "it as unreported; catch InsufficientFundsException instead."),
+    ],
+    "java-a2": [
+        dict(id="java-a2-e1", type="predict_output", language="java", prompt="These lines run inside main. What do they print?",
+             code='List<String> names = List.of("Ama", "Ben", "Chen", "Dev");\nList<String> result = names.stream()\n'
+                  "        .filter(n -> n.length() == 3)\n        .map(String::toUpperCase)\n        .collect(Collectors.toList());\n"
+                  "System.out.println(result);",
+             options=["[AMA, BEN, DEV]", "[AMA, BEN, CHEN, DEV]", "[CHEN]", "[Ama, Ben, Dev]"], answer=0,
+             hint="filter keeps the names with exactly 3 letters; map changes each kept name.",
+             explanation="filter keeps Ama, Ben and Dev (Chen has 4 letters); map makes them upper case; collect puts them in a new list."),
+        dict(id="java-a2-e2", type="fill_blank", language="java",
+             prompt="These lines run inside main. Write a lambda so square.apply(6) gives 36.",
+             code="Function<Integer, Integer> square = ____;\nSystem.out.println(square.apply(6));",
+             expected_output="36", answers=["x -> x * x", "(x) -> x * x", "n -> n * n", "(n) -> n * n", "(Integer x) -> x * x"],
+             hint="A lambda is parameter -> result.",
+             explanation="x -> x * x is a function that takes x and returns x * x. Function<Integer, Integer> is a functional interface, so a lambda can implement it."),
+        dict(id="java-a2-e3", type="order_steps", language="java",
+             prompt="These lines run inside main. Put them in order so the program prints the best mark (85).",
+             lines=["List<Integer> marks = List.of(40, 85, 62);", "Optional<Integer> best = marks.stream().max(Integer::compare);",
+                    "int value = best.orElse(0);", "System.out.println(value);"],
+             expected_output="85",
+             hint="Each line uses the variable made by the line before it.",
+             explanation="Create the list, find the maximum (an Optional, because an empty list has no maximum), take the value with "
+                         "orElse(0), then print it."),
     ],
 }
 

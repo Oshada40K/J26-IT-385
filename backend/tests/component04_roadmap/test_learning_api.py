@@ -122,7 +122,8 @@ class LearningApiTests(unittest.TestCase):
                                           json={"skill_id": "SK001", "kind": "quiz"}).status_code, 422)
         self.assertEqual(self.client.get(f"/api/roadmap/learning/{aid}/activity", headers=headers,
                                          params={"skill_id": "SK001", "kind": "nope"}).status_code, 400)
-        self.assertEqual(self.client.post(f"/api/roadmap/learning/{aid}/generate/SK004", headers=headers).status_code, 503)
+        self.assertEqual(self.client.post(f"/api/roadmap/learning/{aid}/generate/SK015", headers=headers).status_code, 503)
+        self.assertEqual(self.client.post(f"/api/roadmap/learning/{aid}/generate/SK004", headers=headers).status_code, 409)
 
 
 if __name__ == "__main__":
